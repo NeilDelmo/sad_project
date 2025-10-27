@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,3 +19,22 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/test-profile', function () {
+    $user = User::first();
+
+    if (! $user) {
+        return response()->json(['error' => 'No users found'], 404);
+    }
+
+    // Create a profile if none exists; otherwise return the existing one
+    $profile = $user->fishermanProfile;
+    if (! $profile) {
+        $profile = $user->fishermanProfile()->create([
+            'vessel_name' => 'Blue Dolphin',
+            'vessel_type' => 'bangka',
+        ]);
+    }
+
+    return response()->json($profile);
+});
