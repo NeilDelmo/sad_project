@@ -41,7 +41,15 @@ Route::get('/test-profile', function () {
 
 // Marketplace routes (public - no authentication required)
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\MessageController;
 
 Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
-Route::view('/marketplace/message', 'marketplaces.message')->name('marketplace.message');
+
+// Messaging routes (requires authentication)
+Route::middleware('auth')->group(function () {
+    Route::get('/marketplace/message/{conversationId?}', [MessageController::class, 'show'])->name('marketplace.message');
+    Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'show'])->name('marketplace.message.product');
+    Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
+    Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
+});

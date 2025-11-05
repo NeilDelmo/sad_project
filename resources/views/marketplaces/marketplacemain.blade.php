@@ -248,7 +248,7 @@
             </div>
             @endif
             @auth
-                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
+                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message.product', $product->id) }}'">Message Seller</button>
             @else
                 <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
             @endauth

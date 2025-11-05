@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat with Seller</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Chat with {{ $conversation->buyer_id === Auth::id() ? $conversation->seller->username : $conversation->buyer->username }}</title>
   <style>
     /* General layout */
     body {
@@ -155,15 +156,18 @@
     <div class="chat-header">
       <button class="back-btn" onclick="window.history.back()">←</button>
       <div class="seller-info">
-        <h3>Juan Dela Cruz</h3>
-        <p>Fresh Tuna Seller</p>
+        <h3>{{ $conversation->buyer_id === Auth::id() ? $conversation->seller->username : $conversation->buyer->username }}</h3>
+        @if($product)
+        <p>{{ $product->name }}</p>
+        @endif
       </div>
     </div>
 
     <div class="chat-messages" id="chatMessages">
-      <div class="message received">Hi! Interested in the fresh tuna?</div>
-      <div class="message sent">Yes, is it still available?</div>
-      <div class="message received">Yes, caught this morning. When can you pick up?</div>
+      <!-- Messages will be loaded via AJAX -->
+      <div style="text-align: center; color: #999; padding: 20px;">
+        <p>Loading messages...</p>
+      </div>
     </div>
 
     <div class="chat-input">
@@ -173,21 +177,89 @@
   </div>
 
   <script>
+    const conversationId = {{ $conversation->id }};
+    const currentUserId = {{ Auth::id() }};
     const input = document.getElementById('messageInput');
     const messagesContainer = document.getElementById('chatMessages');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    // Load messages on page load
+    loadMessages();
+
+    // Auto-refresh messages every 3 seconds
+    setInterval(loadMessages, 3000);
+
+    function loadMessages() {
+      fetch(`/api/conversations/${conversationId}/messages`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        displayMessages(data.messages);
+      })
+      .catch(error => {
+        console.error('Error loading messages:', error);
+      });
+    }
+
+    function displayMessages(messages) {
+      messagesContainer.innerHTML = '';
+      
+      if (messages.length === 0) {
+        messagesContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;"><p>No messages yet. Start the conversation!</p></div>';
+        return;
+      }
+
+      messages.forEach(msg => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = msg.is_own ? 'message sent' : 'message received';
+        messageDiv.textContent = msg.message;
+        messagesContainer.appendChild(messageDiv);
+      });
+
+      // Scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 
     function sendMessage() {
       const message = input.value.trim();
-      if (message) {
-        const newMessage = document.createElement('div');
-        newMessage.className = 'message sent';
-        newMessage.textContent = message;
-        messagesContainer.appendChild(newMessage);
+      if (!message) return;
 
-        input.value = '';
-        input.style.height = '38px'; // reset size
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
+      // Disable button while sending
+      const sendBtn = document.querySelector('.send-btn');
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+
+      fetch(`/api/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ message: message }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          input.value = '';
+          input.style.height = '38px';
+          loadMessages(); // Reload messages
+        }
+      })
+      .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Failed to send message. Please try again.');
+      })
+      .finally(() => {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      });
     }
 
     // Auto resize textarea
