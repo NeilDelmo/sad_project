@@ -15,25 +15,22 @@ class MarketplaceController extends Controller
 
     public function shop()
     {
-        // Get all products with their relationships, ordered by newest first
-        $products = Product::with(['supplier', 'category'])
+        // Get category IDs
+        $fishCategories = ProductCategory::whereIn('name', ['Fresh Fish', 'Seafood'])->pluck('id');
+        $gearCategories = ProductCategory::whereIn('name', ['Fishing Gear', 'Equipment'])->pluck('id');
+
+        // Get fish products
+        $fishProducts = Product::with(['supplier', 'category'])
+            ->whereIn('category_id', $fishCategories)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Group products by category
-        $fishProducts = $products->filter(function ($product) {
-            return $product->category && 
-                   (stripos($product->category->name, 'fish') !== false || 
-                    stripos($product->category->name, 'seafood') !== false);
-        });
+        // Get gear products
+        $gearProducts = Product::with(['supplier', 'category'])
+            ->whereIn('category_id', $gearCategories)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        $gearProducts = $products->filter(function ($product) {
-            return $product->category && 
-                   (stripos($product->category->name, 'gear') !== false || 
-                    stripos($product->category->name, 'equipment') !== false ||
-                    stripos($product->category->name, 'tool') !== false);
-        });
-
-        return view('marketplaces.marketplacemain', compact('products', 'fishProducts', 'gearProducts'));
+        return view('marketplaces.marketplacemain', compact('fishProducts', 'gearProducts'));
     }
 }

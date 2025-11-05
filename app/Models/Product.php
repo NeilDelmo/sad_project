@@ -31,6 +31,6 @@ class Product extends Model implements AuditableConract
     }
 
     public function category(): BelongsTo{
-        return $this->belongsTo(ProductCategory::class, 'category_id', 'category_id');
+        return $this->belongsTo(ProductCategory::class, 'category_id', 'id');
     }
 }

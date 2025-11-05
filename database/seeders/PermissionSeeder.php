@@ -56,7 +56,6 @@ class PermissionSeeder extends Seeder
         $regulator = Role::create(['name' => 'regulator']);
         $fisherman = Role::create(['name' => 'fisherman']);
         $buyer = Role::create(['name' => 'buyer']);
-        $supplier = Role::create(['name' => 'supplier']);
 
         // Assign permissions to roles
         // Safety module permissions
@@ -65,14 +64,12 @@ class PermissionSeeder extends Seeder
 
         // Marketplace permissions
         $buyer->givePermissionTo(['view marketplace', 'buy products', 'view pricing suggestions']);
-        $supplier->givePermissionTo(['view marketplace', 'sell products', 'manage listings', 'view pricing suggestions']);
-        $fisherman->givePermissionTo(['view marketplace', 'sell products']); // Fishermen can also sell
+        $fisherman->givePermissionTo(['view marketplace', 'sell products']); // Fishermen sell their catch
         $admin->givePermissionTo(['view marketplace', 'buy products', 'sell products', 'manage listings', 'view pricing suggestions']);
 
-        // Equipment management permissions
+        // Equipment management permissions (Organization provides equipment)
         $fisherman->givePermissionTo(['view maintenance reminders', 'log maintenance', 'rent equipment', 'track equipment usage']);
-        $admin->givePermissionTo(['view maintenance reminders', 'log maintenance', 'rent equipment', 'manage rentals', 'track equipment usage']);
-        $supplier->givePermissionTo(['manage rentals', 'track equipment usage']);
+        $admin->givePermissionTo(['view maintenance reminders', 'log maintenance', 'rent equipment', 'manage rentals', 'track equipment usage']); // Admin manages organization equipment
 
         // Credit scoring permissions
         $fisherman->givePermissionTo(['view own credit score']);
@@ -86,7 +83,6 @@ class PermissionSeeder extends Seeder
         // Community hub permissions
         $fisherman->givePermissionTo(['access community hub', 'create posts', 'comment on posts']);
         $buyer->givePermissionTo(['access community hub', 'create posts', 'comment on posts']);
-        $supplier->givePermissionTo(['access community hub', 'create posts', 'comment on posts']);
         $regulator->givePermissionTo(['access community hub']);
         $admin->givePermissionTo(['access community hub', 'create posts', 'comment on posts', 'moderate content']);
     }

@@ -264,6 +264,9 @@
 
     <!-- Fishing Gear Section -->
     <div class="section-title">Fishing Gear & Equipment</div>
+    <div class="gear-contact" onclick="copyOrgContact(this)" style="cursor: pointer;">
+        Contact Equipment Manager: 📞 0916-777-8888 (Click to copy)
+    </div>
     <div class="products-grid">
         @forelse($gearProducts as $product)
         <div class="product-card">
@@ -280,19 +283,6 @@
                 ✓ {{ $product->available_quantity }} units available
             </div>
             @endif
-            <div class="product-info" style="font-size: 12px; color: #999;">
-                Posted {{ $product->created_at->diffForHumans() }}
-            </div>
-            @if($product->supplier && $product->supplier->phone)
-            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $product->supplier->phone }}">
-                📞 {{ $product->supplier->phone }} (Click to copy)
-            </div>
-            @endif
-            @auth
-                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
-            @else
-                <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
-            @endauth
         </div>
         @empty
         <div style="padding: 40px; text-align: center; width: 100%; color: #666;">
@@ -337,20 +327,20 @@
             });
         }
 
-        // Also make gear contact clickable
-        document.querySelector('.gear-contact').addEventListener('click', function () {
-            const contact = this.textContent.match(/\d{4}-\d{3}-\d{4}/)[0];
+        // Organization contact copy function
+        function copyOrgContact(element) {
+            const contact = element.textContent.match(/\d{4}-\d{3}-\d{4}/)[0];
             navigator.clipboard.writeText(contact).then(() => {
-                const originalText = this.innerHTML;
-                this.innerHTML = '✅ Contact copied to clipboard!';
-                this.style.background = '#d4edda';
+                const originalText = element.innerHTML;
+                element.innerHTML = '✅ Contact copied to clipboard!';
+                element.style.background = '#d4edda';
 
                 setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.style.background = '#E7FAFE';
+                    element.innerHTML = originalText;
+                    element.style.background = '#E7FAFE';
                 }, 1500);
             });
-        });
+        }
 
         // Login prompt functions
         function showLoginPrompt() {

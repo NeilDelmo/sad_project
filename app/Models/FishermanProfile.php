@@ -25,7 +25,7 @@ class FishermanProfile extends Model implements AuditableConract
     ];
 
     public function user(): BelongsTo {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     /**

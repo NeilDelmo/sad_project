@@ -15,26 +15,26 @@ class MarketplaceSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a sample supplier user if none exists
-        $supplier = User::firstOrCreate(
-            ['email' => 'supplier@test.com'],
-            [
-                'username' => 'fishsupplier',
-                'email' => 'supplier@test.com',
-                'phone' => '0917-123-4567',
-                'user_type' => 'supplier',
-                'status' => 'active',
-                'password' => Hash::make('password'),
-            ]
-        );
-
-        $fisherman = User::firstOrCreate(
+        // Create test users
+        $fisherman1 = User::firstOrCreate(
             ['email' => 'fisherman@test.com'],
             [
                 'username' => 'fisherman1',
                 'email' => 'fisherman@test.com',
                 'phone' => '0922-987-6543',
                 'user_type' => 'fisherman',
+                'status' => 'active',
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'username' => 'adminuser',
+                'email' => 'admin@test.com',
+                'phone' => '0916-777-8888',
+                'user_type' => 'admin',
                 'status' => 'active',
                 'password' => Hash::make('password'),
             ]
@@ -71,7 +71,7 @@ class MarketplaceSeeder extends Seeder
                 'freshness_metric' => 'Very Fresh',
                 'quality_rating' => 4.8,
                 'category_id' => $fishCategory->id,
-                'supplier_id' => $fisherman->id,
+                'supplier_id' => $fisherman1->id,
             ],
             [
                 'name' => 'Bangus (Milkfish)',
@@ -81,7 +81,7 @@ class MarketplaceSeeder extends Seeder
                 'freshness_metric' => 'Fresh',
                 'quality_rating' => 4.5,
                 'category_id' => $fishCategory->id,
-                'supplier_id' => $fisherman->id,
+                'supplier_id' => $fisherman1->id,
             ],
             [
                 'name' => 'Tilapia',
@@ -91,7 +91,7 @@ class MarketplaceSeeder extends Seeder
                 'freshness_metric' => 'Fresh',
                 'quality_rating' => 4.3,
                 'category_id' => $fishCategory->id,
-                'supplier_id' => $fisherman->id,
+                'supplier_id' => $fisherman1->id,
             ],
             [
                 'name' => 'Squid',
@@ -101,7 +101,7 @@ class MarketplaceSeeder extends Seeder
                 'freshness_metric' => 'Very Fresh',
                 'quality_rating' => 4.6,
                 'category_id' => $seafoodCategory->id,
-                'supplier_id' => $fisherman->id,
+                'supplier_id' => $fisherman1->id,
             ],
             [
                 'name' => 'Shrimp',
@@ -111,7 +111,7 @@ class MarketplaceSeeder extends Seeder
                 'freshness_metric' => 'Very Fresh',
                 'quality_rating' => 4.9,
                 'category_id' => $seafoodCategory->id,
-                'supplier_id' => $fisherman->id,
+                'supplier_id' => $fisherman1->id,
             ],
         ];
 
@@ -124,7 +124,7 @@ class MarketplaceSeeder extends Seeder
                 'available_quantity' => 15.00,
                 'quality_rating' => 4.7,
                 'category_id' => $gearCategory->id,
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $admin->id,
             ],
             [
                 'name' => 'Fishing Net Large',
@@ -133,7 +133,7 @@ class MarketplaceSeeder extends Seeder
                 'available_quantity' => 10.00,
                 'quality_rating' => 4.5,
                 'category_id' => $gearCategory->id,
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $admin->id,
             ],
             [
                 'name' => 'Fishing Line 100m',
@@ -142,7 +142,7 @@ class MarketplaceSeeder extends Seeder
                 'available_quantity' => 50.00,
                 'quality_rating' => 4.4,
                 'category_id' => $gearCategory->id,
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $admin->id,
             ],
             [
                 'name' => 'Cooler Box 50L',
@@ -151,7 +151,7 @@ class MarketplaceSeeder extends Seeder
                 'available_quantity' => 8.00,
                 'quality_rating' => 4.6,
                 'category_id' => $equipmentCategory->id,
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $admin->id,
             ],
             [
                 'name' => 'Fishing Vest',
@@ -160,7 +160,7 @@ class MarketplaceSeeder extends Seeder
                 'available_quantity' => 12.00,
                 'quality_rating' => 4.5,
                 'category_id' => $equipmentCategory->id,
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $admin->id,
             ],
         ];
 
