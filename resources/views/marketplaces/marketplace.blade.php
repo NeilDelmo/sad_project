@@ -143,14 +143,14 @@
         <div class="container-fluid nav-bar">
 
             <!-- logo -->
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="{{ route('marketplace.index') }}">
                 <!-- <img src="photos/sealedger-logo.png" width="50" height="50"> -->
                  Logo Here
             </a>
 
             <!-- center group -->
             <div class="btn-text blue gap-5 d-flex">
-                <a href="#">Latest</a>
+                <a href="{{ route('marketplace.shop') }}">Latest</a>
                 <a href="#">Fish</a>
                 <a href="#">Gears</a>
             </div>
@@ -166,6 +166,15 @@
                 <a href="#">
                     <i class="fa-solid fa-cart-shopping fa-2xs"></i>
                 </a>
+                @if(Auth::check())
+                    <a href="{{ route('dashboard') }}" title="Dashboard">
+                        <i class="fa-solid fa-user fa-xs"></i>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" title="Login">
+                        <i class="fa-solid fa-right-to-bracket fa-xs"></i>
+                    </a>
+                @endif
             </div>
         </div>
     </nav>
@@ -174,9 +183,9 @@
 
         <div>
             <!-- change Amber to name of user logged in -->
-            <span class="font-subtitle">Amber, ready for today's catch?</span>
+            <span class="font-subtitle">{{ Auth::check() ? Auth::user()->name : 'Guest' }}, ready for today's catch?</span>
             <span class="font-title">Marketplace</span>
-            <button class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Shop</button>
+            <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Shop</a>
         </div>
 
         <!-- page indicator -->

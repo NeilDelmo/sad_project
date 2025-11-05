@@ -39,5 +39,7 @@ Route::get('/test-profile', function () {
     return response()->json($profile);
 });
 
-// Marketplace route (renders resources/views/marketplaces/marketplace.blade.php)
+// Marketplace routes (public - no authentication required)
 Route::view('/marketplace', 'marketplaces.marketplace')->name('marketplace.index');
+Route::view('/marketplace/shop', 'marketplaces.marketplacemain')->name('marketplace.shop');
+Route::view('/marketplace/message', 'marketplaces.message')->name('marketplace.message');

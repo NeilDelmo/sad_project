@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
+use OwenIt\Auditing\Auditable as AuditableTrait;
+use App\Models\User;
+use App\Models\ProductCategory;
 
-class Product extends Model
+class Product extends Model implements AuditableConract
 {
-    use HasUuids, HasFactory;
-    protected $primaryKey = 'product_id';
-    protected $keyType = 'string';
-    public $incrementing = false;
+    use HasFactory , AuditableTrait;
 
     protected $fillable = [
         'supplier_id',

@@ -3,27 +3,25 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
+use OwenIt\Auditing\Auditable as AuditableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\FishermanProfile;
 
-class User extends Authenticatable
+class User extends Authenticatable implements AuditableConract
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasUuids;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
+    use HasFactory, Notifiable, HasRoles, AuditableTrait;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
-    protected $fillable = [
+       protected $fillable = [
         'username',
         'email',
         'password',
@@ -48,7 +46,7 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+   protected function casts(): array
     {
         return [
             'registration_date' => 'datetime',

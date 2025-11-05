@@ -4,16 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\User;
+use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
+use OwenIt\Auditing\Auditable as AuditableTrait;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FishermanProfile extends Model
+class FishermanProfile extends Model implements AuditableConract
 {
-    use HasFactory, HasUuids;
-
-    protected $primaryKey = 'profile_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    use HasFactory, AuditableTrait; 
 
     protected $fillable = [
         'user_id',
@@ -26,7 +24,7 @@ class FishermanProfile extends Model
         'compliance_rate',
     ];
 
-    public function user() {
+    public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'user_id');
     }
 

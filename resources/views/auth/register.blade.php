@@ -24,8 +24,6 @@
                 <option value="fisherman" {{ old('user_type') === 'fisherman' ? 'selected' : '' }}>{{ __('Fisherman') }}</option>
                 <option value="buyer" {{ old('user_type') === 'buyer' ? 'selected' : '' }}>{{ __('Buyer') }}</option>
                 <option value="supplier" {{ old('user_type') === 'supplier' ? 'selected' : '' }}>{{ __('Supplier') }}</option>
-                <option value="regulator" {{ old('user_type') === 'regulator' ? 'selected' : '' }}>{{ __('Regulator') }}</option>
-                <option value="admin" {{ old('user_type') === 'admin' ? 'selected' : '' }}>{{ __('Admin') }}</option>
             </select>
             <x-input-error :messages="$errors->get('user_type')" class="mt-2" />
         </div>
