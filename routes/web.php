@@ -40,6 +40,8 @@ Route::get('/test-profile', function () {
 });
 
 // Marketplace routes (public - no authentication required)
-Route::view('/marketplace', 'marketplaces.marketplace')->name('marketplace.index');
-Route::view('/marketplace/shop', 'marketplaces.marketplacemain')->name('marketplace.shop');
+use App\Http\Controllers\MarketplaceController;
+
+Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
+Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
 Route::view('/marketplace/message', 'marketplaces.message')->name('marketplace.message');

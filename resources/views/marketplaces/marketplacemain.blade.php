@@ -157,6 +157,56 @@
             background: #0075B5;
             transform: translateY(-1px);
         }
+
+        .time-posted {
+            font-size: 12px;
+            color: #999;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .freshness-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .stock-info {
+            color: #28a745;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            width: 100%;
+            color: #666;
+            background: white;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .empty-state i {
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin: 10px 0 5px 0;
+            color: #1B5E88;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #999;
+            margin: 0;
+        }
     </style>
 </head>
 
@@ -174,99 +224,83 @@
     <!-- Fresh Fish Section -->
     <div class="section-title">Fresh Fish</div>
     <div class="products-grid">
+        @forelse($fishProducts as $product)
         <div class="product-card">
             <div class="product-image">
                 <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
             </div>
-            <div class="product-title">Fresh Tuna</div>
-            <div class="product-price">₱450/kg</div>
-            <div class="product-info">Caught this morning</div>
-            <div class="contact-info" onclick="copyContact(this)" data-contact="0917-123-4567">
-                📞 0917-123-4567 (Click to copy)
+            <div class="product-title">{{ $product->name }}</div>
+            <div class="product-price">₱{{ number_format($product->unit_price, 2) }}/kg</div>
+            <div class="product-info">
+                {{ $product->description ?? 'Fresh catch' }}
             </div>
+            @if($product->freshness_metric)
+            <div class="product-info" style="color: #28a745; font-weight: bold;">
+                🌟 {{ $product->freshness_metric }}
+            </div>
+            @endif
+            <div class="product-info" style="font-size: 12px; color: #999;">
+                Posted {{ $product->created_at->diffForHumans() }}
+            </div>
+            @if($product->supplier && $product->supplier->phone)
+            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $product->supplier->phone }}">
+                📞 {{ $product->supplier->phone }} (Click to copy)
+            </div>
+            @endif
             @auth
                 <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
             @else
                 <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
             @endauth
         </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
-            </div>
-            <div class="product-title">Bangus</div>
-            <div class="product-price">₱220/kg</div>
-            <div class="product-info">Medium size, fresh</div>
-            <div class="contact-info" onclick="copyContact(this)" data-contact="0922-987-6543">
-                📞 0922-987-6543 (Click to copy)
-            </div>
-            @auth
-                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
-            @else
-                <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
-            @endauth
+        @empty
+        <div style="padding: 40px; text-align: center; width: 100%; color: #666;">
+            <i class="fa-solid fa-fish fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
+            <p style="font-size: 18px; margin: 0;">No fish products available at the moment</p>
+            <p style="font-size: 14px; color: #999; margin-top: 5px;">Check back soon for fresh catches!</p>
         </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
-            </div>
-            <div class="product-title">Tilapia</div>
-            <div class="product-price">₱150/kg</div>
-            <div class="product-info">From local ponds</div>
-            <div class="contact-info" onclick="copyContact(this)" data-contact="0918-555-7890">
-                📞 0918-555-7890 (Click to copy)
-            </div>
-            @auth
-                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
-            @else
-                <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
-            @endauth
-        </div>
+        @endforelse
     </div>
 
     <!-- Fishing Gear Section -->
     <div class="section-title">Fishing Gear & Equipment</div>
-    <div class="gear-contact">
-        Contact Equipment Manager: 📞 0916-777-8888 (Click to copy)
-    </div>
     <div class="products-grid">
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-rod-async fa-2x" style="color: #0075B5;"></i>
-            </div>
-            <div class="product-title">Fishing Rods</div>
-            <div class="product-price">Organization</div>
-            <div class="product-info">Various sizes available</div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-network-wired fa-2x" style="color: #0075B5;"></i>
-            </div>
-            <div class="product-title">Fishing Nets</div>
-            <div class="product-price">Organization</div>
-            <div class="product-info">Different mesh sizes</div>
-        </div>
-
+        @forelse($gearProducts as $product)
         <div class="product-card">
             <div class="product-image">
                 <i class="fa-solid fa-toolbox fa-2x" style="color: #0075B5;"></i>
             </div>
-            <div class="product-title">Repair Tools</div>
-            <div class="product-price">Organization</div>
-            <div class="product-info">Net repair & maintenance</div>
-        </div>
-
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-vest fa-2x" style="color: #0075B5;"></i>
+            <div class="product-title">{{ $product->name }}</div>
+            <div class="product-price">₱{{ number_format($product->unit_price, 2) }}</div>
+            <div class="product-info">
+                {{ $product->description ?? 'Quality equipment' }}
             </div>
-            <div class="product-title">Safety Equipment</div>
-            <div class="product-price">Organization</div>
-            <div class="product-info">Vests, first aid kits</div>
+            @if($product->available_quantity > 0)
+            <div class="product-info" style="color: #28a745; font-size: 12px;">
+                ✓ {{ $product->available_quantity }} units available
+            </div>
+            @endif
+            <div class="product-info" style="font-size: 12px; color: #999;">
+                Posted {{ $product->created_at->diffForHumans() }}
+            </div>
+            @if($product->supplier && $product->supplier->phone)
+            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $product->supplier->phone }}">
+                📞 {{ $product->supplier->phone }} (Click to copy)
+            </div>
+            @endif
+            @auth
+                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message') }}'">Message Seller</button>
+            @else
+                <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
+            @endauth
         </div>
+        @empty
+        <div style="padding: 40px; text-align: center; width: 100%; color: #666;">
+            <i class="fa-solid fa-toolbox fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
+            <p style="font-size: 18px; margin: 0;">No fishing gear available at the moment</p>
+            <p style="font-size: 14px; color: #999; margin-top: 5px;">Check back soon for equipment!</p>
+        </div>
+        @endforelse
     </div>
 
     <!-- Login Prompt Modal -->
