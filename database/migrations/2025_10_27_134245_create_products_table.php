@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->uuid('product_id')->primary();
-            // Users table uses UUID primary key named 'id', so reference that
-            $table->foreignUuid('supplier_id')->constrained('users')->onDelete('cascade');
-            $table->foreignUuid('category_id')->constrained('product_categories','category_id')->onDelete('cascade');
+         Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('supplier_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('product_categories')->onDelete('cascade');
             $table->string('name', 200);
             $table->text('description')->nullable();
             $table->string('freshness_metric', 50)->nullable();

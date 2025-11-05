@@ -13,10 +13,7 @@ return new class extends Migration
     {
       Schema::create('users', function (Blueprint $table) {
             // Change from $table->id() to UUID
-            $table->uuid('id')->primary();
-
-            // Remove 'name' field (or keep if you want names)
-            // $table->string('name'); // Remove or comment out
+            $table->id();
 
             // Add your custom fields
             $table->string('username')->unique();
@@ -34,7 +31,7 @@ return new class extends Migration
         });
 
         // KEEP these - Laravel needs them
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
+        Schema::create('password_resets', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
@@ -42,7 +39,7 @@ return new class extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignUuid('user_id')->nullable()->index(); // Changed to foreignUuid
+            $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
@@ -56,7 +53,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('password_resets');
         Schema::dropIfExists('sessions');
     }
 };

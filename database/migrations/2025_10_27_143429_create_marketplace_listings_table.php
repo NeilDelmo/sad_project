@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('marketplace_listings', function (Blueprint $table) {
-            $table->uuid('listing_id')->primary();
-            $table->foreignUuid('product_id')->constrained('products', 'product_id')->onDelete('cascade');
-            $table->foreignUuid('seller_id')->constrained('users', 'id')->onDelete('cascade');
+            $table->id();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
             $table->decimal('asking_price', 10, 2);
             $table->decimal('suggested_price', 10, 2)->nullable();
             $table->decimal('demand_factor', 5, 2)->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('listing_date')->useCurrent();
             $table->enum('status', ['active', 'sold', 'expired'])->default('active');
             $table->timestamps();
-            
+
             // Indexes
             $table->index('product_id');
             $table->index('seller_id');

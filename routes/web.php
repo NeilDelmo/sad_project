@@ -38,3 +38,6 @@ Route::get('/test-profile', function () {
 
     return response()->json($profile);
 });
+
+// Marketplace route (renders resources/views/marketplaces/marketplace.blade.php)
+Route::view('/marketplace', 'marketplaces.marketplace')->name('marketplace.index');
