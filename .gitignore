@@ -22,8 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/venv
-/python
+/python/venv
+*Zone.Identifier
 __pycache__/
 *.pyc
 *.pyo

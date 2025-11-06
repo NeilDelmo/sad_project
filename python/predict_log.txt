@@ -1,0 +1,54 @@
+Error during prediction: The feature names should match those that were passed during fit.
+Feature names seen at fit time, yet now missing:
+- location
+
+Traceback (most recent call last):
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/predict_risk.py", line 38, in <module>
+    prediction = model.predict(df)[0]
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 903, in predict
+    proba = self.predict_proba(X)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 945, in predict_proba
+    X = self._validate_X_predict(X)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 637, in _validate_X_predict
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/utils/validation.py", line 2929, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/utils/validation.py", line 2787, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names seen at fit time, yet now missing:
+- location
+
+
+Error during prediction: could not convert string to float: 'Unknown'
+Traceback (most recent call last):
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/predict_risk.py", line 39, in <module>
+    prediction = model.predict(df)[0]
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 903, in predict
+    proba = self.predict_proba(X)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 945, in predict_proba
+    X = self._validate_X_predict(X)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/ensemble/_forest.py", line 637, in _validate_X_predict
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/utils/validation.py", line 2954, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/utils/validation.py", line 1053, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/sklearn/utils/_array_api.py", line 757, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cedri/LaravelProjects/SADProject/sad_project/python/venv/lib/python3.12/site-packages/pandas/core/generic.py", line 2171, in __array__
+    arr = np.asarray(values, dtype=dtype)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: 'Unknown'
+
