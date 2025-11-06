@@ -11,54 +11,61 @@ use Illuminate\Support\Facades\Auth;
 class MessageController extends Controller
 {
     /**
-     * Show conversation page
+     * Show conversation page (by conversation ID)
      */
-    public function show($conversationId = null, $productId = null)
+    public function show($conversationId)
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to access messages');
         }
 
-        $conversation = null;
-        $product = null;
+        $conversation = Conversation::with(['buyer', 'seller', 'product', 'messages.sender'])
+            ->findOrFail($conversationId);
+        
+        // Ensure user is part of this conversation
+        if ($conversation->buyer_id !== Auth::id() && $conversation->seller_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to conversation');
+        }
 
-        // If conversation ID provided, load it
-        if ($conversationId) {
-            $conversation = Conversation::with(['buyer', 'seller', 'product', 'messages.sender'])
-                ->findOrFail($conversationId);
-            
-            // Ensure user is part of this conversation
-            if ($conversation->buyer_id !== Auth::id() && $conversation->seller_id !== Auth::id()) {
-                abort(403, 'Unauthorized access to conversation');
-            }
+        // Mark messages as read
+        $this->markMessagesAsRead($conversation);
 
-            // Mark messages as read
-            $this->markMessagesAsRead($conversation);
+        $product = $conversation->product;
 
-            $product = $conversation->product;
-        } 
-        // If product ID provided, find or create conversation
-        elseif ($productId) {
-            $product = Product::with('supplier')->findOrFail($productId);
-            
-            // Check if conversation already exists
-            $conversation = Conversation::where('buyer_id', Auth::id())
-                ->where('seller_id', $product->supplier_id)
-                ->where('product_id', $productId)
-                ->with(['messages.sender'])
-                ->first();
+        return view('marketplaces.message', compact('conversation', 'product'));
+    }
 
-            // Create new conversation if doesn't exist
-            if (!$conversation) {
-                $conversation = Conversation::create([
-                    'buyer_id' => Auth::id(),
-                    'seller_id' => $product->supplier_id,
-                    'product_id' => $productId,
-                    'last_message_at' => now(),
-                ]);
-            }
-        } else {
-            abort(404, 'Conversation or product not found');
+    /**
+     * Start conversation about a product
+     */
+    public function startConversation($productId)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Please login to message sellers');
+        }
+
+        $product = Product::with('supplier')->findOrFail($productId);
+        
+        // Check if user is trying to message themselves
+        if ($product->supplier_id === Auth::id()) {
+            return redirect()->route('marketplace.shop')->with('error', 'You cannot message yourself');
+        }
+        
+        // Check if conversation already exists
+        $conversation = Conversation::where('buyer_id', Auth::id())
+            ->where('seller_id', $product->supplier_id)
+            ->where('product_id', $productId)
+            ->with(['messages.sender'])
+            ->first();
+
+        // Create new conversation if doesn't exist
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'buyer_id' => Auth::id(),
+                'seller_id' => $product->supplier_id,
+                'product_id' => $productId,
+                'last_message_at' => now(),
+            ]);
         }
 
         return view('marketplaces.message', compact('conversation', 'product'));

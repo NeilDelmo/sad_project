@@ -1,7 +1,12 @@
 <?php
 
+use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiskPredictionController; 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\FishermanController;
 use App\Models\User;
 
 Route::get('/', function () {
@@ -39,17 +44,31 @@ Route::get('/test-profile', function () {
     return response()->json($profile);
 });
 
+Route::get('/dashboard/risk', [RiskPredictionController::class, 'showForm'])->name('risk-form');
+Route::post('/dashboard/risk', [RiskPredictionController::class, 'predict'])->name('predict-risk');
+
 // Marketplace routes (public - no authentication required)
-use App\Http\Controllers\MarketplaceController;
-use App\Http\Controllers\MessageController;
 
 Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
 
 // Messaging routes (requires authentication)
 Route::middleware('auth')->group(function () {
-    Route::get('/marketplace/message/{conversationId?}', [MessageController::class, 'show'])->name('marketplace.message');
-    Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'show'])->name('marketplace.message.product');
+    Route::get('/marketplace/message/{conversationId}', [MessageController::class, 'show'])->name('marketplace.message');
+    Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'startConversation'])->name('marketplace.message.product');
     Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
     Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
+});
+
+// Fisherman routes (requires authentication + fisherman role)
+
+Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(function () {
+    // Fisherman Dashboard (will include safety navigation/ML features later)
+    Route::get('/dashboard', [FishermanController::class, 'dashboard'])->name('dashboard');
+    
+    // Product Management (CRUD)
+    Route::resource('products', ProductController::class)->except(['show']);
+    
+    // Message Inbox
+    Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
 });
