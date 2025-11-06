@@ -13,9 +13,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    Route::get('/dashboard/risk', [RiskPredictionController::class, 'showForm'])->name('risk-form');
+    Route::post('/dashboard/risk', [RiskPredictionController::class, 'predict'])->name('predict-risk');
+    Route::get('/dashboard/risk/history', [RiskPredictionController::class, 'history'])->name('risk-history');
+    Route::get('/api/risk/latest', [RiskPredictionController::class, 'latest'])->name('risk-latest');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -43,9 +50,6 @@ Route::get('/test-profile', function () {
 
     return response()->json($profile);
 });
-
-Route::get('/dashboard/risk', [RiskPredictionController::class, 'showForm'])->name('risk-form');
-Route::post('/dashboard/risk', [RiskPredictionController::class, 'predict'])->name('predict-risk');
 
 // Marketplace routes (public - no authentication required)
 

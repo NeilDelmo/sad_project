@@ -8,10 +8,58 @@
                 <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">AI-powered safety assessment for your fishing trips</p>
             </div>
         </div>
+
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            @if(isset($recentLogs) && $recentLogs->isNotEmpty())
+                <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Recent Predictions</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Latest runs captured for quick reference.</p>
+                        </div>
+                        <a href="{{ route('risk-history') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-700">View full history →</a>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-900">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">When</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Result</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Conditions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                                @foreach ($recentLogs as $log)
+                                    <tr>
+                                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ $log->predicted_at->diffForHumans() }}</td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $log->location }}</td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                                                @class([
+                                                    'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-200' => str_contains(strtolower($log->result), 'high'),
+                                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/60 dark:text-yellow-200' => str_contains(strtolower($log->result), 'medium'),
+                                                    'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-200' => str_contains(strtolower($log->result), 'low'),
+                                                    'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' => ! str_contains(strtolower($log->result), 'high') && ! str_contains(strtolower($log->result), 'medium') && ! str_contains(strtolower($log->result), 'low'),
+                                                ])">
+                                                {{ $log->result }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                                            Wind {{ $log->wind_speed_kph }} kph • Waves {{ $log->wave_height_m }} m • Rain {{ $log->rainfall_mm }} mm
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 shadow-xl rounded-2xl overflow-hidden">
                 <!-- Header Banner -->
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
