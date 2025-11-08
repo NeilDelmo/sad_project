@@ -19,6 +19,7 @@ class Product extends Model implements AuditableConract
         'category_id',
         'name',
         'description',
+        'image_path',
         'freshness_metric',
         'unit_price',
         'available_quantity',

@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="bootstrap5/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
-    <title>FishOrg Market</title>
+    <title>SeaLedger - FishOrg Marketplace</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
+
         body {
             background-color: #f8f9fa;
             margin: 0;
@@ -15,39 +17,82 @@
             font-family: Arial, sans-serif;
         }
 
+        /* Modern Navbar */
         .navbar {
-            background: #1B5E88;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .nav-brand {
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
+            font-family: "Koulen", sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        .nav-tabs {
+        .nav-center-group {
             display: flex;
-            gap: 30px;
+            gap: 10px;
         }
 
-        .nav-tab {
-            color: white;
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: background 0.3s;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .nav-tab.active {
-            background: #0075B5;
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
         }
 
-        .nav-tab:hover {
-            background: #0075B5;
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-right-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-icon-link {
+            color: white;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-icon-link:hover {
+            transform: scale(1.2);
+            color: #E7FAFE;
         }
 
         .products-grid {
@@ -214,20 +259,61 @@
 
     <!-- Simple Navbar -->
     <nav class="navbar">
-        <div class="nav-brand">FishOrg</div>
-        <div class="nav-tabs">
-            <a href="#" class="nav-tab active">Marketplace</a>
-            <a href="#" class="nav-tab">Organization</a>
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <!-- logo -->
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
+                🐟 FishOrg
+            </a>
+
+            <!-- center group -->
+            <div class="nav-center-group">
+                <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
+                    <i class="fa-solid fa-fire"></i> Latest
+                </a>
+                <a href="{{ route('marketplace.shop', ['filter' => 'fish']) }}" class="nav-link {{ (isset($filter) && $filter == 'fish') ? 'active' : '' }}">
+                    <i class="fa-solid fa-fish"></i> Fish
+                </a>
+                <a href="{{ route('marketplace.shop', ['filter' => 'gear']) }}" class="nav-link {{ (isset($filter) && $filter == 'gear') ? 'active' : '' }}">
+                    <i class="fa-solid fa-screwdriver-wrench"></i> Gears
+                </a>
+            </div>
+
+            <!-- right group -->
+            <div class="nav-right-group">
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </a>
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-heart"></i>
+                </a>
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </a>
+                @if(Auth::check())
+                    <a href="{{ route('dashboard') }}" title="Dashboard" class="nav-icon-link">
+                        <i class="fa-solid fa-user"></i>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" title="Login" class="nav-icon-link">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </a>
+                @endif
+            </div>
         </div>
     </nav>
 
     <!-- Fresh Fish Section -->
-    <div class="section-title">Fresh Fish</div>
+    @if(!isset($filter) || $filter == 'all' || $filter == 'fish')
+    <div class="section-title" id="fish-section">Fresh Fish</div>
     <div class="products-grid">
         @forelse($fishProducts as $product)
         <div class="product-card">
             <div class="product-image">
-                <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
+                @if($product->image_path)
+                    <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
+                @else
+                    <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
+                @endif
             </div>
             <div class="product-title">{{ $product->name }}</div>
             <div class="product-price">₱{{ number_format($product->unit_price, 2) }}/kg</div>
@@ -248,7 +334,13 @@
             </div>
             @endif
             @auth
-                <button class="contact-btn" onclick="window.location.href='{{ route('marketplace.message.product', $product->id) }}'">Message Seller</button>
+                @if($product->supplier_id === auth()->id())
+                    <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
+                @else
+                    <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
+                        <button type="submit" class="contact-btn">Message Seller</button>
+                    </form>
+                @endif
             @else
                 <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
             @endauth
@@ -261,9 +353,11 @@
         </div>
         @endforelse
     </div>
+    @endif
 
     <!-- Fishing Gear Section -->
-    <div class="section-title">Fishing Gear & Equipment</div>
+    @if(!isset($filter) || $filter == 'all' || $filter == 'gear')
+    <div class="section-title" id="gear-section">Fishing Gear & Equipment</div>
     <div class="gear-contact" onclick="copyOrgContact(this)" style="cursor: pointer;">
         Contact Equipment Manager: 📞 0916-777-8888 (Click to copy)
     </div>
@@ -292,6 +386,7 @@
         </div>
         @endforelse
     </div>
+    @endif
 
     <!-- Login Prompt Modal -->
     <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
@@ -313,6 +408,13 @@
     </div>
 
     <script>
+        function messageSellerClick(button) {
+            const url = button.getAttribute('data-url');
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
         function copyContact(element) {
             const contact = element.textContent.match(/\d{4}-\d{3}-\d{4}/)[0];
             navigator.clipboard.writeText(contact).then(() => {

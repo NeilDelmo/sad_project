@@ -10,7 +10,7 @@
     <!-- icons -->
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
 
-    <title>Marketplace</title>
+    <title>SeaLedger - FishOrg</title>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
@@ -71,6 +71,83 @@
             color: #1B5E88;
         }
 
+        /* Modern Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            font-family: "Koulen", sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-center-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-right-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-icon-link {
+            color: white;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-icon-link:hover {
+            transform: scale(1.2);
+            color: #E7FAFE;
+        }
+
         /* for bg uncomment later */
         /* .bg-cover {
             position: fixed;
@@ -85,18 +162,13 @@
             z-index: -1;
         } */
 
-        .nav-bar {
-            background-color: #E7FAFE;  
-            height: 48px;
-        }
-
         /* center div */
         .center-div {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: calc(100vh - 48px);
+            height: calc(100vh - 68px);
             text-align: center;
         }
 
@@ -139,40 +211,44 @@
 <body style="background-color: #BFBFBF;"> <!-- temp - change to bg image later -->
     
     <!-- navbar -->
-    <nav class="navbar py-0">
-        <div class="container-fluid nav-bar">
-
+    <nav class="navbar">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
             <!-- logo -->
-            <a class="navbar-brand" href="{{ route('marketplace.index') }}">
-                <!-- <img src="photos/sealedger-logo.png" width="50" height="50"> -->
-                 Logo Here
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
+                🐟 FishOrg
             </a>
 
             <!-- center group -->
-            <div class="btn-text blue gap-5 d-flex">
-                <a href="{{ route('marketplace.shop') }}">Latest</a>
-                <a href="#">Fish</a>
-                <a href="#">Gears</a>
+            <div class="nav-center-group">
+                <a href="{{ route('marketplace.shop') }}" class="nav-link">
+                    <i class="fa-solid fa-fire"></i> Latest
+                </a>
+                <a href="{{ route('marketplace.shop') }}" class="nav-link">
+                    <i class="fa-solid fa-fish"></i> Fish
+                </a>
+                <a href="{{ route('marketplace.shop') }}" class="nav-link">
+                    <i class="fa-solid fa-screwdriver-wrench"></i> Gears
+                </a>
             </div>
 
             <!-- right group -->
-            <div class="btn-text blue gap-3 d-flex">
-                <a href="#">
-                    <i class="fa-solid fa-magnifying-glass fa-xs"></i>
+            <div class="nav-right-group">
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-magnifying-glass"></i>
                 </a>
-                <a href="#">
-                    <i class="fa-solid fa-heart fa-xs"></i>
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-heart"></i>
                 </a>
-                <a href="#">
-                    <i class="fa-solid fa-cart-shopping fa-2xs"></i>
+                <a href="#" class="nav-icon-link">
+                    <i class="fa-solid fa-cart-shopping"></i>
                 </a>
                 @if(Auth::check())
-                    <a href="{{ route('dashboard') }}" title="Dashboard">
-                        <i class="fa-solid fa-user fa-xs"></i>
+                    <a href="{{ route('dashboard') }}" title="Dashboard" class="nav-icon-link">
+                        <i class="fa-solid fa-user"></i>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" title="Login">
-                        <i class="fa-solid fa-right-to-bracket fa-xs"></i>
+                    <a href="{{ route('login') }}" title="Login" class="nav-icon-link">
+                        <i class="fa-solid fa-right-to-bracket"></i>
                     </a>
                 @endif
             </div>
@@ -184,8 +260,11 @@
         <div>
             <!-- change Amber to name of user logged in -->
             <span class="font-subtitle">{{ Auth::check() ? Auth::user()->name : 'Guest' }}, ready for today's catch?</span>
-            <span class="font-title">Marketplace</span>
-            <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Shop</a>
+            <span class="font-title">FishOrg</span>
+            <div class="d-flex gap-3 justify-content-center mt-2">
+                <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Marketplace</a>
+                <a href="#" class="btn btn-text btn-size rounded-pill dark-blue" style="background-color: #E7FAFE; border: 2px solid #0075B5;">Community Forum</a>
+            </div>
         </div>
 
         <!-- page indicator -->

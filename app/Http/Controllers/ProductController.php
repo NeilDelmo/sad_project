@@ -27,8 +27,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Only fish categories for fishermen
-        $categories = ProductCategory::whereIn('name', ['Fresh Fish', 'Seafood'])->get();
+        // Only Fresh Fish category for fishermen (no seafood, just live fish)
+        $categories = ProductCategory::where('name', 'Fresh Fish')->get();
         
         return view('fisherman.products.create', compact('categories'));
     }
@@ -46,9 +46,18 @@ class ProductController extends Controller
             'available_quantity' => 'required|numeric|min:0',
             'freshness_metric' => 'required|in:Very Fresh,Fresh,Good',
             'quality_rating' => 'nullable|numeric|min:0|max:5',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 
         $validated['supplier_id'] = Auth::id();
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/products'), $imageName);
+            $validated['image_path'] = 'images/products/' . $imageName;
+        }
 
         Product::create($validated);
 
@@ -64,7 +73,8 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
-        $categories = ProductCategory::whereIn('name', ['Fresh Fish', 'Seafood'])->get();
+        // Only Fresh Fish category for fishermen (no seafood, just live fish)
+        $categories = ProductCategory::where('name', 'Fresh Fish')->get();
 
         return view('fisherman.products.edit', compact('product', 'categories'));
     }
@@ -85,7 +95,21 @@ class ProductController extends Controller
             'available_quantity' => 'required|numeric|min:0',
             'freshness_metric' => 'required|in:Very Fresh,Fresh,Good',
             'quality_rating' => 'nullable|numeric|min:0|max:5',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($product->image_path && file_exists(public_path($product->image_path))) {
+                unlink(public_path($product->image_path));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/products'), $imageName);
+            $validated['image_path'] = 'images/products/' . $imageName;
+        }
 
         $product->update($validated);
 
@@ -100,6 +124,11 @@ class ProductController extends Controller
     {
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
+
+        // Delete image if exists
+        if ($product->image_path && file_exists(public_path($product->image_path))) {
+            unlink(public_path($product->image_path));
+        }
 
         $product->delete();
 

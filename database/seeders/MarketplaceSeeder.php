@@ -43,12 +43,7 @@ class MarketplaceSeeder extends Seeder
         // Create product categories
         $fishCategory = ProductCategory::firstOrCreate(
             ['name' => 'Fresh Fish'],
-            ['description' => 'Fresh catch from local waters']
-        );
-
-        $seafoodCategory = ProductCategory::firstOrCreate(
-            ['name' => 'Seafood'],
-            ['description' => 'Various seafood products']
+            ['description' => 'Fresh live fish caught from local waters']
         );
 
         $gearCategory = ProductCategory::firstOrCreate(
@@ -61,11 +56,11 @@ class MarketplaceSeeder extends Seeder
             ['description' => 'Fishing equipment and supplies']
         );
 
-        // Create sample fish products
+        // Create sample fish products (all live fresh fish)
         $fishProducts = [
             [
                 'name' => 'Fresh Tuna',
-                'description' => 'Caught this morning, premium quality',
+                'description' => 'Caught this morning, premium quality live tuna',
                 'unit_price' => 450.00,
                 'available_quantity' => 50.00,
                 'freshness_metric' => 'Very Fresh',
@@ -75,7 +70,7 @@ class MarketplaceSeeder extends Seeder
             ],
             [
                 'name' => 'Bangus (Milkfish)',
-                'description' => 'Medium size, fresh from local farms',
+                'description' => 'Medium size, fresh live milkfish',
                 'unit_price' => 220.00,
                 'available_quantity' => 100.00,
                 'freshness_metric' => 'Fresh',
@@ -85,7 +80,7 @@ class MarketplaceSeeder extends Seeder
             ],
             [
                 'name' => 'Tilapia',
-                'description' => 'Farm-raised, clean and fresh',
+                'description' => 'Live tilapia, clean and fresh',
                 'unit_price' => 150.00,
                 'available_quantity' => 80.00,
                 'freshness_metric' => 'Fresh',
@@ -94,23 +89,23 @@ class MarketplaceSeeder extends Seeder
                 'supplier_id' => $fisherman1->id,
             ],
             [
-                'name' => 'Squid',
-                'description' => 'Fresh squid, cleaned',
-                'unit_price' => 280.00,
+                'name' => 'Red Snapper',
+                'description' => 'Fresh caught red snapper',
+                'unit_price' => 380.00,
                 'available_quantity' => 30.00,
                 'freshness_metric' => 'Very Fresh',
-                'quality_rating' => 4.6,
-                'category_id' => $seafoodCategory->id,
+                'quality_rating' => 4.7,
+                'category_id' => $fishCategory->id,
                 'supplier_id' => $fisherman1->id,
             ],
             [
-                'name' => 'Shrimp',
-                'description' => 'Large size, freshly caught',
-                'unit_price' => 380.00,
+                'name' => 'Lapu-Lapu (Grouper)',
+                'description' => 'Large size, freshly caught grouper',
+                'unit_price' => 420.00,
                 'available_quantity' => 25.00,
                 'freshness_metric' => 'Very Fresh',
                 'quality_rating' => 4.9,
-                'category_id' => $seafoodCategory->id,
+                'category_id' => $fishCategory->id,
                 'supplier_id' => $fisherman1->id,
             ],
         ];
