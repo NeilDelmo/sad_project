@@ -297,6 +297,16 @@
                                     </div>
                                 </div>
 
+                                <div id="weather-alerts-section" class="mt-6 hidden">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L4.34 17c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                        Active Weather Alerts
+                                    </h4>
+                                    <div id="weather-alerts" class="space-y-3"></div>
+                                </div>
+
                                 <div id="history-insights" class="mt-6 hidden">
                                     <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
                                         <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -563,6 +573,18 @@
                 });
             }
 
+            function sanitizeText(value) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                };
+
+                return String(value ?? '').replace(/[&<>"']/g, char => map[char] || char);
+            }
+
             // Store markers
             let markers = [];
             let currentMarker = null;
@@ -584,6 +606,8 @@
             const tideState = document.getElementById('tide-state');
             const recommendations = document.getElementById('recommendations');
             const riskAreas = document.getElementById('risk-areas');
+            const weatherAlertsSection = document.getElementById('weather-alerts-section');
+            const weatherAlerts = document.getElementById('weather-alerts');
             const apiStatus = document.getElementById('api-status');
             const updateTime = document.getElementById('update-time');
             const historySection = document.getElementById('history-insights');
@@ -639,6 +663,11 @@
                 confidenceLevel.textContent = `Confidence: ${(data.safety_assessment.confidence * 100).toFixed(1)}%`;
                 if (data.safety_assessment.override_reasons && data.safety_assessment.override_reasons.length > 0) {
                     confidenceLevel.textContent += ' • Severe weather override active';
+                }
+                if (data.typhoon_active) {
+                    confidenceLevel.textContent += ' • Typhoon bulletin active';
+                } else if (data.severe_alert_present) {
+                    confidenceLevel.textContent += ' • Weather alert issued';
                 }
 
                 // Set icon and color based on verdict
@@ -714,6 +743,49 @@
                     riskAreas.innerHTML = riskHTML;
                 } else {
                     riskAreas.innerHTML = '<p class="text-sm text-green-700 dark:text-green-200">No high-risk areas detected within 10km radius</p>';
+                }
+
+                if (weatherAlertsSection && weatherAlerts) {
+                    const alerts = Array.isArray(data.weather_alerts) ? data.weather_alerts : [];
+                    if (alerts.length) {
+                        weatherAlertsSection.classList.remove('hidden');
+                        const alertCards = alerts.map(alert => {
+                            const severity = (alert.severity || '').toLowerCase();
+                            let badgeClass = 'bg-gray-200 text-gray-800';
+                            if (severity === 'warning') {
+                                badgeClass = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200';
+                            } else if (severity === 'watch') {
+                                badgeClass = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-200';
+                            } else if (severity === 'advisory') {
+                                badgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200';
+                            }
+
+                            const startLabel = alert.start ? new Date(alert.start * 1000).toLocaleString() : '—';
+                            const endLabel = alert.end ? new Date(alert.end * 1000).toLocaleString() : '—';
+                            const sourceLabel = sanitizeText(alert.source || 'Official bulletin');
+                            const title = `${alert.is_typhoon ? '🌀 ' : ''}${sanitizeText(alert.title || 'Weather Alert')}`;
+                            const description = sanitizeText(alert.description || '');
+
+                            return `
+                                <div class="border border-red-100 dark:border-red-900/40 rounded-lg p-3 bg-white/90 dark:bg-gray-800/70 shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <span class="px-2 py-1 text-[11px] font-semibold rounded-full ${badgeClass}">${sanitizeText(alert.severity || 'Alert')}</span>
+                                        <span class="text-[11px] text-gray-500 dark:text-gray-400">${sourceLabel}</span>
+                                    </div>
+                                    <p class="mt-2 font-semibold text-sm text-gray-800 dark:text-gray-100">${title}</p>
+                                    ${description ? `<p class="mt-1 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">${description}</p>` : ''}
+                                    <div class="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                        <span>Valid: ${startLabel} – ${endLabel}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+
+                        weatherAlerts.innerHTML = alertCards;
+                    } else {
+                        weatherAlertsSection.classList.add('hidden');
+                        weatherAlerts.innerHTML = '';
+                    }
                 }
 
                 // Update timestamp

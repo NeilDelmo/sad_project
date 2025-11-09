@@ -73,7 +73,7 @@ class FishingSafetyAPI:
                 'lon': lon,
                 'appid': OPENWEATHER_API_KEY,
                 'units': 'metric',
-                'exclude': 'minutely,alerts'  # Exclude what we don't need
+                'exclude': 'minutely'  # Keep alerts so we can surface typhoon warnings
             }
             
             response = requests.get(onecall_url, params=params, timeout=10)
@@ -263,6 +263,56 @@ class FishingSafetyAPI:
             'total_weighted_incidents': round(total_incidents, 1),
             'nearby_risk_areas': nearby_areas
         }
+
+    def analyze_weather_alerts(self, alerts):
+        """Normalize weather alerts and detect typhoon-level warnings."""
+        if not alerts:
+            return {
+                'alerts': [],
+                'typhoon_active': False,
+                'severe_alert_present': False
+            }
+
+        normalized = []
+        typhoon_active = False
+        severe_present = False
+
+        keywords = ('typhoon', 'tropical storm', 'tropical cyclone', 'hurricane', 'signal', 'storm surge')
+
+        for alert in alerts:
+            title = (alert.get('event') or 'Weather Alert').strip()
+            description = (alert.get('description') or '').strip()
+            severity = (alert.get('severity') or '').strip().lower()
+            sender = (alert.get('sender_name') or '').strip()
+
+            combined = f"{title} {description}".lower()
+            is_typhoon = any(keyword in combined for keyword in keywords)
+            typhoon_active = typhoon_active or is_typhoon
+
+            level = 'information'
+            if severity in {'advisory', 'watch', 'warning'}:
+                level = severity
+            elif is_typhoon:
+                level = 'warning'
+
+            if level in {'watch', 'warning'}:
+                severe_present = True
+
+            normalized.append({
+                'title': title,
+                'severity': level,
+                'description': description[:600],
+                'is_typhoon': is_typhoon,
+                'start': alert.get('start'),
+                'end': alert.get('end'),
+                'source': sender
+            })
+
+        return {
+            'alerts': normalized,
+            'typhoon_active': typhoon_active,
+            'severe_alert_present': severe_present
+        }
     
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """Calculate distance between two coordinates using Haversine formula"""
@@ -385,11 +435,25 @@ class FishingSafetyAPI:
                 "flags": []
             }
 
+            alert_summary = self.analyze_weather_alerts(onecall_data.get('alerts'))
+            if alert_summary['alerts']:
+                environmental_context['active_alerts'] = alert_summary['alerts']
+            if alert_summary['typhoon_active']:
+                environmental_context['typhoon_alert'] = True
+                message = "Active typhoon or tropical cyclone alert in effect"
+                if message not in environmental_context['flags']:
+                    environmental_context['flags'].append(message)
+            if alert_summary['severe_alert_present']:
+                message = "Official weather agency issued a severe weather watch/warning"
+                if message not in environmental_context['flags']:
+                    environmental_context['flags'].append(message)
+
             return features, {
                 'marine_conditions': marine_conditions,
                 'tide_data': tide_data,
                 'incident_data': incident_data,
-                'environmental_context': environmental_context
+                'environmental_context': environmental_context,
+                'alert_summary': alert_summary
             }
         except Exception as e:
             print(f"❌ Error extracting features: {e}")
@@ -600,6 +664,10 @@ class FishingSafetyAPI:
 
         current_level = {"Safe": 0, "Caution": 1, "Dangerous": 2}.get(current_verdict, 1)
 
+        if context.get("typhoon_alert"):
+            reasons_danger.append("Active typhoon or tropical cyclone warning issued for this area")
+            alerts_present = True
+
         # Official alerts or forecasted extreme conditions should escalate to Dangerous
         if alerts_present:
             reasons_danger.append("Weather service issued an active alert for this area")
@@ -704,6 +772,16 @@ class FishingSafetyAPI:
             recommendations.append("🌤️ Moderate UV index - consider sun protection")
         
         # Environmental context advisories
+        active_alerts = env_context.get("active_alerts", [])
+        if active_alerts:
+            alert = active_alerts[0]
+            icon = "🌀" if alert.get("is_typhoon") else "📢"
+            severity = alert.get("severity", "").title()
+            title = alert.get("title", "Weather alert")
+            if env_context.get("typhoon_alert"):
+                recommendations.append("🌀 PAGASA/meteorological agencies report a typhoon affecting this area")
+            recommendations.append(f"{icon} {severity or 'Alert'}: {title}")
+        
         if env_context.get("alerts_present"):
             recommendations.append("📢 Follow official weather advisories and stay updated")
         if env_context.get("is_night"):
@@ -801,7 +879,10 @@ def check_fishing_safety():
                 extra_data,
                 prediction.get("override_reasons")
             ),
-            "environmental_context": env_context
+            "environmental_context": env_context,
+            "weather_alerts": extra_data['alert_summary']['alerts'],
+            "typhoon_active": extra_data['alert_summary']['typhoon_active'],
+            "severe_alert_present": extra_data['alert_summary']['severe_alert_present']
         }
         
         print(f"✅ Safety assessment complete: {prediction['verdict']}")
