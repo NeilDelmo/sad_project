@@ -10,6 +10,8 @@ from datetime import datetime
 import numpy as np
 from dotenv import load_dotenv
 import traceback
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables from Laravel's .env file
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
@@ -36,6 +38,10 @@ class FishingSafetyAPI:
     def __init__(self):
         self.model = None
         self.location_mapping = {}
+        self.marine_cache = {}
+        self.elevation_cache = {}
+        self.weather_cache = {}
+        self.weather_cache_ttl = 180  # seconds
         self.load_model()
     
     def load_model(self):
@@ -62,47 +68,73 @@ class FishingSafetyAPI:
     def get_weather_data(self, lat, lon):
         """Fetch comprehensive weather data using One Call API 3.0 only"""
         try:
+            cache_key = (round(lat, 3), round(lon, 3))
+            cached_entry = self.weather_cache.get(cache_key)
+            if cached_entry:
+                cached_data, cached_name, cached_ts = cached_entry
+                if time.time() - cached_ts < self.weather_cache_ttl:
+                    print("♻️ Using cached weather data")
+                    return cached_data, cached_name
+                else:
+                    self.weather_cache.pop(cache_key, None)
+
             if not OPENWEATHER_API_KEY or OPENWEATHER_API_KEY == "your_openweather_api_key_here":
                 print("⚠️ API key not configured - using mock weather data")
-                return self.get_mock_weather_data(lat, lon)
+                mock_data = self.get_mock_weather_data(lat, lon)
+                self._store_weather_cache(cache_key, mock_data)
+                return mock_data
             
-            # One Call API 3.0 - gets everything in one call!
-            onecall_url = "https://api.openweathermap.org/data/3.0/onecall"
-            params = {
-                'lat': lat,
-                'lon': lon,
-                'appid': OPENWEATHER_API_KEY,
-                'units': 'metric',
-                'exclude': 'minutely'  # Keep alerts so we can surface typhoon warnings
-            }
-            
-            response = requests.get(onecall_url, params=params, timeout=10)
-            response.raise_for_status()
-            onecall_data = response.json()
-            
-            # Get location name from reverse geocoding (basic)
-            location_url = "http://api.openweathermap.org/geo/1.0/reverse"
-            location_params = {
-                'lat': lat,
-                'lon': lon,
-                'limit': 1,
-                'appid': OPENWEATHER_API_KEY
-            }
-            location_response = requests.get(location_url, params=location_params, timeout=5)
-            location_name = "Unknown location"
-            if location_response.status_code == 200:
-                location_data = location_response.json()
-                if location_data and len(location_data) > 0:
-                    location_name = location_data[0].get('name', 'Unknown location')
+            def fetch_onecall():
+                onecall_url = "https://api.openweathermap.org/data/3.0/onecall"
+                params = {
+                    'lat': lat,
+                    'lon': lon,
+                    'appid': OPENWEATHER_API_KEY,
+                    'units': 'metric',
+                    'exclude': 'minutely'  # Keep alerts so we can surface typhoon warnings
+                }
+                response = requests.get(onecall_url, params=params, timeout=10)
+                response.raise_for_status()
+                return response.json()
+
+            def fetch_location_name():
+                try:
+                    location_url = "http://api.openweathermap.org/geo/1.0/reverse"
+                    location_params = {
+                        'lat': lat,
+                        'lon': lon,
+                        'limit': 1,
+                        'appid': OPENWEATHER_API_KEY
+                    }
+                    response = requests.get(location_url, params=location_params, timeout=5)
+                    response.raise_for_status()
+                    location_data = response.json()
+                    if location_data and len(location_data) > 0:
+                        return location_data[0].get('name', 'Unknown location')
+                except Exception as exc:
+                    print(f"⚠️ Location lookup fallback: {exc}")
+                return "Unknown location"
+
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                onecall_future = executor.submit(fetch_onecall)
+                location_future = executor.submit(fetch_location_name)
+                onecall_data = onecall_future.result()
+                location_name = location_future.result()
             
             print(f"✅ Weather data fetched for: {location_name} ({lat}, {lon})")
-            return onecall_data, location_name
+            result = (onecall_data, location_name)
+            self._store_weather_cache(cache_key, result)
+            return result
         except requests.exceptions.RequestException as e:
             print(f"❌ API request failed: {e}")
-            return self.get_mock_weather_data(lat, lon)
+            fallback = self.get_mock_weather_data(lat, lon)
+            self._store_weather_cache(cache_key, fallback)
+            return fallback
         except Exception as e:
             print(f"❌ Error fetching weather data: {e}")
-            return self.get_mock_weather_data(lat, lon)
+            fallback = self.get_mock_weather_data(lat, lon)
+            self._store_weather_cache(cache_key, fallback)
+            return fallback
     
     def get_mock_weather_data(self, lat, lon):
         """Generate realistic mock weather data for testing/development"""
@@ -264,6 +296,151 @@ class FishingSafetyAPI:
             'nearby_risk_areas': nearby_areas
         }
 
+    def is_marine_location(self, lat, lon):
+        """Check whether the coordinate is over water using OpenStreetMap reverse geocoding."""
+        try:
+            # Simple cache to avoid hammering Nominatim for nearby clicks
+            # Use four decimal places (~11m) to avoid treating nearby land/ocean points as identical
+            cache_key = (round(lat, 4), round(lon, 4))
+            if cache_key in self.marine_cache:
+                return self.marine_cache[cache_key]
+
+            url = "https://nominatim.openstreetmap.org/reverse"
+            params = {
+                'format': 'json',
+                'lat': lat,
+                'lon': lon,
+                'zoom': 13,
+                'addressdetails': 1,
+                'namedetails': 1,
+                'extratags': 1,
+                'accept-language': 'en'
+            }
+            headers = {'User-Agent': 'FishingSafetyApp/1.0'}
+
+            response = requests.get(url, params=params, headers=headers, timeout=5)
+            response.raise_for_status()
+            data = response.json()
+
+            address = data.get('address', {})
+            display_name = (data.get('display_name') or '').lower()
+            classification = (data.get('class') or '').lower()
+            category = (data.get('category') or '').lower()
+            type_name = (data.get('type') or '').lower()
+            addresstype = (data.get('addresstype') or '').lower()
+            extratags = data.get('extratags', {})
+            address_values = ' '.join(
+                (value or '').lower()
+                for value in address.values()
+                if isinstance(value, str)
+            )
+
+            water_terms = (
+                'sea', 'ocean', 'bay', 'coast', 'strait', 'gulf', 'channel',
+                'harbor', 'harbour', 'port', 'shore', 'beach', 'cove', 'lagoon',
+                'estuary', 'waters', 'sound', 'river', 'lake', 'pond', 'marina'
+            )
+
+            marine_types = {
+                'sea', 'ocean', 'bay', 'strait', 'channel', 'harbor', 'harbour',
+                'lagoon', 'estuary', 'coastline', 'water', 'river', 'riverbank',
+                'lake', 'pond', 'reservoir', 'dam', 'dock', 'marina'
+            }
+
+            # Check classification hints from Nominatim response
+            is_water = any([
+                classification in {'water', 'waterway'} or category in {'water', 'waterway'},
+                classification == 'natural' and type_name in marine_types,
+                classification == 'place' and type_name in marine_types,
+                addresstype in marine_types,
+                type_name in marine_types,
+                address.get('natural') in marine_types,
+                address.get('waterway') in marine_types,
+                address.get('water') in marine_types,
+                address.get('place') in marine_types,
+                any(term in display_name for term in water_terms),
+                any(term in address_values for term in water_terms),
+                extratags.get('natural') in marine_types,
+                extratags.get('water') in marine_types,
+                extratags.get('waterway') in marine_types,
+            ])
+
+            is_water_bool = bool(is_water)
+            if not is_water_bool:
+                elevation = self._get_elevation(lat, lon)
+                if elevation is not None and elevation <= 0.5:
+                    is_water_bool = True
+                    print(
+                        "ℹ️ Elevation fallback marked as water",
+                        {
+                            "lat": round(lat, 5),
+                            "lon": round(lon, 5),
+                            "elevation": elevation
+                        }
+                    )
+                else:
+                    print(
+                        "ℹ️ Marine check classified as land",
+                        {
+                            "lat": round(lat, 5),
+                            "lon": round(lon, 5),
+                            "class": classification,
+                            "type": type_name,
+                            "addresstype": addresstype,
+                            "category": category,
+                            "display_name": display_name[:120],
+                            "elevation": elevation
+                        }
+                    )
+
+            self.marine_cache[cache_key] = is_water_bool
+            return is_water_bool
+        except Exception as exc:
+            print(f"⚠️ Water detection API error: {exc}")
+            # Default to treating as marine so users still receive data even if lookup fails
+            return True
+
+    def _get_elevation(self, lat, lon):
+        """Fetch elevation data to help disambiguate water vs land when geocoding is inconclusive."""
+        cache_key = (round(lat, 4), round(lon, 4))
+        if cache_key in self.elevation_cache:
+            return self.elevation_cache[cache_key]
+
+        try:
+            url = "https://api.opentopodata.org/v1/etopo1"
+            params = {"locations": f"{lat},{lon}"}
+            response = requests.get(url, params=params, timeout=5)
+            response.raise_for_status()
+            payload = response.json()
+            results = payload.get("results", [])
+            if results:
+                elevation = results[0].get("elevation")
+                self.elevation_cache[cache_key] = elevation
+                return elevation
+        except Exception as exc:
+            print(f"⚠️ Elevation lookup failed: {exc}")
+
+        self.elevation_cache[cache_key] = None
+        return None
+
+    def _store_weather_cache(self, cache_key, result):
+        """Cache weather responses with a TTL to reduce repeat external calls."""
+        if not isinstance(result, tuple) or len(result) != 2:
+            return
+        data, location_name = result
+        self.weather_cache[cache_key] = (data, location_name, time.time())
+
+        # Simple LRU-style trim to prevent unbounded growth
+        max_entries = 200
+        if len(self.weather_cache) > max_entries:
+            # drop the oldest entries
+            sorted_items = sorted(
+                self.weather_cache.items(),
+                key=lambda item: item[1][2]
+            )
+            for key, _ in sorted_items[: len(self.weather_cache) - max_entries]:
+                self.weather_cache.pop(key, None)
+
     def analyze_weather_alerts(self, alerts):
         """Normalize weather alerts and detect typhoon-level warnings."""
         if not alerts:
@@ -322,7 +499,7 @@ class FishingSafetyAPI:
         a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
         return 2 * math.asin(math.sqrt(a)) * 6371  # Earth radius in km
     
-    def extract_features_from_weather(self, onecall_data, lat, lon):
+    def extract_features_from_weather(self, onecall_data, lat, lon, is_marine=True):
         """Extract comprehensive features for the safety model"""
         try:
             current = onecall_data['current']
@@ -351,7 +528,14 @@ class FishingSafetyAPI:
                 is_night = not (sunrise <= observation_time <= sunset)
             
             # Marine conditions
-            marine_conditions = self.get_marine_conditions(lat, lon, wind_speed_ms)
+            if is_marine:
+                marine_conditions = self.get_marine_conditions(lat, lon, wind_speed_ms)
+            else:
+                marine_conditions = {
+                    'wave_height_m': 0.0,
+                    'beaufort_scale': 0,
+                    'sea_state': 'Onshore location'
+                }
             wave_height_m = marine_conditions['wave_height_m']
             
             # Precipitation
@@ -406,7 +590,7 @@ class FishingSafetyAPI:
             features = {
                 "wind_speed_kph": wind_speed_kph,
                 "wind_direction": wind_direction,
-                "wave_height_m": wave_height_m,
+                "wave_height_m": wave_height_m if is_marine else 0.0,
                 "rainfall_mm": rainfall_mm,
                 "tide_level_m": tide_level_m,
                 "moon_phase": moon_phase,
@@ -432,6 +616,7 @@ class FishingSafetyAPI:
                 "max_hourly_rain_mm": max_hourly_rain_mm,
                 "severe_weather_windows": severe_weather_windows,
                 "wind_gust_kph": wind_gust_kph,
+                "is_marine_location": bool(is_marine),
                 "flags": []
             }
 
@@ -445,6 +630,11 @@ class FishingSafetyAPI:
                     environmental_context['flags'].append(message)
             if alert_summary['severe_alert_present']:
                 message = "Official weather agency issued a severe weather watch/warning"
+                if message not in environmental_context['flags']:
+                    environmental_context['flags'].append(message)
+
+            if not is_marine:
+                message = "Selected point appears to be on land; marine values approximated"
                 if message not in environmental_context['flags']:
                     environmental_context['flags'].append(message)
 
@@ -823,15 +1013,25 @@ def check_fishing_safety():
         
         print(f"🎣 Checking fishing safety for: {lat}, {lon}")
         
-        # Get weather data
-        weather_result = fishing_api.get_weather_data(lat, lon)
+        # Fetch weather data and marine classification in parallel to reduce perceived latency
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            weather_future = executor.submit(fishing_api.get_weather_data, lat, lon)
+            marine_future = executor.submit(fishing_api.is_marine_location, lat, lon)
+            weather_result = weather_future.result()
+            is_marine = marine_future.result()
+
         if not weather_result:
             return jsonify({"error": "Failed to fetch weather data"}), 500
-        
+
         onecall_data, location_name = weather_result
-        
-        # Extract features
-        features, extra_data = fishing_api.extract_features_from_weather(onecall_data, lat, lon)
+
+        # Extract features (waves default to calm if point appears on land)
+        features, extra_data = fishing_api.extract_features_from_weather(
+            onecall_data,
+            lat,
+            lon,
+            is_marine=is_marine
+        )
         if not features or not extra_data:
             return jsonify({"error": "Failed to extract weather features"}), 500
         
@@ -847,7 +1047,8 @@ def check_fishing_safety():
                 "latitude": lat,
                 "longitude": lon,
                 "name": location_name,
-                "region": "Philippines"
+                "region": "Philippines",
+                "is_marine": bool(is_marine)
             },
             "timestamp": datetime.now().isoformat(),
             "weather_conditions": {
@@ -882,7 +1083,8 @@ def check_fishing_safety():
             "environmental_context": env_context,
             "weather_alerts": extra_data['alert_summary']['alerts'],
             "typhoon_active": extra_data['alert_summary']['typhoon_active'],
-            "severe_alert_present": extra_data['alert_summary']['severe_alert_present']
+            "severe_alert_present": extra_data['alert_summary']['severe_alert_present'],
+            "is_marine_location": bool(is_marine)
         }
         
         print(f"✅ Safety assessment complete: {prediction['verdict']}")
@@ -920,7 +1122,13 @@ def check_multiple_locations():
                     continue
                 
                 onecall_data, _ = weather_result
-                features, extra_data = fishing_api.extract_features_from_weather(onecall_data, lat, lon)
+                is_marine = fishing_api.is_marine_location(lat, lon)
+                features, extra_data = fishing_api.extract_features_from_weather(
+                    onecall_data,
+                    lat,
+                    lon,
+                    is_marine=is_marine
+                )
                 if not features or not extra_data:
                     continue
                 
@@ -932,6 +1140,7 @@ def check_multiple_locations():
                 results.append({
                     "id": i,
                     "location": {"lat": lat, "lon": lon},
+                    "is_marine": bool(is_marine),
                     "safety": prediction["verdict"],
                     "risk_level": prediction["risk_level"],
                     "confidence": prediction["confidence"],

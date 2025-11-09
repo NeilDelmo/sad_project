@@ -31,6 +31,18 @@
         .dark .card-light {
             background-color: #1f2937;
         }
+
+        .on-land-card {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .dark .on-land-card {
+            background-color: rgba(55, 65, 81, 0.7);
+            border-color: rgba(75, 85, 99, 0.7);
+            color: #d1d5db;
+        }
     </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     @endpush
@@ -222,6 +234,7 @@
                                             <div>
                                                 <p id="location-name" class="text-sm font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wide">Calatagan, Batangas</p>
                                                 <p id="coordinates" class="text-xs text-gray-400 dark:text-gray-500 mt-1">13.8500, 120.6167</p>
+                                                <p id="marine-notice" class="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-2 hidden">This point is on land; marine data limited.</p>
                                             </div>
                                             <div class="text-center md:text-right">
                                                 <div id="safety-icon" class="text-4xl md:text-5xl mb-1">✅</div>
@@ -607,6 +620,9 @@
             const waveHeight = document.getElementById('wave-height');
             const visibility = document.getElementById('visibility');
             const tideState = document.getElementById('tide-state');
+            const marineNotice = document.getElementById('marine-notice');
+            const waveCard = waveHeight ? waveHeight.closest('div') : null;
+            const waveCardLabel = waveCard ? waveCard.querySelector('p') : null;
             const recommendations = document.getElementById('recommendations');
             const riskAreas = document.getElementById('risk-areas');
             const weatherAlertsSection = document.getElementById('weather-alerts-section');
@@ -658,8 +674,28 @@
             // Update safety result display
             function updateSafetyResult(data) {
                 // Update location info
-                locationName.textContent = data.location.name || `${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`;
-                coordinates.textContent = `${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`;
+                const latValue = Number(data.location.latitude ?? 0);
+                const lonValue = Number(data.location.longitude ?? 0);
+                const isMarineLocation = Boolean(data.is_marine_location ?? data.location?.is_marine);
+                const coordinateLabel = `${latValue.toFixed(4)}, ${lonValue.toFixed(4)}`;
+                const locationLabel = data.location.name || coordinateLabel;
+
+                locationName.textContent = locationLabel;
+                coordinates.textContent = isMarineLocation
+                    ? `${coordinateLabel} (coastal water point)`
+                    : `${coordinateLabel} (land point)`;
+                if (marineNotice) {
+                    marineNotice.classList.toggle('hidden', isMarineLocation);
+                }
+                if (marineNotice && !isMarineLocation) {
+                    marineNotice.textContent = 'This point is on land; marine data limited.';
+                }
+                if (waveCard) {
+                    waveCard.classList.toggle('on-land-card', !isMarineLocation);
+                }
+                if (waveCardLabel) {
+                    waveCardLabel.textContent = isMarineLocation ? 'Wave Height' : 'Land Conditions';
+                }
 
                 // Update safety verdict and styling
                 safetyVerdict.textContent = data.safety_assessment.verdict;
@@ -697,9 +733,11 @@
                 safetyVerdict.className = `text-3xl font-bold ${colorClass}`;
 
                 // Update weather conditions
-                windSpeed.textContent = `${data.weather_conditions.wind_speed_kph.toFixed(1)} km/h`;
-                waveHeight.textContent = `${data.weather_conditions.wave_height_m.toFixed(1)} m`;
-                visibility.textContent = `${data.weather_conditions.visibility_km.toFixed(1)} km`;
+                windSpeed.textContent = `${Number(data.weather_conditions.wind_speed_kph ?? 0).toFixed(1)} km/h`;
+                waveHeight.textContent = isMarineLocation
+                    ? `${Number(data.weather_conditions.wave_height_m ?? 0).toFixed(1)} m`
+                    : 'Not applicable';
+                visibility.textContent = `${Number(data.weather_conditions.visibility_km ?? 0).toFixed(1)} km`;
                 tideState.textContent = data.weather_conditions.tide_state;
 
                 // Update recommendations
@@ -812,7 +850,8 @@
                     confidence: data.safety_assessment.confidence,
                     timestamp: new Date().toISOString(),
                     wind: data.weather_conditions.wind_speed_kph,
-                    waves: data.weather_conditions.wave_height_m
+                    waves: data.weather_conditions.wave_height_m,
+                    isMarine: Boolean(data.is_marine_location ?? data.location?.is_marine)
                 };
 
                 // Add to beginning of array
@@ -945,6 +984,9 @@
                         '—';
                     const timestamp = log.predicted_at ? new Date(log.predicted_at).toLocaleString() : 'Unknown time';
                     const extraFlags = [...(log.override_reasons || []), ...(log.environmental_flags || [])];
+                    const waveDisplay = log.is_marine === false
+                        ? 'Waves: N/A (land point)'
+                        : `Waves: ${Number(log.wave_height_m ?? 0).toFixed(1)} m`;
 
                     const severityClass = (() => {
                         const verdict = (log.verdict || '').toLowerCase();
@@ -961,7 +1003,7 @@
                             </div>
                             <div class="mt-1 text-xs text-gray-600 dark:text-gray-300 flex flex-wrap gap-2">
                                 <span>Wind: ${Number(log.wind_speed_kph ?? 0).toFixed(1)} km/h</span>
-                                <span>Waves: ${Number(log.wave_height_m ?? 0).toFixed(1)} m</span>
+                                <span>${waveDisplay}</span>
                                 <span>Confidence: ${confidencePercent}</span>
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">${timestamp}</p>
@@ -996,6 +1038,8 @@
                         throw new Error(data.error);
                     }
 
+                    const isMarine = Boolean(data.is_marine_location ?? data.location?.is_marine);
+
                     // Remove previous marker if exists
                     if (currentMarker) {
                         map.removeLayer(currentMarker);
@@ -1015,31 +1059,41 @@
                     let badgeClass = 'bg-gray-100 text-gray-700';
                     let borderClass = 'border-blue-200';
                     let headlineClass = 'text-gray-800';
-                    let noteClass = 'text-blue-600';
-
                     if (severity.includes('danger')) {
                         badgeClass = 'bg-red-100 text-red-700';
                         borderClass = 'border-red-200';
                         headlineClass = 'text-red-700';
-                        noteClass = 'text-red-600';
                     } else if (severity.includes('caution')) {
                         badgeClass = 'bg-yellow-100 text-yellow-700';
                         borderClass = 'border-yellow-200';
                         headlineClass = 'text-yellow-700';
-                        noteClass = 'text-yellow-600';
                     } else if (severity.includes('safe')) {
                         badgeClass = 'bg-green-100 text-green-700';
                         borderClass = 'border-green-200';
                         headlineClass = 'text-green-700';
-                        noteClass = 'text-green-600';
                     }
 
                     const locationLabel = sanitizeText(
                         data.location?.name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
                     );
 
-                    const windValue = `${data.weather_conditions.wind_speed_kph.toFixed(1)} km/h`;
-                    const waveValue = `${data.weather_conditions.wave_height_m.toFixed(1)} m`;
+                    const windValue = `${Number(data.weather_conditions.wind_speed_kph ?? 0).toFixed(1)} km/h`;
+                    const waveValue = isMarine
+                        ? `${Number(data.weather_conditions.wave_height_m ?? 0).toFixed(1)} m`
+                        : 'Not applicable';
+                    const waveLabel = isMarine ? 'Waves' : 'Land';
+                    const waveBlockClass = isMarine
+                        ? 'rounded-lg bg-purple-600 px-2 py-1.5 text-center'
+                        : 'rounded-lg bg-gray-500 px-2 py-1.5 text-center';
+                    const waveLabelClass = isMarine
+                        ? 'text-[10px] font-semibold uppercase text-purple-100'
+                        : 'text-[10px] font-semibold uppercase text-gray-200';
+                    const waveValueClass = isMarine
+                        ? 'text-xs font-bold text-white'
+                        : 'text-xs font-semibold text-gray-100';
+                    const landNote = isMarine
+                        ? ''
+                        : '<p class="mt-2 text-[10px] text-gray-600">Land point - marine values limited.</p>';
 
                     const popupContent = `
                         <div class="p-3 rounded-xl border ${borderClass} bg-white/95 shadow-sm min-w-[220px]">
@@ -1053,11 +1107,12 @@
                                     <p class="text-[10px] font-semibold uppercase text-blue-100">Wind</p>
                                     <p class="text-xs font-bold text-white">${sanitizeText(windValue)}</p>
                                 </div>
-                                <div class="rounded-lg bg-purple-600 px-2 py-1.5 text-center">
-                                    <p class="text-[10px] font-semibold uppercase text-purple-100">Waves</p>
-                                    <p class="text-xs font-bold text-white">${sanitizeText(waveValue)}</p>
+                                <div class="${waveBlockClass}">
+                                    <p class="${waveLabelClass}">${sanitizeText(waveLabel)}</p>
+                                    <p class="${waveValueClass}">${sanitizeText(waveValue)}</p>
                                 </div>
                             </div>
+                            ${landNote}
                         </div>
                     `;
 
@@ -1120,7 +1175,12 @@
                             }
 
                             map.setView([lat, lng], 13);
-                            checkFishingSafety(lat, lng);
+                            const checkPromise = checkFishingSafety(lat, lng);
+                            if (checkPromise && typeof checkPromise.finally === 'function') {
+                                checkPromise.finally(resetButton);
+                            } else {
+                                resetButton();
+                            }
                         },
                         function(error) {
                             console.error('Geolocation error:', error);
