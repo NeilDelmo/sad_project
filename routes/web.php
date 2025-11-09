@@ -7,6 +7,8 @@ use App\Http\Controllers\RiskPredictionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
+use App\Http\Controllers\FishingSafetyController;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 
 Route::get('/', function () {
@@ -75,4 +77,23 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     
     // Message Inbox
     Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
+});
+
+// Fishing Safety API routes (proxies to Flask)
+// Health and setup check are public, actual API calls require auth
+Route::prefix('api/fishing-safety')
+    ->name('api.fishing-safety.')
+    ->withoutMiddleware([VerifyCsrfToken::class])
+    ->group(function () {
+    // Public endpoints for monitoring
+    Route::get('/health', [FishingSafetyController::class, 'health'])->name('health');
+    Route::get('/setup-check', [FishingSafetyController::class, 'setupCheck'])->name('setup-check');
+    
+    // Protected endpoints require authentication
+    Route::middleware('auth')->group(function () {
+        Route::post('/', [FishingSafetyController::class, 'checkSafety'])->name('check');
+        Route::post('/batch', [FishingSafetyController::class, 'checkBatch'])->name('batch');
+        Route::post('/weather-map', [FishingSafetyController::class, 'weatherMap'])->name('weather-map');
+        Route::get('/history', [FishingSafetyController::class, 'history'])->name('history');
+    });
 });

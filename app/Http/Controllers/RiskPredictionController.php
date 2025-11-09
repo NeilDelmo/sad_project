@@ -72,6 +72,7 @@ class RiskPredictionController extends Controller
                 'result' => 'Error',
                 'raw_output' => $output,
                 'predicted_at' => now(),
+                'data_source' => 'manual',
             ]);
 
             $recentLogs = RiskPredictionLog::query()->latest('predicted_at')->take(5)->get();
@@ -100,6 +101,7 @@ class RiskPredictionController extends Controller
             'result' => $normalizedResult,
             'raw_output' => $output,
             'predicted_at' => now(),
+            'data_source' => 'manual',
         ]);
 
         $recentLogs = RiskPredictionLog::query()->latest('predicted_at')->take(5)->get();
@@ -140,9 +142,28 @@ class RiskPredictionController extends Controller
         }
 
         $stats = [
-            'low' => (clone $baseQuery)->where('result', 'like', '%low%')->count(),
-            'medium' => (clone $baseQuery)->where('result', 'like', '%medium%')->count(),
-            'high' => (clone $baseQuery)->where('result', 'like', '%high%')->count(),
+            'low' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->where('risk_level', 0)
+                        ->orWhere('result', 'like', '%low%')
+                        ->orWhere('result', 'like', '%safe%');
+                })
+                ->count(),
+            'medium' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->where('risk_level', 1)
+                        ->orWhere('result', 'like', '%medium%')
+                        ->orWhere('result', 'like', '%caution%');
+                })
+                ->count(),
+            'high' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->where('risk_level', '>=', 2)
+                        ->orWhere('result', 'like', '%high%')
+                        ->orWhere('result', 'like', '%danger%')
+                        ->orWhere('result', 'like', '%extreme%');
+                })
+                ->count(),
             'error' => (clone $baseQuery)->where('result', 'like', '%error%')->count(),
         ];
 

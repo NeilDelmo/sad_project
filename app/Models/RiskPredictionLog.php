@@ -25,6 +25,13 @@ class RiskPredictionLog extends Model
         'result',
         'raw_output',
         'predicted_at',
+        'latitude',
+        'longitude',
+        'risk_level',
+        'confidence',
+        'override_reasons',
+        'environmental_flags',
+        'data_source',
     ];
 
     protected $casts = [
@@ -36,6 +43,12 @@ class RiskPredictionLog extends Model
         'visibility_km' => 'float',
         'past_incidents_nearby' => 'integer',
         'predicted_at' => 'datetime',
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'risk_level' => 'integer',
+        'confidence' => 'float',
+        'override_reasons' => 'array',
+        'environmental_flags' => 'array',
     ];
 
     public function scopeFilterLocation($query, ?string $location): void
