@@ -63,107 +63,103 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-6">
                 <!-- Map Section -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
-                        <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                            <h3 class="text-xl font-bold flex items-center">
-                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Interactive Safety Map
+                        </h3>
+                        <p class="text-white font-medium mt-1">Click anywhere on the map to check fishing safety conditions, hold right-click to move the map</p>
+                    </div>
+
+                    <div class="relative h-96 md:h-[600px]">
+                        <div id="fishing-map" class="w-full h-full"></div>
+
+                        <!-- Loading overlay -->
+                        <div id="loading-overlay" class="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center hidden">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                                <p class="mt-4 text-gray-900 dark:text-white font-bold">Checking conditions...</p>
+                                <p class="text-sm text-gray-700 dark:text-gray-200 font-medium">Fetching weather data and analyzing safety</p>
+                            </div>
+                        </div>
+
+                        <!-- Map legend -->
+                        <div class="absolute bottom-4 left-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-10 border border-gray-200 dark:border-gray-600">
+                            <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Safety Levels</h4>
+                            <div class="flex flex-col space-y-2">
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 rounded-full bg-green-500 mr-2 border-2 border-white"></div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">Safe</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2 border-2 border-white"></div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">Caution</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 rounded-full bg-red-500 mr-2 border-2 border-white"></div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">Dangerous</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample locations -->
+                        <div class="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-10 max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-600">
+                            <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Popular Fishing Spots</h4>
+                            <div class="space-y-2">
+                                @foreach([
+                                ['name' => 'Talisay Point', 'lat' => 13.901804, 'lng' => 120.621940],
+                                ['name' => 'Balibago Beach', 'lat' => 13.931485, 'lng' => 120.618735],
+                                ['name' => 'Matabungkay Beach', 'lat' => 13.947251, 'lng' => 120.615741],
+                                ['name' => 'Calatagan Fishing Spot', 'lat' => 13.866245640009993, 'lng' => 120.6176208450655],
+                                ['name' => 'Malabrigo Point', 'lat' => 13.5986, 'lng' => 121.2625]
+                                ] as $spot)
+                                <button
+                                    class="flex items-center w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 rounded transition"
+                                    data-lat="{{ $spot['lat'] }}"
+                                    data-lng="{{ $spot['lng'] }}">
+                                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $spot['name'] }}</span>
+                                </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                Interactive Safety Map
-                            </h3>
-                            <p class="text-white font-medium mt-1">Click anywhere on the map to check fishing safety conditions, hold right-click to move the map</p>
-                        </div>
-
-                        <div class="relative h-96 md:h-[600px]">
-                            <div id="fishing-map" class="w-full h-full"></div>
-
-                            <!-- Loading overlay -->
-                            <div id="loading-overlay" class="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center hidden">
-                                <div class="text-center">
-                                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                    <p class="mt-4 text-gray-900 dark:text-white font-bold">Checking conditions...</p>
-                                    <p class="text-sm text-gray-700 dark:text-gray-200 font-medium">Fetching weather data and analyzing safety</p>
-                                </div>
-                            </div>
-
-                            <!-- Map legend -->
-                            <div class="absolute bottom-4 left-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-10 border border-gray-200 dark:border-gray-600">
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Safety Levels</h4>
-                                <div class="flex flex-col space-y-2">
-                                    <div class="flex items-center">
-                                        <div class="w-4 h-4 rounded-full bg-green-500 mr-2 border-2 border-white"></div>
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">Safe</span>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2 border-2 border-white"></div>
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">Caution</span>
-                                    </div>
-                                    <div class="flex items-center">
-                                        <div class="w-4 h-4 rounded-full bg-red-500 mr-2 border-2 border-white"></div>
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">Dangerous</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Sample locations -->
-                            <div class="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 z-10 max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-600">
-                                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Popular Fishing Spots</h4>
-                                <div class="space-y-2">
-                                    @foreach([
-                                    ['name' => 'Talisay Point', 'lat' => 13.901804, 'lng' => 120.621940],
-                                    ['name' => 'Balibago Beach', 'lat' => 13.931485, 'lng' => 120.618735],
-                                    ['name' => 'Matabungkay Beach', 'lat' => 13.947251, 'lng' => 120.615741],
-                                    ['name' => 'Calatagan Fishing Spot', 'lat' => 13.866245640009993, 'lng' => 120.6176208450655],
-                                    ['name' => 'Malabrigo Point', 'lat' => 13.5986, 'lng' => 121.2625]
-                                    ] as $spot)
-                                    <button
-                                        class="flex items-center w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 rounded transition"
-                                        data-lat="{{ $spot['lat'] }}"
-                                        data-lng="{{ $spot['lng'] }}">
-                                        <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        </svg>
-                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $spot['name'] }}</span>
-                                    </button>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
-                            <div class="flex flex-wrap gap-2 justify-center">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Real-time data
-                                </span>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                                    </svg>
-                                    Historical incidents
-                                </span>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M12 19.394V20m4.647-6.364l.707.707M6.343 17.657l.707.707m0-12.728l-.707.707m0 0l.707.707"></path>
-                                    </svg>
-                                    Tide & moon phases
-                                </span>
-                            </div>
+                                Real-time data
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                Historical incidents
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M12 19.394V20m4.647-6.364l.707.707M6.343 17.657l.707.707m0-12.728l-.707.707m0 0l.707.707"></path>
+                                </svg>
+                                Tide & moon phases
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Details Panel -->
-                <div class="space-y-6">
-                    <!-- Welcome Panel -->
-                    <div id="default-panel" class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
+                <!-- Welcome Panel -->
+                <div id="default-panel" class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
                         <div class="p-6">
                             <div class="text-center mb-6">
                                 <div class="inline-block p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
@@ -219,124 +215,131 @@
                                 </button>
                             </div>
 
-                            <div id="safety-result-card" class="bg-white dark:bg-gray-800 rounded-xl p-5 mb-6 shadow-md border-l-4 border-blue-500">
-                                <div class="text-center mb-4">
-                                    <p id="location-name" class="text-sm text-gray-500 dark:text-gray-400">Calatagan, Batangas</p>
-                                    <p id="coordinates" class="text-xs text-gray-400 dark:text-gray-500 mt-1">13.8500, 120.6167</p>
-                                </div>
-
-                                <div class="text-center mb-6">
-                                    <div id="safety-icon" class="text-5xl mb-2">✅</div>
-                                    <h2 id="safety-verdict" class="text-3xl font-bold text-green-600 dark:text-green-400">Safe</h2>
-                                    <p id="confidence-level" class="text-sm text-gray-600 dark:text-gray-300 mt-1">Confidence: 92%</p>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Wind Speed</p>
-                                        <p id="wind-speed" class="text-lg font-semibold text-gray-800 dark:text-gray-200">12.5 km/h</p>
-                                    </div>
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Wave Height</p>
-                                        <p id="wave-height" class="text-lg font-semibold text-gray-800 dark:text-gray-200">0.8 m</p>
-                                    </div>
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Visibility</p>
-                                        <p id="visibility" class="text-lg font-semibold text-gray-800 dark:text-gray-200">10.0 km</p>
-                                    </div>
-                                    <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg text-center">
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">Tide</p>
-                                        <p id="tide-state" class="text-lg font-semibold text-gray-800 dark:text-gray-200">Rising</p>
-                                    </div>
-                                </div>
-
-                                <div class="mb-6">
-                                    <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                                        </svg>
-                                        Recommendations
-                                    </h4>
-                                    <div id="recommendations" class="space-y-2">
-                                        <div class="flex items-start">
-                                            <span class="flex-shrink-0 w-5 h-5 text-green-500">
-                                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                                </svg>
-                                            </span>
-                                            <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Conditions are generally safe for fishing</p>
+                            <div class="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+                                <div class="space-y-6">
+                                    <div id="safety-result-card" class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-blue-200/60 dark:border-blue-900/40">
+                                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                            <div>
+                                                <p id="location-name" class="text-sm font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wide">Calatagan, Batangas</p>
+                                                <p id="coordinates" class="text-xs text-gray-400 dark:text-gray-500 mt-1">13.8500, 120.6167</p>
+                                            </div>
+                                            <div class="text-center md:text-right">
+                                                <div id="safety-icon" class="text-4xl md:text-5xl mb-1">✅</div>
+                                                <h2 id="safety-verdict" class="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">Safe</h2>
+                                                <p id="confidence-level" class="text-xs md:text-sm text-gray-600 dark:text-gray-300">Confidence: 92%</p>
+                                            </div>
                                         </div>
-                                        <div class="flex items-start">
-                                            <span class="flex-shrink-0 w-5 h-5 text-green-500">
-                                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                                </svg>
-                                            </span>
-                                            <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Good conditions for recreational fishing</p>
+
+                                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                                            <div class="rounded-xl border border-blue-100 dark:border-blue-900/50 bg-blue-50/60 dark:bg-blue-900/20 p-4">
+                                                <p class="text-xs font-semibold uppercase text-blue-700 dark:text-blue-200 tracking-wide">Wind Speed</p>
+                                                <p id="wind-speed" class="mt-2 text-xl font-semibold text-blue-900 dark:text-blue-100">12.5 km/h</p>
+                                            </div>
+                                            <div class="rounded-xl border border-purple-100 dark:border-purple-900/50 bg-purple-50/60 dark:bg-purple-900/20 p-4">
+                                                <p class="text-xs font-semibold uppercase text-purple-700 dark:text-purple-200 tracking-wide">Wave Height</p>
+                                                <p id="wave-height" class="mt-2 text-xl font-semibold text-purple-900 dark:text-purple-100">0.8 m</p>
+                                            </div>
+                                            <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/60 dark:bg-emerald-900/20 p-4">
+                                                <p class="text-xs font-semibold uppercase text-emerald-700 dark:text-emerald-200 tracking-wide">Visibility</p>
+                                                <p id="visibility" class="mt-2 text-xl font-semibold text-emerald-900 dark:text-emerald-100">10.0 km</p>
+                                            </div>
+                                            <div class="rounded-xl border border-amber-100 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-900/20 p-4">
+                                                <p class="text-xs font-semibold uppercase text-amber-700 dark:text-amber-200 tracking-wide">Tide State</p>
+                                                <p id="tide-state" class="mt-2 text-xl font-semibold text-amber-900 dark:text-amber-100">Rising</p>
+                                            </div>
                                         </div>
-                                        <div class="flex items-start">
-                                            <span class="flex-shrink-0 w-5 h-5 text-blue-500">
-                                                <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                                </svg>
-                                            </span>
-                                            <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Rising tide - good for fishing near structures</p>
+                                    </div>
+
+                                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-yellow-200/60 dark:border-yellow-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Risk Areas Nearby
+                                        </h4>
+                                        <div id="risk-areas" class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                                            <p class="text-sm text-yellow-700 dark:text-yellow-200">No high-risk areas detected within 10km radius</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Risk Areas Nearby
-                                    </h4>
-                                    <div id="risk-areas" class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-                                        <p class="text-sm text-yellow-700 dark:text-yellow-200">No high-risk areas detected within 10km radius</p>
+                                <div class="space-y-6">
+                                    <div id="weather-alerts-section" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-red-200/60 dark:border-red-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L4.34 17c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            Active Weather Alerts
+                                        </h4>
+                                        <div id="weather-alerts" class="space-y-3"></div>
                                     </div>
-                                </div>
 
-                                <div id="weather-alerts-section" class="mt-6 hidden">
-                                    <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L4.34 17c-.77 1.333.192 3 1.732 3z"></path>
-                                        </svg>
-                                        Active Weather Alerts
-                                    </h4>
-                                    <div id="weather-alerts" class="space-y-3"></div>
-                                </div>
-
-                                <div id="history-insights" class="mt-6 hidden">
-                                    <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2m0 2H7m0 0H2v-2a3 3 0 015.356-1.857M7 20v-2m0-5a3 3 0 116 0 3 3 0 01-6 0zm5-3V5a3 3 0 00-6 0v5"></path>
-                                        </svg>
-                                        Local History Insights
-                                    </h4>
-                                    <p id="history-status" class="text-sm text-gray-600 dark:text-gray-300">Searching previous checks near this location...</p>
-
-                                    <div id="history-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 hidden">
-                                        <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
-                                            <p class="text-xs font-semibold uppercase text-green-700 dark:text-green-300">Safe</p>
-                                            <p id="history-safe-count" class="text-xl font-bold text-green-900 dark:text-green-100">0</p>
-                                        </div>
-                                        <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-700">
-                                            <p class="text-xs font-semibold uppercase text-yellow-700 dark:text-yellow-300">Caution</p>
-                                            <p id="history-caution-count" class="text-xl font-bold text-yellow-900 dark:text-yellow-100">0</p>
-                                        </div>
-                                        <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
-                                            <p class="text-xs font-semibold uppercase text-red-700 dark:text-red-300">Dangerous</p>
-                                            <p id="history-danger-count" class="text-xl font-bold text-red-900 dark:text-red-100">0</p>
-                                        </div>
-                                        <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 sm:col-span-3">
-                                            <p class="text-xs font-semibold uppercase text-blue-700 dark:text-blue-300">Average Confidence</p>
-                                            <p id="history-average-confidence" class="text-xl font-bold text-blue-900 dark:text-blue-100">—</p>
-                                            <p id="history-last-danger" class="text-xs text-blue-600 dark:text-blue-300 mt-1"></p>
+                                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-blue-200/60 dark:border-blue-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                            </svg>
+                                            Action Plan
+                                        </h4>
+                                        <div id="recommendations" class="space-y-2">
+                                            <div class="flex items-start">
+                                                <span class="flex-shrink-0 w-5 h-5 text-green-500">
+                                                    <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </span>
+                                                <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Conditions are generally safe for fishing</p>
+                                            </div>
+                                            <div class="flex items-start">
+                                                <span class="flex-shrink-0 w-5 h-5 text-green-500">
+                                                    <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </span>
+                                                <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Good conditions for recreational fishing</p>
+                                            </div>
+                                            <div class="flex items-start">
+                                                <span class="flex-shrink-0 w-5 h-5 text-blue-500">
+                                                    <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                </span>
+                                                <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Rising tide - good for fishing near structures</p>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div id="history-list" class="mt-4 space-y-3"></div>
+                                    <div id="history-insights" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-indigo-200/60 dark:border-indigo-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2m0 2H7m0 0H2v-2a3 3 0 015.356-1.857M7 20v-2m0-5a3 3 0 116 0 3 3 0 01-6 0zm5-3V5a3 3 0 00-6 0v5"></path>
+                                            </svg>
+                                            Local History Insights
+                                        </h4>
+                                        <p id="history-status" class="text-sm text-gray-600 dark:text-gray-300">Searching previous checks near this location...</p>
+
+                                        <div id="history-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 hidden">
+                                            <div class="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
+                                                <p class="text-xs font-semibold uppercase text-green-700 dark:text-green-300">Safe</p>
+                                                <p id="history-safe-count" class="text-xl font-bold text-green-900 dark:text-green-100">0</p>
+                                            </div>
+                                            <div class="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-700">
+                                                <p class="text-xs font-semibold uppercase text-yellow-700 dark:text-yellow-300">Caution</p>
+                                                <p id="history-caution-count" class="text-xl font-bold text-yellow-900 dark:text-yellow-100">0</p>
+                                            </div>
+                                            <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+                                                <p class="text-xs font-semibold uppercase text-red-700 dark:text-red-300">Dangerous</p>
+                                                <p id="history-danger-count" class="text-xl font-bold text-red-900 dark:text-red-100">0</p>
+                                            </div>
+                                            <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 sm:col-span-3">
+                                                <p class="text-xs font-semibold uppercase text-blue-700 dark:text-blue-300">Average Confidence</p>
+                                                <p id="history-average-confidence" class="text-xl font-bold text-blue-900 dark:text-blue-100">—</p>
+                                                <p id="history-last-danger" class="text-xs text-blue-600 dark:text-blue-300 mt-1"></p>
+                                            </div>
+                                        </div>
+
+                                        <div id="history-list" class="mt-4 space-y-3"></div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1003,13 +1006,58 @@
                         icon: createMarkerIcon(data.safety_assessment.verdict)
                     }).addTo(map);
 
-                    // Create popup content with simplified info
-                    let popupContent = `
-                        <div class="p-2">
-                            <h3 class="font-bold text-gray-800">${data.safety_assessment.verdict}</h3>
-                            <p class="text-sm text-gray-600 mt-1">Wind: ${data.weather_conditions.wind_speed_kph.toFixed(1)} km/h</p>
-                            <p class="text-sm text-gray-600">Waves: ${data.weather_conditions.wave_height_m.toFixed(1)} m</p>
-                            <p class="mt-2 text-xs text-blue-600">Detailed results appear in the right-hand panel.</p>
+                    const verdictLabel = data.safety_assessment?.verdict || 'Unknown';
+                    const severity = verdictLabel.toLowerCase();
+                    const confidencePercent = typeof data.safety_assessment?.confidence === 'number'
+                        ? `${(data.safety_assessment.confidence * 100).toFixed(0)}%`
+                        : '—';
+
+                    let badgeClass = 'bg-gray-100 text-gray-700';
+                    let borderClass = 'border-blue-200';
+                    let headlineClass = 'text-gray-800';
+                    let noteClass = 'text-blue-600';
+
+                    if (severity.includes('danger')) {
+                        badgeClass = 'bg-red-100 text-red-700';
+                        borderClass = 'border-red-200';
+                        headlineClass = 'text-red-700';
+                        noteClass = 'text-red-600';
+                    } else if (severity.includes('caution')) {
+                        badgeClass = 'bg-yellow-100 text-yellow-700';
+                        borderClass = 'border-yellow-200';
+                        headlineClass = 'text-yellow-700';
+                        noteClass = 'text-yellow-600';
+                    } else if (severity.includes('safe')) {
+                        badgeClass = 'bg-green-100 text-green-700';
+                        borderClass = 'border-green-200';
+                        headlineClass = 'text-green-700';
+                        noteClass = 'text-green-600';
+                    }
+
+                    const locationLabel = sanitizeText(
+                        data.location?.name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+                    );
+
+                    const windValue = `${data.weather_conditions.wind_speed_kph.toFixed(1)} km/h`;
+                    const waveValue = `${data.weather_conditions.wave_height_m.toFixed(1)} m`;
+
+                    const popupContent = `
+                        <div class="p-3 rounded-xl border ${borderClass} bg-white/95 shadow-sm min-w-[220px]">
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide rounded-full ${badgeClass}">${sanitizeText(verdictLabel)}</span>
+                                <span class="text-[11px] text-gray-500">Confidence ${confidencePercent}</span>
+                            </div>
+                            <h3 class="mt-2 text-sm font-bold ${headlineClass}">${locationLabel}</h3>
+                            <div class="mt-3 grid grid-cols-2 gap-2">
+                                <div class="rounded-lg bg-blue-600 px-2 py-1.5 text-center">
+                                    <p class="text-[10px] font-semibold uppercase text-blue-100">Wind</p>
+                                    <p class="text-xs font-bold text-white">${sanitizeText(windValue)}</p>
+                                </div>
+                                <div class="rounded-lg bg-purple-600 px-2 py-1.5 text-center">
+                                    <p class="text-[10px] font-semibold uppercase text-purple-100">Waves</p>
+                                    <p class="text-xs font-bold text-white">${sanitizeText(waveValue)}</p>
+                                </div>
+                            </div>
                         </div>
                     `;
 
