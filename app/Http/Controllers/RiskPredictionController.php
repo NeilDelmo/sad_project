@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class RiskPredictionController extends Controller
 {
+    public function publicMap()
+    {
+        // Public fishing safety map - no authentication required
+        return view('fishing-safety-public');
+    }
+
     public function showForm()
     {
         $recentLogs = RiskPredictionLog::query()

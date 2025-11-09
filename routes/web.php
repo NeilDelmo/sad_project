@@ -15,6 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Public fishing safety map (no authentication required)
+Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->name('fishing-safety.public');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -89,11 +92,13 @@ Route::prefix('api/fishing-safety')
     Route::get('/health', [FishingSafetyController::class, 'health'])->name('health');
     Route::get('/setup-check', [FishingSafetyController::class, 'setupCheck'])->name('setup-check');
     
-    // Protected endpoints require authentication
+    // Public endpoints (no auth needed for map functionality)
+    Route::post('/', [FishingSafetyController::class, 'checkSafety'])->name('check');
+    Route::post('/batch', [FishingSafetyController::class, 'checkBatch'])->name('batch');
+    Route::post('/weather-map', [FishingSafetyController::class, 'weatherMap'])->name('weather-map');
+    
+    // Protected endpoint - history requires authentication
     Route::middleware('auth')->group(function () {
-        Route::post('/', [FishingSafetyController::class, 'checkSafety'])->name('check');
-        Route::post('/batch', [FishingSafetyController::class, 'checkBatch'])->name('batch');
-        Route::post('/weather-map', [FishingSafetyController::class, 'weatherMap'])->name('weather-map');
         Route::get('/history', [FishingSafetyController::class, 'history'])->name('history');
     });
 });
