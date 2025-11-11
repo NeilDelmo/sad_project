@@ -1,4 +1,9 @@
 <x-app-layout>
+    @php
+        $compactLayout = $compactLayout ?? false;
+        $allowHistory = auth()->check() && in_array(auth()->user()->user_type, ['admin', 'regulator']);
+        $enableOutcomeLogging = auth()->check();
+    @endphp
     @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -44,8 +49,48 @@
             color: #d1d5db;
         }
     </style>
+    @if($compactLayout)
+    <style>
+        body.compact-map main {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+
+        body.compact-map .compact-container {
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        body.compact-map .compact-surface {
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        body.compact-map header {
+            display: none !important;
+        }
+
+        body.compact-map .min-h-screen > .flex > div:first-child {
+            display: none !important;
+        }
+
+        body.compact-map .min-h-screen > .flex > div.flex-1 {
+            width: 100% !important;
+        }
+    </style>
+    @endif
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     @endpush
+
+    @if($compactLayout)
+        @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.classList.add('compact-map');
+            });
+        </script>
+        @endpush
+    @endif
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
@@ -56,6 +101,7 @@
                 <p class="text-gray-700 dark:text-gray-300 text-sm mt-1 font-medium">Click on the map to check conditions, hold the right mouse button to pan around</p>
             </div>
             <div class="flex items-center space-x-3">
+                @unless($compactLayout)
                 <button id="current-location-btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -63,21 +109,24 @@
                     </svg>
                     My Location
                 </button>
+                @endunless
+                @if($allowHistory && ! $compactLayout)
                 <a href="{{ route('risk-history') }}" class="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     History
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="{{ $compactLayout ? 'py-4 sm:py-6' : 'py-6' }}">
+        <div class="{{ $compactLayout ? 'compact-container w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto sm:px-6 lg:px-8' }}">
             <div class="space-y-6">
                 <!-- Map Section -->
-                <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-xl {{ $compactLayout ? 'compact-surface rounded-none sm:rounded-2xl' : 'rounded-2xl' }} overflow-hidden">
                     <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                         <h3 class="text-xl font-bold flex items-center">
                             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -89,8 +138,20 @@
                         <p class="text-white font-medium mt-1">Click anywhere on the map to check fishing safety conditions, hold right-click to move the map</p>
                     </div>
 
-                    <div class="relative h-96 md:h-[600px]">
+                    <div class="{{ $compactLayout ? 'relative h-[calc(100vh-160px)] md:h-[calc(100vh-140px)]' : 'relative h-96 md:h-[600px]' }}">
                         <div id="fishing-map" class="w-full h-full"></div>
+
+                        @if($compactLayout)
+                        <div class="absolute top-4 left-4 z-20">
+                            <button id="current-location-btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                My Location
+                            </button>
+                        </div>
+                        @endif
 
                         <!-- Loading overlay -->
                         <div id="loading-overlay" class="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center hidden">
@@ -321,35 +382,64 @@
                                         </div>
                                     </div>
 
-                                    <div id="outcome-card" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-emerald-200/60 dark:border-emerald-900/40">
-                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            Log Trip Outcome
-                                        </h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">After you return, record what actually happened so the safety model keeps learning.</p>
+                                    @if($enableOutcomeLogging)
+                                    <div id="outcome-card" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-emerald-200/60 dark:border-emerald-900/40 space-y-4">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-2 flex items-center">
+                                                <svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                Log Trip Outcome
+                                            </h4>
+                                            <p class="text-xs text-gray-600 dark:text-gray-300">Every spot you tap on the map is saved below. Pick the one you actually sailed to, then tell us what really happened so the model keeps learning the right lessons.</p>
+                                        </div>
+
+                                        <div class="rounded-xl border border-emerald-100 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-900/20 p-3 space-y-3">
+                                            <div id="planned-trips-empty" class="text-xs text-emerald-800 dark:text-emerald-200">
+                                                Check a location on the map to add it here, then choose it before logging your outcome.
+                                            </div>
+                                            <ul id="planned-trips-list" class="hidden space-y-2"></ul>
+                                        </div>
+
                                         <form id="outcome-form" class="space-y-3">
                                             <div>
-                                                <label for="outcome-select" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Actual outcome</label>
+                                                <label for="planned-trip-select" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Which saved spot did you fish?</label>
+                                                <select id="planned-trip-select" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40" required>
+                                                    <option value="">Select a saved spot…</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="outcome-select" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Actual outcome offshore</label>
                                                 <select id="outcome-select" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40" required>
-                                                    <option value="">Select the real conditions…</option>
+                                                    <option value="">What really happened…</option>
                                                     <option value="Safe">✅ Safe</option>
                                                     <option value="Caution">⚠️ Caution</option>
                                                     <option value="Dangerous">🚨 Dangerous</option>
                                                 </select>
                                             </div>
                                             <div>
-                                                <label for="outcome-notes" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Notes (optional)</label>
-                                                <textarea id="outcome-notes" rows="3" placeholder="Add quick notes about what you observed…" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40"></textarea>
+                                                <label for="outcome-notes" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Brief notes (optional)</label>
+                                                <textarea id="outcome-notes" rows="3" placeholder="Quickly jot what you observed or changed on board…" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40"></textarea>
                                             </div>
-                                            <p id="outcome-status" class="text-xs text-gray-500 dark:text-gray-400">Submit outcomes after each trip so we can keep improving predictions.</p>
+                                            <p id="outcome-status" class="text-xs text-gray-500 dark:text-gray-400">Select the saved spot you actually visited, then record the real conditions.</p>
                                             <button type="submit" id="outcome-submit" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition disabled:opacity-70 disabled:cursor-not-allowed">
                                                 Save Outcome
                                             </button>
                                         </form>
                                     </div>
+                                    @else
+                                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-emerald-200/60 dark:border-emerald-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Log Trip Outcome
+                                        </h4>
+                                        <p class="text-xs text-gray-600 dark:text-gray-300">Sign in to record trip outcomes and help improve the safety model.</p>
+                                    </div>
+                                    @endif
 
+                                    @if($allowHistory)
                                     <div id="history-insights" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-indigo-200/60 dark:border-indigo-900/40">
                                         <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
                                             <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -381,6 +471,7 @@
 
                                         <div id="history-list" class="mt-4 space-y-3"></div>
                                     </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -393,7 +484,7 @@
                     </div>
 
                     <!-- Recent Activity -->
-                    @if(isset($recentLogs) && $recentLogs->isNotEmpty())
+                    @if($allowHistory && isset($recentLogs) && $recentLogs->isNotEmpty())
                     <div class="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Recent Checks</h4>
@@ -499,6 +590,9 @@
                 </div>`;
                 return;
             }
+
+            const enableHistoryApi = "{{ $allowHistory ? '1' : '0' }}" === '1';
+            const outcomeEnabled = "{{ $enableOutcomeLogging ? '1' : '0' }}" === '1';
 
             // Initialize map
             const map = L.map(mapContainer).setView([13.85, 120.62], 11);
@@ -668,13 +762,174 @@
             const historyList = document.getElementById('history-list');
             const outcomeCard = document.getElementById('outcome-card');
             const outcomeForm = document.getElementById('outcome-form');
+            const plannedTripsList = document.getElementById('planned-trips-list');
+            const plannedTripsEmpty = document.getElementById('planned-trips-empty');
+            const plannedTripSelect = document.getElementById('planned-trip-select');
             const outcomeSelect = document.getElementById('outcome-select');
             const outcomeNotes = document.getElementById('outcome-notes');
             const outcomeStatus = document.getElementById('outcome-status');
             const outcomeSubmit = document.getElementById('outcome-submit');
             let historyRequestToken = 0;
             let lastPrediction = null;
-            const outcomeStatusDefault = 'Submit outcomes after each trip so we can keep improving predictions.';
+            const outcomeStatusDefault = 'Select the saved spot you actually visited, then record the real conditions.';
+            const plannedTripsStorageKey = 'fishingSafetyPlannedTrips';
+            let plannedTrips = [];
+
+            function persistPlannedTrips() {
+                if (!outcomeEnabled) {
+                    return;
+                }
+
+                try {
+                    localStorage.setItem(plannedTripsStorageKey, JSON.stringify(plannedTrips));
+                } catch (error) {
+                    console.warn('Unable to persist planned trips', error);
+                }
+            }
+
+            function renderPlannedTrips(focusTripId = null) {
+                if (!outcomeEnabled || !plannedTripSelect) {
+                    return;
+                }
+
+                const baseOption = '<option value="">Select a saved spot…</option>';
+                if (!Array.isArray(plannedTrips)) {
+                    plannedTrips = [];
+                }
+
+                const hasTrips = plannedTrips.length > 0;
+
+                if (plannedTripsEmpty) {
+                    plannedTripsEmpty.classList.toggle('hidden', hasTrips);
+                }
+
+                if (plannedTripsList) {
+                    if (!hasTrips) {
+                        plannedTripsList.classList.add('hidden');
+                        plannedTripsList.innerHTML = '';
+                    } else {
+                        plannedTripsList.classList.remove('hidden');
+                        plannedTripsList.innerHTML = plannedTrips.map(trip => {
+                            const verdictLabel = sanitizeText(trip.verdict || 'Unknown');
+                            const confidenceLabel = typeof trip.confidence === 'number'
+                                ? `${Math.round(trip.confidence * 100)}%`
+                                : '—';
+                            const coordinateLabel = `${Number(trip.coordinates?.lat ?? 0).toFixed(3)}, ${Number(trip.coordinates?.lng ?? 0).toFixed(3)}`;
+                            const savedTime = trip.savedAt ? new Date(trip.savedAt).toLocaleTimeString() : '';
+                            const metaParts = [
+                                verdictLabel,
+                                confidenceLabel !== '—' ? `Conf ${confidenceLabel}` : null,
+                                coordinateLabel,
+                                savedTime ? `Saved ${savedTime}` : null,
+                            ].filter(Boolean);
+
+                            return `
+                                <li class="flex items-start justify-between rounded-lg border border-emerald-100 dark:border-emerald-900/60 bg-white dark:bg-gray-900/50 p-3">
+                                    <button type="button" class="text-left flex-1" data-select-trip="${trip.id}">
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">${sanitizeText(trip.locationLabel || coordinateLabel)}</p>
+                                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${metaParts.join(' • ')}</p>
+                                    </button>
+                                    <button type="button" class="ml-3 text-[11px] font-semibold text-red-600 hover:text-red-700 dark:text-red-300 dark:hover:text-red-200" data-remove-trip="${trip.id}">
+                                        Remove
+                                    </button>
+                                </li>
+                            `;
+                        }).join('');
+                    }
+                }
+
+                const options = hasTrips
+                    ? plannedTrips.map(trip => `<option value="${trip.id}">${sanitizeText(trip.locationLabel || `${Number(trip.coordinates?.lat ?? 0).toFixed(3)}, ${Number(trip.coordinates?.lng ?? 0).toFixed(3)}`)} • ${sanitizeText(trip.verdict || 'Unknown')}</option>`).join('')
+                    : '';
+
+                plannedTripSelect.innerHTML = `${baseOption}${options}`;
+                plannedTripSelect.disabled = !hasTrips;
+
+                if (outcomeSubmit) {
+                    outcomeSubmit.disabled = !hasTrips;
+                    if (!hasTrips) {
+                        outcomeSubmit.innerHTML = 'Save Outcome';
+                    }
+                }
+
+                if (!hasTrips) {
+                    plannedTripSelect.value = '';
+                } else if (focusTripId) {
+                    plannedTripSelect.value = focusTripId;
+                }
+            }
+
+            function loadPlannedTrips() {
+                if (!outcomeEnabled) {
+                    return;
+                }
+
+                try {
+                    const raw = localStorage.getItem(plannedTripsStorageKey);
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    plannedTrips = Array.isArray(parsed) ? parsed : [];
+                } catch (error) {
+                    plannedTrips = [];
+                    console.warn('Unable to load planned trips', error);
+                }
+
+                renderPlannedTrips();
+            }
+
+            function findPlannedTrip(tripId) {
+                return plannedTrips.find(trip => trip.id === tripId);
+            }
+
+            function removePlannedTrip(tripId) {
+                if (!outcomeEnabled) {
+                    return;
+                }
+
+                plannedTrips = plannedTrips.filter(trip => trip.id !== tripId);
+                persistPlannedTrips();
+                renderPlannedTrips();
+            }
+
+            function addPlannedTripFromPrediction(predictionData) {
+                if (!outcomeEnabled || !predictionData || !predictionData.feature_vector || !plannedTripSelect) {
+                    return null;
+                }
+
+                const latValue = Number(predictionData.location?.latitude ?? 0);
+                const lonValue = Number(predictionData.location?.longitude ?? 0);
+                const coordinateLabel = `${latValue.toFixed(4)}, ${lonValue.toFixed(4)}`;
+                const locationLabel = predictionData.location?.name || coordinateLabel;
+                const locationKey = `${latValue.toFixed(4)}|${lonValue.toFixed(4)}`;
+
+                const tripId = `trip-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+
+                plannedTrips = plannedTrips.filter(trip => trip.locationKey !== locationKey);
+
+                plannedTrips.unshift({
+                    id: tripId,
+                    locationLabel,
+                    locationKey,
+                    coordinates: {
+                        lat: latValue,
+                        lng: lonValue,
+                    },
+                    verdict: predictionData.safety_assessment?.verdict || 'Unknown',
+                    confidence: predictionData.safety_assessment?.confidence ?? null,
+                    savedAt: new Date().toISOString(),
+                    feature_vector: predictionData.feature_vector,
+                    api_verdict: predictionData.safety_assessment?.verdict || 'Unknown',
+                    is_marine: Boolean(predictionData.is_marine_location ?? predictionData.location?.is_marine),
+                });
+
+                if (plannedTrips.length > 10) {
+                    plannedTrips = plannedTrips.slice(0, 10);
+                }
+
+                persistPlannedTrips();
+                renderPlannedTrips(tripId);
+
+                return tripId;
+            }
 
             // Set current time
             updateTime.textContent = new Date().toLocaleTimeString();
@@ -727,8 +982,12 @@
             }
 
             function resetOutcomeForm() {
-                if (!outcomeCard || !outcomeForm) {
+                if (!outcomeEnabled || !outcomeCard || !outcomeForm) {
                     return;
+                }
+
+                if (plannedTripSelect) {
+                    plannedTripSelect.value = '';
                 }
 
                 if (outcomeSelect) {
@@ -745,21 +1004,33 @@
                 }
 
                 setOutcomeStatus(outcomeStatusDefault, 'info');
-                outcomeForm.dataset.logged = 'false';
+                delete outcomeForm.dataset.logged;
             }
 
             function prepareOutcomeLogging(predictionData) {
-                if (!outcomeCard || !outcomeForm) {
+                if (!outcomeEnabled || !outcomeCard || !outcomeForm) {
                     return;
                 }
 
                 lastPrediction = predictionData;
                 resetOutcomeForm();
+                const newTripId = addPlannedTripFromPrediction(predictionData);
                 outcomeCard.classList.remove('hidden');
+
+                if (!newTripId) {
+                    setOutcomeStatus('This spot could not be saved for logging yet. Tap it again once the prediction finishes loading.', 'warning');
+                    return;
+                }
 
                 if (predictionData?.location) {
                     const label = predictionData.location.name || `${Number(predictionData.location.latitude ?? 0).toFixed(3)}, ${Number(predictionData.location.longitude ?? 0).toFixed(3)}`;
-                    setOutcomeStatus(`After your trip near ${label}, record what actually happened.`, 'info');
+                    setOutcomeStatus(`Saved ${label} in your trip list. Once you return, pick it and log what really happened.`, 'info');
+                } else {
+                    setOutcomeStatus('Saved this spot in your trip list. Select it later and record what really happened.', 'info');
+                }
+
+                if (plannedTripSelect) {
+                    plannedTripSelect.value = newTripId;
                 }
             }
 
@@ -924,7 +1195,9 @@
                 // Update timestamp
                 updateTime.textContent = new Date().toLocaleTimeString();
 
-                prepareOutcomeLogging(data);
+                if (outcomeEnabled) {
+                    prepareOutcomeLogging(data);
+                }
 
                 // Add result to history
                 addToHistory(data);
@@ -960,7 +1233,7 @@
             }
 
             function resetHistorySection(message) {
-                if (!historySection) {
+                if (!enableHistoryApi || !historySection) {
                     return;
                 }
 
@@ -985,7 +1258,7 @@
             }
 
             async function loadHistoricalInsights(lat, lng) {
-                if (!historySection) {
+                if (!enableHistoryApi || !historySection) {
                     return;
                 }
 
@@ -1214,7 +1487,11 @@
 
                     // Update the result panel
                     updateSafetyResult(data);
-                    loadHistoricalInsights(lat, lng);
+                    if (enableHistoryApi) {
+                        loadHistoricalInsights(lat, lng);
+                    } else if (historySection) {
+                        historySection.classList.add('hidden');
+                    }
                     showResultPanel();
 
                 } catch (error) {
@@ -1225,42 +1502,46 @@
                 }
             }
 
-            if (outcomeForm) {
+            if (outcomeEnabled && outcomeForm) {
                 outcomeForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
 
-                    if (outcomeForm.dataset.logged === 'true') {
-                        setOutcomeStatus('Outcome already recorded for this prediction. Refresh after your next trip.', 'success');
+                    if (outcomeSubmit?.disabled) {
                         return;
                     }
 
-                    if (!lastPrediction) {
-                        setOutcomeStatus('No recent prediction to log yet. Check conditions first.', 'error');
+                    const selectedTripId = plannedTripSelect?.value || '';
+                    if (!selectedTripId) {
+                        setOutcomeStatus('Select the saved spot you actually visited before logging.', 'warning');
                         return;
                     }
 
-                    if (!lastPrediction.feature_vector) {
-                        setOutcomeStatus('This prediction cannot be logged yet. Refresh and try again.', 'error');
+                    const plannedTrip = findPlannedTrip(selectedTripId);
+
+                    if (!plannedTrip) {
+                        setOutcomeStatus('That saved spot is no longer available. Check the map again and save it before logging.', 'error');
+                        renderPlannedTrips();
+                        return;
+                    }
+
+                    if (!plannedTrip.feature_vector) {
+                        setOutcomeStatus('This saved spot is missing model data. Tap it on the map again before logging the outcome.', 'error');
                         return;
                     }
 
                     const selectedOutcome = outcomeSelect?.value;
 
                     if (!selectedOutcome) {
-                        setOutcomeStatus('Please choose the actual outcome before submitting.', 'warning');
-                        return;
-                    }
-
-                    if (outcomeSubmit?.disabled) {
+                        setOutcomeStatus('Pick what actually happened on the water.', 'warning');
                         return;
                     }
 
                     const payload = {
-                        lat: lastPrediction.location.latitude,
-                        lon: lastPrediction.location.longitude,
+                        lat: Number(plannedTrip.coordinates?.lat ?? 0),
+                        lon: Number(plannedTrip.coordinates?.lng ?? 0),
                         outcome: selectedOutcome,
-                        api_verdict: lastPrediction.safety_assessment?.verdict ?? 'Unknown',
-                        features: lastPrediction.feature_vector,
+                        api_verdict: plannedTrip.api_verdict ?? 'Unknown',
+                        features: plannedTrip.feature_vector,
                     };
 
                     const notesValue = outcomeNotes?.value?.trim();
@@ -1291,16 +1572,25 @@
                         }
 
                         const result = await response.json();
-                        outcomeForm.dataset.logged = 'true';
-                        setOutcomeStatus(result.message || 'Outcome recorded. Retrain soon to learn from it.', 'success');
+                        removePlannedTrip(selectedTripId);
 
-                        if (outcomeSubmit) {
-                            outcomeSubmit.innerHTML = 'Recorded ✅';
+                        if (plannedTripSelect) {
+                            plannedTripSelect.value = '';
                         }
+
+                        if (outcomeSelect) {
+                            outcomeSelect.value = '';
+                        }
+
+                        if (outcomeNotes) {
+                            outcomeNotes.value = '';
+                        }
+
+                        setOutcomeStatus(result.message || 'Outcome recorded. Retrain soon to learn from it.', 'success');
                     } catch (error) {
                         console.error('Failed to record outcome:', error);
                         setOutcomeStatus(error.message || 'Unable to record outcome right now.', 'error');
-
+                    } finally {
                         if (outcomeSubmit) {
                             outcomeSubmit.disabled = false;
                             outcomeSubmit.innerHTML = 'Save Outcome';
@@ -1308,6 +1598,46 @@
                     }
                 });
             }
+
+            if (plannedTripsList) {
+                plannedTripsList.addEventListener('click', (event) => {
+                    const removeButton = event.target.closest('[data-remove-trip]');
+                    if (removeButton) {
+                        removePlannedTrip(removeButton.dataset.removeTrip);
+                        if (plannedTripSelect) {
+                            plannedTripSelect.value = '';
+                        }
+                        if (plannedTrips.length) {
+                            setOutcomeStatus('Removed that spot from your list. Tap a new location to add another.', 'info');
+                        } else {
+                            setOutcomeStatus('No saved spots right now. Tap the map to add one before logging.', 'info');
+                        }
+                        return;
+                    }
+
+                    const selectButton = event.target.closest('[data-select-trip]');
+                    if (selectButton && plannedTripSelect) {
+                        plannedTripSelect.value = selectButton.dataset.selectTrip;
+                        plannedTripSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            plannedTripSelect?.addEventListener('change', () => {
+                const tripId = plannedTripSelect.value;
+
+                if (!tripId) {
+                    setOutcomeStatus(outcomeStatusDefault, 'info');
+                    return;
+                }
+
+                const selectedTrip = findPlannedTrip(tripId);
+                if (selectedTrip) {
+                    const label = selectedTrip.locationLabel
+                        || `${Number(selectedTrip.coordinates?.lat ?? 0).toFixed(3)}, ${Number(selectedTrip.coordinates?.lng ?? 0).toFixed(3)}`;
+                    setOutcomeStatus(`Locked in ${label}. Record what actually happened before you forget.`, 'info');
+                }
+            });
 
             // Handle map clicks
             map.on('click', function(e) {
@@ -1335,7 +1665,11 @@
             });
 
             // Current location button
-            currentLocationBtn.addEventListener('click', function() {
+            if (!currentLocationBtn) {
+                console.warn('Current location button not found in DOM.');
+            }
+
+            currentLocationBtn?.addEventListener('click', function() {
                 currentLocationBtn.disabled = true;
                 currentLocationBtn.innerHTML = '<svg class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m1.969-9A8.001 8.001 0 0119.418 9m-15.356 2H9m0 0h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9"></path></svg> Locating...';
 
@@ -1408,6 +1742,10 @@
                         API: Offline
                     `;
                 }
+            }
+
+            if (outcomeEnabled) {
+                loadPlannedTrips();
             }
 
             // Initialize

@@ -255,7 +255,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 FishOrg</a>
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
             <div class="nav-links">
                 <a href="{{ route('fisherman.dashboard') }}" class="nav-link active">
                     <i class="fa-solid fa-gauge-high"></i> Dashboard
@@ -265,6 +265,9 @@
                 </a>
                 <a href="{{ route('fisherman.messages') }}" class="nav-link">
                     <i class="fa-solid fa-envelope"></i> Messages
+                </a>
+                <a href="{{ route('fishing-safety.public') }}" class="nav-link">
+                    <i class="fa-solid fa-life-ring"></i> Safety Map
                 </a>
                 <a href="{{ route('marketplace.index') }}" class="nav-link">
                     <i class="fa-solid fa-store"></i> Marketplace
@@ -301,6 +304,10 @@
                     @if(isset($unreadCount) && $unreadCount > 0)
                     <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px;">{{ $unreadCount }}</span>
                     @endif
+                </a>
+                <a href="{{ route('fishing-safety.public') }}" class="btn-secondary-custom">
+                    <i class="fa-solid fa-life-ring"></i>
+                    Check Safety Map
                 </a>
             </div>
         </div>

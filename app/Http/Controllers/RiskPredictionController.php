@@ -11,7 +11,10 @@ class RiskPredictionController extends Controller
     public function publicMap()
     {
         // Public fishing safety map - no authentication required
-        return view('fishing-safety-public');
+        return view('riskpredict', [
+            'compactLayout' => true,
+            'recentLogs' => collect(),
+        ]);
     }
 
     public function showForm()
@@ -121,6 +124,12 @@ class RiskPredictionController extends Controller
 
     public function history(Request $request)
     {
+        $userType = optional($request->user())->user_type;
+
+        if (! in_array($userType, ['admin', 'regulator'], true)) {
+            abort(403, 'You do not have permission to view prediction history.');
+        }
+
         $locationFilter = trim((string) $request->input('q'));
         $riskFilter = trim((string) $request->input('risk'));
 

@@ -280,7 +280,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 FishOrg</a>
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
             <div class="nav-links">
                 <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
                     <i class="fa-solid fa-gauge-high"></i> Dashboard

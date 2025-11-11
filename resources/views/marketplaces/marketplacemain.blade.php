@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="bootstrap5/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
-    <title>SeaLedger - FishOrg Marketplace</title>
+    <title>SeaLedger Marketplace</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
 
@@ -262,7 +262,7 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <!-- logo -->
             <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
-                🐟 FishOrg
+                🐟 SeaLedger
             </a>
 
             <!-- center group -->

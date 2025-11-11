@@ -167,6 +167,14 @@ class FishingSafetyController extends Controller
 
     public function history(Request $request)
     {
+        $userType = optional($request->user())->user_type;
+
+        if (! in_array($userType, ['admin', 'regulator'], true)) {
+            return response()->json([
+                'error' => 'Not authorized to view historical logs.',
+            ], 403);
+        }
+
         $request->validate([
             'lat' => 'required|numeric|between:-90,90',
             'lon' => 'required|numeric|between:-180,180',

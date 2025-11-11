@@ -10,7 +10,7 @@
     <!-- icons -->
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
 
-    <title>SeaLedger - FishOrg</title>
+    <title>SeaLedger Marketplace</title>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
@@ -215,7 +215,7 @@
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <!-- logo -->
             <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
-                🐟 FishOrg
+                🐟 SeaLedger
             </a>
 
             <!-- center group -->
@@ -260,7 +260,7 @@
         <div>
             <!-- change Amber to name of user logged in -->
             <span class="font-subtitle">{{ Auth::check() ? Auth::user()->name : 'Guest' }}, ready for today's catch?</span>
-            <span class="font-title">FishOrg</span>
+            <span class="font-title">SeaLedger</span>
             <div class="d-flex gap-3 justify-content-center mt-2">
                 <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Marketplace</a>
                 <a href="#" class="btn btn-text btn-size rounded-pill dark-blue" style="background-color: #E7FAFE; border: 2px solid #0075B5;">Community Forum</a>
