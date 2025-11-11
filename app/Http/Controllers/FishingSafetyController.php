@@ -110,6 +110,61 @@ class FishingSafetyController extends Controller
         }
     }
 
+    public function recordOutcome(Request $request)
+    {
+        $request->validate([
+            'lat' => 'required|numeric|between:-90,90',
+            'lon' => 'required|numeric|between:-180,180',
+            'outcome' => 'required|string|in:Safe,Caution,Dangerous',
+            'api_verdict' => 'nullable|string|max:64',
+            'features' => 'required|array',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $features = $request->input('features');
+
+        if (! is_array($features)) {
+            return response()->json([
+                'error' => 'Invalid features payload',
+            ], 422);
+        }
+
+        $payload = [
+            'lat' => (float) $request->lat,
+            'lon' => (float) $request->lon,
+            'outcome' => $request->input('outcome'),
+            'api_verdict' => $request->input('api_verdict'),
+            'features' => $features,
+        ];
+
+        $notes = trim((string) $request->input('notes', ''));
+        if ($notes !== '') {
+            $payload['notes'] = $notes;
+        }
+
+        try {
+            $response = Http::timeout(20)->post("{$this->flaskApiUrl}/api/record-trip-outcome", $payload);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), 201);
+            }
+
+            $errorMessage = $response->json('error') ?? 'Failed to record trip outcome';
+
+            return response()->json([
+                'error' => $errorMessage,
+            ], $response->status() ?: 500);
+        } catch (\Throwable $e) {
+            Log::warning('Trip outcome logging failed', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to record outcome: ' . $e->getMessage(),
+            ], 503);
+        }
+    }
+
     public function history(Request $request)
     {
         $request->validate([

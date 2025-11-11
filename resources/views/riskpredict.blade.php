@@ -129,7 +129,6 @@
                                 ['name' => 'Balibago Beach', 'lat' => 13.931485, 'lng' => 120.618735],
                                 ['name' => 'Matabungkay Beach', 'lat' => 13.947251, 'lng' => 120.615741],
                                 ['name' => 'Calatagan Fishing Spot', 'lat' => 13.866245640009993, 'lng' => 120.6176208450655],
-                                ['name' => 'Malabrigo Point', 'lat' => 13.5986, 'lng' => 121.2625]
                                 ] as $spot)
                                 <button
                                     class="flex items-center w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 rounded transition"
@@ -320,6 +319,35 @@
                                                 <p class="ml-2 text-sm text-gray-700 dark:text-gray-300">Rising tide - good for fishing near structures</p>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div id="outcome-card" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-emerald-200/60 dark:border-emerald-900/40">
+                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Log Trip Outcome
+                                        </h4>
+                                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">After you return, record what actually happened so the safety model keeps learning.</p>
+                                        <form id="outcome-form" class="space-y-3">
+                                            <div>
+                                                <label for="outcome-select" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Actual outcome</label>
+                                                <select id="outcome-select" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40" required>
+                                                    <option value="">Select the real conditions…</option>
+                                                    <option value="Safe">✅ Safe</option>
+                                                    <option value="Caution">⚠️ Caution</option>
+                                                    <option value="Dangerous">🚨 Dangerous</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label for="outcome-notes" class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Notes (optional)</label>
+                                                <textarea id="outcome-notes" rows="3" placeholder="Add quick notes about what you observed…" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900/60 text-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40"></textarea>
+                                            </div>
+                                            <p id="outcome-status" class="text-xs text-gray-500 dark:text-gray-400">Submit outcomes after each trip so we can keep improving predictions.</p>
+                                            <button type="submit" id="outcome-submit" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition disabled:opacity-70 disabled:cursor-not-allowed">
+                                                Save Outcome
+                                            </button>
+                                        </form>
                                     </div>
 
                                     <div id="history-insights" class="hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-indigo-200/60 dark:border-indigo-900/40">
@@ -638,7 +666,15 @@
             const historyAverageConfidence = document.getElementById('history-average-confidence');
             const historyLastDanger = document.getElementById('history-last-danger');
             const historyList = document.getElementById('history-list');
+            const outcomeCard = document.getElementById('outcome-card');
+            const outcomeForm = document.getElementById('outcome-form');
+            const outcomeSelect = document.getElementById('outcome-select');
+            const outcomeNotes = document.getElementById('outcome-notes');
+            const outcomeStatus = document.getElementById('outcome-status');
+            const outcomeSubmit = document.getElementById('outcome-submit');
             let historyRequestToken = 0;
+            let lastPrediction = null;
+            const outcomeStatusDefault = 'Submit outcomes after each trip so we can keep improving predictions.';
 
             // Set current time
             updateTime.textContent = new Date().toLocaleTimeString();
@@ -660,6 +696,9 @@
                 if (historySection) {
                     historySection.classList.add('hidden');
                 }
+                if (outcomeCard) {
+                    outcomeCard.classList.add('hidden');
+                }
             }
 
             // Show result panel
@@ -670,6 +709,59 @@
 
             // Close result panel
             closeResultBtn.addEventListener('click', showDefaultPanel);
+
+            function setOutcomeStatus(message, tone = 'info') {
+                if (!outcomeStatus) {
+                    return;
+                }
+
+                const toneClass = {
+                    info: 'text-gray-500 dark:text-gray-400',
+                    success: 'text-emerald-600 dark:text-emerald-300',
+                    error: 'text-red-600 dark:text-red-300',
+                    warning: 'text-yellow-600 dark:text-yellow-300',
+                };
+
+                outcomeStatus.className = `text-xs ${toneClass[tone] || toneClass.info}`;
+                outcomeStatus.textContent = message;
+            }
+
+            function resetOutcomeForm() {
+                if (!outcomeCard || !outcomeForm) {
+                    return;
+                }
+
+                if (outcomeSelect) {
+                    outcomeSelect.value = '';
+                }
+
+                if (outcomeNotes) {
+                    outcomeNotes.value = '';
+                }
+
+                if (outcomeSubmit) {
+                    outcomeSubmit.disabled = false;
+                    outcomeSubmit.innerHTML = 'Save Outcome';
+                }
+
+                setOutcomeStatus(outcomeStatusDefault, 'info');
+                outcomeForm.dataset.logged = 'false';
+            }
+
+            function prepareOutcomeLogging(predictionData) {
+                if (!outcomeCard || !outcomeForm) {
+                    return;
+                }
+
+                lastPrediction = predictionData;
+                resetOutcomeForm();
+                outcomeCard.classList.remove('hidden');
+
+                if (predictionData?.location) {
+                    const label = predictionData.location.name || `${Number(predictionData.location.latitude ?? 0).toFixed(3)}, ${Number(predictionData.location.longitude ?? 0).toFixed(3)}`;
+                    setOutcomeStatus(`After your trip near ${label}, record what actually happened.`, 'info');
+                }
+            }
 
             // Update safety result display
             function updateSafetyResult(data) {
@@ -831,6 +923,8 @@
 
                 // Update timestamp
                 updateTime.textContent = new Date().toLocaleTimeString();
+
+                prepareOutcomeLogging(data);
 
                 // Add result to history
                 addToHistory(data);
@@ -1129,6 +1223,90 @@
                 } finally {
                     hideLoading();
                 }
+            }
+
+            if (outcomeForm) {
+                outcomeForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    if (outcomeForm.dataset.logged === 'true') {
+                        setOutcomeStatus('Outcome already recorded for this prediction. Refresh after your next trip.', 'success');
+                        return;
+                    }
+
+                    if (!lastPrediction) {
+                        setOutcomeStatus('No recent prediction to log yet. Check conditions first.', 'error');
+                        return;
+                    }
+
+                    if (!lastPrediction.feature_vector) {
+                        setOutcomeStatus('This prediction cannot be logged yet. Refresh and try again.', 'error');
+                        return;
+                    }
+
+                    const selectedOutcome = outcomeSelect?.value;
+
+                    if (!selectedOutcome) {
+                        setOutcomeStatus('Please choose the actual outcome before submitting.', 'warning');
+                        return;
+                    }
+
+                    if (outcomeSubmit?.disabled) {
+                        return;
+                    }
+
+                    const payload = {
+                        lat: lastPrediction.location.latitude,
+                        lon: lastPrediction.location.longitude,
+                        outcome: selectedOutcome,
+                        api_verdict: lastPrediction.safety_assessment?.verdict ?? 'Unknown',
+                        features: lastPrediction.feature_vector,
+                    };
+
+                    const notesValue = outcomeNotes?.value?.trim();
+                    if (notesValue) {
+                        payload.notes = notesValue;
+                    }
+
+                    setOutcomeStatus('Saving outcome…', 'info');
+                    if (outcomeSubmit) {
+                        outcomeSubmit.disabled = true;
+                        outcomeSubmit.innerHTML = 'Saving…';
+                    }
+
+                    try {
+                        const response = await fetch('/api/fishing-safety/record-outcome', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errorPayload = await response.json().catch(() => ({}));
+                            throw new Error(errorPayload.error || 'Failed to record outcome');
+                        }
+
+                        const result = await response.json();
+                        outcomeForm.dataset.logged = 'true';
+                        setOutcomeStatus(result.message || 'Outcome recorded. Retrain soon to learn from it.', 'success');
+
+                        if (outcomeSubmit) {
+                            outcomeSubmit.innerHTML = 'Recorded ✅';
+                        }
+                    } catch (error) {
+                        console.error('Failed to record outcome:', error);
+                        setOutcomeStatus(error.message || 'Unable to record outcome right now.', 'error');
+
+                        if (outcomeSubmit) {
+                            outcomeSubmit.disabled = false;
+                            outcomeSubmit.innerHTML = 'Save Outcome';
+                        }
+                    }
+                });
             }
 
             // Handle map clicks

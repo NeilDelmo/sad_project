@@ -1138,6 +1138,49 @@ class FishingSafetyAPI:
         except Exception as exc:
             print(f"⚠️ Failed to write debug log: {exc}")
 
+    def record_trip_outcome(self, lat, lon, features, verdict, trip_outcome, notes=None):
+        """Record a completed trip's actual outcome to improve future training."""
+        try:
+            if trip_outcome not in {"Safe", "Caution", "Dangerous"}:
+                raise ValueError(f"Invalid outcome: {trip_outcome}")
+
+            new_row = {
+                "trip_id": int(datetime.now().timestamp() * 1000),
+                "location": f"PH_{lat:.3f}_{lon:.3f}",
+                "wind_speed_kph": round(float(features.get("wind_speed_kph", 0)), 2),
+                "wind_direction": int(features.get("wind_direction", 0)),
+                "wave_height_m": round(float(features.get("wave_height_m", 0)), 2),
+                "rainfall_mm": round(float(features.get("rainfall_mm", 0)), 2),
+                "tide_level_m": round(float(features.get("tide_level_m", 0)), 2),
+                "moon_phase": round(float(features.get("moon_phase", 0)), 3),
+                "visibility_km": round(float(features.get("visibility_km", 0)), 2),
+                "past_incidents_nearby": round(float(features.get("past_incidents_nearby", 0)), 2),
+                "uv_index": round(float(features.get("uv_index", 0)), 1),
+                "humidity": round(float(features.get("humidity", 0)), 1),
+                "pressure": round(float(features.get("pressure", 0)), 2),
+                "beaufort_scale": int(features.get("beaufort_scale", 0)),
+                "wind_gust_kph": round(float(features.get("wind_gust_kph", 0)), 2),
+                "cloud_cover": round(float(features.get("cloud_cover", 0)), 1),
+                "api_verdict": verdict,
+                "actual_verdict": trip_outcome,
+                "verdict": trip_outcome,
+                "recorded_at": datetime.now().isoformat(),
+                "user_notes": (notes or "").strip()
+            }
+
+            if os.path.exists(DATA_PATH):
+                df = pd.read_csv(DATA_PATH)
+                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            else:
+                df = pd.DataFrame([new_row])
+
+            df.to_csv(DATA_PATH, index=False)
+            print(f"✅ Trip outcome recorded: {trip_outcome} at ({lat:.3f}, {lon:.3f})")
+            return True
+        except Exception as e:
+            print(f"❌ Failed to record trip outcome: {e}")
+            return False
+
 # Initialize the API
 fishing_api = FishingSafetyAPI()
 
@@ -1188,6 +1231,11 @@ def check_fishing_safety():
             return jsonify({"error": "Failed to make safety prediction"}), 500
         
         # Prepare comprehensive response
+        feature_vector = {
+            key: (float(value) if isinstance(value, (int, float, np.floating, np.integer)) else value)
+            for key, value in features.items()
+        }
+
         response = {
             "location": {
                 "latitude": lat,
@@ -1215,6 +1263,7 @@ def check_fishing_safety():
                 "cloud_cover_pct": env_context.get("cloud_cover", 0),
                 "is_night": env_context.get("is_night", False)
             },
+            "feature_vector": feature_vector,
             "safety_assessment": prediction,
             "historical_data": {
                 "past_incidents_nearby": features["past_incidents_nearby"],
@@ -1399,6 +1448,56 @@ def setup_check():
         "checks": checks,
         "recommendations": recommendations
     })
+
+@app.route('/api/record-trip-outcome', methods=['POST'])
+def record_trip_outcome():
+    """Record the actual outcome of a completed fishing trip for model retraining."""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or 'lat' not in data or 'lon' not in data or 'outcome' not in data:
+            return jsonify({"error": "Missing required fields: lat, lon, outcome"}), 400
+        
+        lat = float(data['lat'])
+        lon = float(data['lon'])
+        outcome = data['outcome'].strip()
+        
+        if outcome not in {"Safe", "Caution", "Dangerous"}:
+            return jsonify({"error": f"Invalid outcome. Must be one of: Safe, Caution, Dangerous"}), 400
+        
+        # Extract features from the request (API should send these)
+        if 'features' not in data:
+            return jsonify({"error": "Missing 'features' object"}), 400
+        
+        features = data['features']
+        api_verdict = data.get('api_verdict', 'Unknown')
+        
+        # Record the outcome
+        success = fishing_api.record_trip_outcome(
+            lat,
+            lon,
+            features,
+            api_verdict,
+            outcome,
+            data.get("notes")
+        )
+        
+        if success:
+            return jsonify({
+                "status": "recorded",
+                "message": f"Trip outcome '{outcome}' recorded successfully",
+                "note": "Run train_random_forest.py to retrain the model with new data",
+                "timestamp": datetime.now().isoformat()
+            }), 201
+        else:
+            return jsonify({"error": "Failed to record trip outcome"}), 500
+    except ValueError as e:
+        return jsonify({"error": f"Invalid data: {str(e)}"}), 400
+    except Exception as e:
+        print(f"❌ Error recording trip outcome: {e}")
+        traceback.print_exc()
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     print("🎣 Starting Enhanced Fishing Safety API for Laravel...")

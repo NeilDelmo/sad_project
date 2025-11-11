@@ -100,5 +100,6 @@ Route::prefix('api/fishing-safety')
     // Protected endpoint - history requires authentication
     Route::middleware('auth')->group(function () {
         Route::get('/history', [FishingSafetyController::class, 'history'])->name('history');
+        Route::post('/record-outcome', [FishingSafetyController::class, 'recordOutcome'])->name('record-outcome');
     });
 });

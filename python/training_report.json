@@ -1,0 +1,77 @@
+{
+  "accuracy": 0.88,
+  "classification_report": {
+    "0": {
+      "precision": 0.9230769230769231,
+      "recall": 0.7741935483870968,
+      "f1-score": 0.8421052631578947,
+      "support": 31.0
+    },
+    "1": {
+      "precision": 0.8804347826086957,
+      "recall": 0.9529411764705882,
+      "f1-score": 0.9152542372881356,
+      "support": 85.0
+    },
+    "2": {
+      "precision": 0.7142857142857143,
+      "recall": 0.5555555555555556,
+      "f1-score": 0.625,
+      "support": 9.0
+    },
+    "accuracy": 0.88,
+    "macro avg": {
+      "precision": 0.839265806657111,
+      "recall": 0.7608967601377469,
+      "f1-score": 0.7941198334820102,
+      "support": 125.0
+    },
+    "weighted avg": {
+      "precision": 0.8790473005255613,
+      "recall": 0.88,
+      "f1-score": 0.8762149866190901,
+      "support": 125.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      24,
+      7,
+      0
+    ],
+    [
+      2,
+      81,
+      2
+    ],
+    [
+      0,
+      4,
+      5
+    ]
+  ],
+  "feature_names": [
+    "wind_speed_kph",
+    "wind_direction",
+    "wave_height_m",
+    "rainfall_mm",
+    "tide_level_m",
+    "moon_phase",
+    "visibility_km",
+    "past_incidents_nearby",
+    "location",
+    "uv_index",
+    "humidity",
+    "pressure",
+    "beaufort_scale",
+    "wind_gust_kph",
+    "cloud_cover"
+  ],
+  "location_mapping": {
+    "Batangas Bay": 0,
+    "Calatagan Coast": 1,
+    "Lubang Island": 2,
+    "Mindoro Strait": 3,
+    "Verde Island Passage": 4
+  }
+}
