@@ -122,11 +122,11 @@
         </div>
     </x-slot>
 
-    <div class="{{ $compactLayout ? 'py-4 sm:py-6' : 'py-6' }}">
-        <div class="{{ $compactLayout ? 'compact-container w-full px-3 sm:px-6 lg:px-8' : 'max-w-7xl mx-auto sm:px-6 lg:px-8' }}">
-            <div class="space-y-6">
+    <div class="{{ $compactLayout ? 'py-4 sm:py-6' : 'py-0' }}">
+        <div class="{{ $compactLayout ? 'compact-container w-full px-3 sm:px-6 lg:px-8' : 'w-full px-0 mx-auto' }}">
+            <div class="{{ $compactLayout ? 'space-y-6' : 'space-y-6 lg:space-y-8' }}">
                 <!-- Map Section -->
-                <div class="bg-white dark:bg-gray-800 shadow-xl {{ $compactLayout ? 'compact-surface rounded-none sm:rounded-2xl' : 'rounded-2xl' }} overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 {{ $compactLayout ? 'shadow-xl compact-surface rounded-none sm:rounded-2xl' : 'shadow-none rounded-none' }} overflow-hidden">
                     <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
                         <div class="flex items-center">
                             <h3 class="text-xl font-bold flex items-center">
@@ -155,7 +155,7 @@
                         </div>
                     </div>
 
-                    <div class="{{ $compactLayout ? 'relative h-[calc(100vh-160px)] md:h-[calc(100vh-140px)]' : 'relative h-96 md:h-[600px]' }}">
+                    <div class="{{ $compactLayout ? 'relative h-[calc(100vh-160px)] md:h-[calc(100vh-140px)]' : 'relative min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-8rem)]' }}">
                         <div id="fishing-map" class="w-full h-full"></div>
 
                         {{-- Removed floating My Location button from map area --}}

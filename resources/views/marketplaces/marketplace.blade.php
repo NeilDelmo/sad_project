@@ -13,8 +13,6 @@
     <title>SeaLedger Marketplace</title>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
-
         .koulen-regular {
             font-family: "Koulen", sans-serif;
             font-weight: 400;
@@ -71,7 +69,7 @@
             color: #1B5E88;
         }
 
-        /* Modern Navbar */
+        /* Modern Navbar — NOW USING DASHBOARD STYLE */
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
             padding: 15px 20px;
@@ -86,7 +84,7 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        .nav-center-group {
+        .nav-links {
             display: flex;
             gap: 10px;
         }
@@ -131,38 +129,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .nav-right-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .nav-icon-link {
-            color: white;
-            font-size: 18px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-icon-link:hover {
-            transform: scale(1.2);
-            color: #E7FAFE;
-        }
-
-        /* for bg uncomment later */
-        /* .bg-cover {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('login-photo.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            z-index: -1;
-        } */
-
-        /* center div */
+        /* Keep your original page styles */
         .center-div {
             display: flex;
             flex-direction: column;
@@ -179,7 +146,6 @@
             white-space: nowrap;
         }
 
-        /* page indicator */
         .page-indicators {
             position: fixed;
             bottom: 10px;
@@ -205,21 +171,19 @@
             opacity: 1;
             width: 40px;
         }
-
     </style>
 </head>
-<body style="background-color: #BFBFBF;"> <!-- temp - change to bg image later -->
-    
-    <!-- navbar -->
+<body style="background-color: #BFBFBF;">
+
+    <!-- NAVBAR FROM FISHERMAN DASHBOARD (slightly adjusted for marketplace context) -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <!-- logo -->
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
-                🐟 SeaLedger
-            </a>
-
-            <!-- center group -->
-            <div class="nav-center-group">
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+            <div class="nav-links">
+                @if(Auth::check())
+                <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard
+                    </a>
                 <a href="{{ route('marketplace.shop') }}" class="nav-link">
                     <i class="fa-solid fa-fire"></i> Latest
                 </a>
@@ -229,36 +193,30 @@
                 <a href="{{ route('marketplace.shop') }}" class="nav-link">
                     <i class="fa-solid fa-screwdriver-wrench"></i> Gears
                 </a>
-            </div>
-
-            <!-- right group -->
-            <div class="nav-right-group">
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                <a href="{{ route('fishing-safety.public') }}" class="nav-link">
+                    <i class="fa-solid fa-life-ring"></i> Safety Map
                 </a>
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-heart"></i>
+                <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                    <i class="fa-solid fa-store"></i> Marketplace
                 </a>
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </a>
-                @if(Auth::check())
-                    <a href="{{ route('dashboard') }}" title="Dashboard" class="nav-icon-link">
-                        <i class="fa-solid fa-user"></i>
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
                 @else
-                    <a href="{{ route('login') }}" title="Login" class="nav-icon-link">
-                        <i class="fa-solid fa-right-to-bracket"></i>
+                    <a href="{{ route('login') }}" class="nav-link">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
                     </a>
                 @endif
             </div>
         </div>
     </nav>
 
+    <!-- REST OF YOUR PAGE: 100% UNCHANGED -->
     <div class="d-flex flex-column align-items-center center-div light-blue">
-
         <div>
-            <!-- change Amber to name of user logged in -->
             <span class="font-subtitle">{{ Auth::check() ? Auth::user()->name : 'Guest' }}, ready for today's catch?</span>
             <span class="font-title">SeaLedger</span>
             <div class="d-flex gap-3 justify-content-center mt-2">
@@ -267,25 +225,17 @@
             </div>
         </div>
 
-        <!-- page indicator -->
         <div class="page-indicators gap-1">
             <span class="indicator active"></span>
             <span class="indicator"></span>
         </div>
-
     </div>
 
+    <script>
+        document.addEventListener('click', () => {
+            const indicators = document.querySelectorAll('.indicator');
+            indicators.forEach(ind => ind.classList.toggle('active'));
+        });
+    </script>
 </body>
-
-<!-- page indicator js -->
-<script>
-    
-    // toggle to active
-    document.addEventListener('click', () => {
-        const indicators = document.querySelectorAll('.indicator');
-        indicators.forEach(ind => ind.classList.toggle('active'));
-    });
-</script>
-
-
 </html>
