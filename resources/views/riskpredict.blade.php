@@ -127,23 +127,25 @@
             <div class="space-y-6">
                 <!-- Map Section -->
                 <div class="bg-white dark:bg-gray-800 shadow-xl {{ $compactLayout ? 'compact-surface rounded-none sm:rounded-2xl' : 'rounded-2xl' }} overflow-hidden">
-                    <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                        <h3 class="text-xl font-bold flex items-center">
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Interactive Safety Map
-                        </h3>
-                        <p class="text-white font-medium mt-1">Click anywhere on the map to check fishing safety conditions, hold right-click to move the map</p>
-                    </div>
-
-                    <div class="{{ $compactLayout ? 'relative h-[calc(100vh-160px)] md:h-[calc(100vh-140px)]' : 'relative h-96 md:h-[600px]' }}">
-                        <div id="fishing-map" class="w-full h-full"></div>
-
-                        @if($compactLayout)
-                        <div class="absolute top-4 left-4 z-20">
-                            <button id="current-location-btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-lg transition">
+                    <div class="p-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-between">
+                        <div class="flex items-center">
+                            <h3 class="text-xl font-bold flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Interactive Safety Map
+                            </h3>
+                            <p class="text-white font-medium mt-1 ml-4">Click anywhere on the map to check fishing safety conditions, hold right-click to move the map</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ route('fisherman.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white/95 hover:bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-200 shadow-sm transition">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                                Back to Dashboard
+                            </a>
+                            <button id="current-location-btn" class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -151,7 +153,12 @@
                                 My Location
                             </button>
                         </div>
-                        @endif
+                    </div>
+
+                    <div class="{{ $compactLayout ? 'relative h-[calc(100vh-160px)] md:h-[calc(100vh-140px)]' : 'relative h-96 md:h-[600px]' }}">
+                        <div id="fishing-map" class="w-full h-full"></div>
+
+                        {{-- Removed floating My Location button from map area --}}
 
                         <!-- Loading overlay -->
                         <div id="loading-overlay" class="absolute inset-0 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 flex items-center justify-center hidden">
