@@ -11,6 +11,7 @@ import numpy as np
 from dotenv import load_dotenv
 import traceback
 import time
+import json
 from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables from Laravel's .env file
@@ -454,7 +455,27 @@ class FishingSafetyAPI:
         typhoon_active = False
         severe_present = False
 
-        keywords = ('typhoon', 'tropical storm', 'tropical cyclone', 'hurricane', 'signal', 'storm surge')
+        typhoon_core_terms = (
+            'typhoon',
+            'tropical storm',
+            'tropical cyclone',
+            'hurricane',
+            'storm surge'
+        )
+        signal_terms = (
+            'wind signal',
+            'tropical cyclone signal',
+            'tcws',
+            'signal #',
+            'signal no.'
+        )
+        flood_terms = (
+            'flood advisory',
+            'flood warning',
+            'general flood',
+            'river flood',
+            'flash flood'
+        )
 
         for alert in alerts:
             title = (alert.get('event') or 'Weather Alert').strip()
@@ -463,7 +484,26 @@ class FishingSafetyAPI:
             sender = (alert.get('sender_name') or '').strip()
 
             combined = f"{title} {description}".lower()
-            is_typhoon = any(keyword in combined for keyword in keywords)
+            title_lower = title.lower()
+            has_typhoon_term = any(keyword in combined for keyword in typhoon_core_terms)
+            has_signal_term = any(term in combined for term in signal_terms)
+            has_flood_term = any(term in combined for term in flood_terms)
+
+            is_typhoon = False
+            if has_typhoon_term:
+                is_typhoon = True
+            elif has_signal_term and ('tropical cyclone' in combined or 'typhoon' in combined):
+                # Treat PAGASA wind signal advisories tied to tropical cyclones as typhoon alerts
+                is_typhoon = True
+
+            if is_typhoon and ('flood' in title_lower or (has_flood_term and not has_typhoon_term)):
+                # Avoid classifying standalone flood advisories as typhoon-level alerts
+                is_typhoon = False
+
+            if is_typhoon and severity not in {'watch', 'warning'}:
+                # Do not treat informational notices as typhoon-level without explicit severity
+                is_typhoon = False
+
             typhoon_active = typhoon_active or is_typhoon
 
             level = 'information'
@@ -854,24 +894,92 @@ class FishingSafetyAPI:
 
         current_level = {"Safe": 0, "Caution": 1, "Dangerous": 2}.get(current_verdict, 1)
 
-        if context.get("typhoon_alert"):
-            reasons_danger.append("Active typhoon or tropical cyclone warning issued for this area")
+        flags = context.setdefault("flags", [])
+
+        active_alerts = context.get("active_alerts", [])
+        typhoon_alert = context.get("typhoon_alert")
+        if typhoon_alert and not any(alert.get("is_typhoon") for alert in active_alerts):
+            typhoon_alert = False
+
+        if typhoon_alert:
+            reason = "Active typhoon or tropical cyclone warning issued for this area"
+            reasons_danger.append(reason)
             alerts_present = True
 
-        # Official alerts or forecasted extreme conditions should escalate to Dangerous
+        dangerous_alerts = []
+        caution_alerts = []
+
+        severe_watch_keywords = (
+            "signal",
+            "storm surge",
+            "tropical storm",
+            "tropical cyclone",
+            "typhoon",
+            "hurricane"
+        )
+
+        for alert in active_alerts:
+            severity = (alert.get("severity") or "information").lower()
+            title = (alert.get("title") or "").strip()
+            normalized_title = title.lower()
+
+            is_moderate_flood = "flood" in normalized_title and "moderate" in normalized_title
+            is_heavy_flood = "flood" in normalized_title and any(word in normalized_title for word in ("severe", "major", "heavy"))
+
+            if alert.get("is_typhoon"):
+                dangerous_alerts.append(alert)
+                continue
+
+            if severity == "warning":
+                if is_moderate_flood and not is_heavy_flood:
+                    caution_alerts.append(alert)
+                else:
+                    dangerous_alerts.append(alert)
+                continue
+
+            if severity == "watch":
+                if any(keyword in normalized_title for keyword in severe_watch_keywords):
+                    dangerous_alerts.append(alert)
+                else:
+                    caution_alerts.append(alert)
+                continue
+
+            caution_alerts.append(alert)
+
+        alert_should_escalate = False
         if alerts_present:
-            reasons_danger.append("Weather service issued an active alert for this area")
+            if typhoon_alert or dangerous_alerts:
+                alert_should_escalate = True
+            elif max_forecast_wind >= 45 or max_forecast_gust >= 60 or max_forecast_rain >= 20 or severe_windows >= 1:
+                alert_should_escalate = True
+            elif weather_main in {"thunderstorm", "tornado", "squall", "extreme"}:
+                alert_should_escalate = True
+
+            if alert_should_escalate:
+                reasons_danger.append("Weather service issued an active severe alert for this area")
+            elif caution_alerts:
+                has_flood_advisory = any("flood" in (alert.get("title") or "").lower() for alert in caution_alerts)
+                if has_flood_advisory:
+                    reasons_caution.append("Moderate flood advisory in effect – expect localized flooding near shore")
+                else:
+                    reasons_caution.append("Official weather alert in effect – monitor conditions closely")
+            else:
+                reasons_caution.append("Official weather alert in effect – monitor conditions closely")
+
+        if severe_windows >= 1 and not alert_should_escalate:
+            reasons_danger.append("Thunderstorm or extreme weather expected in the next 6 hours")
+        if weather_main in {"thunderstorm", "tornado", "squall", "extreme"} and not alert_should_escalate:
+            reasons_danger.append(f"Severe weather detected ({weather_main.title()})")
+
         if max_forecast_wind >= 60 or max_forecast_gust >= 70:
             reasons_danger.append("Forecast wind/gust exceeds 60 kph within the next few hours")
-        if severe_windows >= 1:
-            reasons_danger.append("Thunderstorm or extreme weather expected in the next 6 hours")
-        if weather_main in {"thunderstorm", "tornado", "squall", "extreme"}:
-            reasons_danger.append(f"Severe weather detected ({weather_main.title()})")
         if max_forecast_rain >= 30:
             reasons_danger.append("Forecast rainfall exceeds 30mm soon")
 
         if reasons_danger and current_level < 2:
-            context.setdefault("flags", []).extend(reasons_danger)
+            for reason in reasons_danger:
+                if reason not in flags:
+                    flags.append(reason)
             return {
                 "verdict": "Dangerous",
                 "risk_level": 2,
@@ -892,7 +1000,9 @@ class FishingSafetyAPI:
             reasons_caution.append(f"Storm conditions reported ({weather_description})")
 
         if reasons_caution and current_level == 0:
-            context.setdefault("flags", []).extend(reasons_caution)
+            for reason in reasons_caution:
+                if reason not in flags:
+                    flags.append(reason)
             return {
                 "verdict": "Caution",
                 "risk_level": 1,
@@ -901,7 +1011,9 @@ class FishingSafetyAPI:
             }
 
         if reasons_caution:
-            context.setdefault("flags", []).extend(reasons_caution)
+            for reason in reasons_caution:
+                if reason not in flags:
+                    flags.append(reason)
 
         return None
 
@@ -991,6 +1103,40 @@ class FishingSafetyAPI:
                     recommendations.append(f"📍 Nearby risk area: {area['name']} ({area['distance_km']}km away) - {area['incidents']} reported incidents")
         
         return recommendations
+
+    def record_prediction_debug(self, lat, lon, is_marine, features, env_context, prediction, extra_data):
+        """Persist a concise debug snapshot for later inspection."""
+        try:
+            log_payload = {
+                "timestamp": datetime.now().isoformat(),
+                "lat": round(float(lat), 5),
+                "lon": round(float(lon), 5),
+                "is_marine": bool(is_marine),
+                "verdict": prediction.get("verdict"),
+                "risk_level": prediction.get("risk_level"),
+                "confidence": round(float(prediction.get("confidence", 0)), 3),
+                "wind_speed_kph": round(float(features.get("wind_speed_kph", 0)), 2),
+                "wave_height_m": round(float(features.get("wave_height_m", 0)), 2),
+                "rainfall_mm": round(float(features.get("rainfall_mm", 0)), 2),
+                "visibility_km": round(float(features.get("visibility_km", 0)), 2),
+                "past_incidents_nearby": round(float(features.get("past_incidents_nearby", 0)), 2),
+                "override_reasons": prediction.get("override_reasons", []),
+                "env_flags": env_context.get("flags", []),
+                "max_hourly_wind_kph": round(float(env_context.get("max_hourly_wind_kph", 0)), 2),
+                "max_hourly_gust_kph": round(float(env_context.get("max_hourly_gust_kph", 0)), 2),
+                "max_hourly_rain_mm": round(float(env_context.get("max_hourly_rain_mm", 0)), 2),
+                "alerts_present": bool(env_context.get("alerts_present", False)),
+                "alert_titles": [
+                    alert.get("title")
+                    for alert in extra_data.get('alert_summary', {}).get('alerts', [])
+                ],
+            }
+
+            log_path = os.path.join(BASE_DIR, "predict_log.txt")
+            with open(log_path, "a", encoding="utf-8") as log_file:
+                log_file.write(json.dumps(log_payload, ensure_ascii=True) + "\n")
+        except Exception as exc:
+            print(f"⚠️ Failed to write debug log: {exc}")
 
 # Initialize the API
 fishing_api = FishingSafetyAPI()
@@ -1087,6 +1233,16 @@ def check_fishing_safety():
             "is_marine_location": bool(is_marine)
         }
         
+        fishing_api.record_prediction_debug(
+            lat,
+            lon,
+            is_marine,
+            features,
+            env_context,
+            prediction,
+            extra_data
+        )
+
         print(f"✅ Safety assessment complete: {prediction['verdict']}")
         return jsonify(response)
     except ValueError as e:
