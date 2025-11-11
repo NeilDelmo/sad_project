@@ -1,4 +1,3 @@
-
 <style>
     body {
         background-color: #0b1d3a;

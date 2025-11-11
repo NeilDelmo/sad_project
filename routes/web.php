@@ -4,6 +4,7 @@ use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiskPredictionController; 
+use App\Http\Controllers\ForumController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -80,6 +81,16 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     
     // Message Inbox
     Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
+});
+
+// Forum routes (requires authentication)
+Route::middleware('auth')->group(function () {
+    Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
+    Route::get('/forums/category/{id}', [ForumController::class, 'showCategory'])->name('forums.category');
+    Route::get('/forums/thread/{id}', [ForumController::class, 'showThread'])->name('forums.thread');
+    Route::post('/forums/category/{category_id}/thread', [ForumController::class, 'storeThread'])->name('forums.thread.store');
+    Route::post('/forums/thread/{thread_id}/reply', [ForumController::class, 'storeReply'])->name('forums.reply.store');
+    Route::post('/forums/upload-image', [ForumController::class, 'uploadImage'])->name('forums.upload-image');
 });
 
 // Fishing Safety API routes (proxies to Flask)

@@ -221,7 +221,7 @@
             <span class="font-title">SeaLedger</span>
             <div class="d-flex gap-3 justify-content-center mt-2">
                 <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Marketplace</a>
-                <a href="#" class="btn btn-text btn-size rounded-pill dark-blue" style="background-color: #E7FAFE; border: 2px solid #0075B5;">Community Forum</a>
+                <a href="{{ route('forums.index') }}" class="btn btn-text btn-size rounded-pill dark-blue" style="background-color: #E7FAFE; border: 2px solid #0075B5;">Community Forum</a>
             </div>
         </div>
 

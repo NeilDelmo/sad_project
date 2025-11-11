@@ -4,6 +4,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const forumContent = document.getElementById('forum-content');
+    
+    console.log('Forum script loaded. forumContent:', forumContent);
+    console.log('Category links found:', document.querySelectorAll('.category-link').length);
 
     // 🧠 Utility: initialize TinyMCE if textarea exists
     function initTinyMCE() {
@@ -88,7 +91,41 @@ function uploadHandler(blobInfo, success, failure) {
     xhr.send(formData);
 }
 
-    // 🧭 Load a category
+    // 🗂️ Load category from initial page (category links on index)
+    document.querySelectorAll('.category-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Category link clicked, preventing default');
+            const categoryId = link.dataset.categoryId;
+            console.log('Loading category ID:', categoryId);
+            
+            if (!categoryId) {
+                console.error('No category ID found');
+                return;
+            }
+            
+            fetch(`/forums/category/${categoryId}`)
+                .then(res => {
+                    console.log('Fetch response:', res);
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.text();
+                })
+                .then(html => {
+                    console.log('HTML received, length:', html.length);
+                    forumContent.innerHTML = html;
+                    initTinyMCE(); // ✅ Initialize TinyMCE for new-thread form
+                })
+                .catch(err => {
+                    console.error('Category load error:', err);
+                    showNotification('Failed to load category: ' + err.message, 'error');
+                });
+        });
+    });
+
+    // 🧭 Load a category (from forum-card elements)
     document.querySelectorAll('.forum-card').forEach(card => {
         card.addEventListener('click', () => {
             const categoryId = card.dataset.category;
