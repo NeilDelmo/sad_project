@@ -50,7 +50,7 @@ class VendorOnboardingController extends Controller
         $user = Auth::user();
         $prefs = $user->vendorPreference;
 
-        $query = Product::with(['category','supplier'])->orderByDesc('created_at');
+        $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])->orderByDesc('created_at');
 
         if ($prefs && $prefs->notify_on === 'matching') {
             if (!empty($prefs->preferred_categories)) {

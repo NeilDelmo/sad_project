@@ -52,4 +52,37 @@ class Product extends Model implements AuditableConract
             ->where('status', 'active')
             ->latest('listing_date');
     }
+
+    /**
+     * Compute freshness level dynamically based on active listing age.
+     */
+    public function computeFreshnessLevel(): ?string
+    {
+        $listing = $this->activeMarketplaceListing()->first();
+        if (!$listing || !$listing->listing_date) {
+            return null;
+        }
+        $minutes = $listing->listing_date->diffInMinutes();
+        $thresholds = config('fish.freshness_threshold_minutes', []);
+        foreach ($thresholds as $level => $maxMinutes) {
+            if ($minutes <= $maxMinutes) {
+                return $level;
+            }
+        }
+        return 'Spoiled';
+    }
+
+    public function getFreshnessLevelAttribute(): ?string
+    {
+        return $this->computeFreshnessLevel();
+    }
+
+    public function getTimeOnMarketAttribute(): ?string
+    {
+        $listing = $this->activeMarketplaceListing()->first();
+        if (!$listing || !$listing->listing_date) {
+            return null;
+        }
+        return $listing->listing_date->diffForHumans(now(), true);
+    }
 }

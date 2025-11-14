@@ -20,7 +20,9 @@ return new class extends Migration
             $table->decimal('demand_factor', 5, 2)->nullable();
             $table->integer('freshness_score')->nullable();
             $table->timestamp('listing_date')->useCurrent();
-            $table->enum('status', ['active', 'sold', 'expired'])->default('active');
+            $table->timestamp('unlisted_at')->nullable()->index();
+            $table->enum('status', ['active', 'sold', 'expired', 'inactive'])->default('active');
+            $table->string('freshness_level', 20)->nullable()->index();
             $table->timestamps();
 
             // Indexes

@@ -32,9 +32,10 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        .nav-center-group {
+        .nav-links {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
         .nav-link {
@@ -75,24 +76,6 @@
             color: white;
             font-weight: 600;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .nav-right-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .nav-icon-link {
-            color: white;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .nav-icon-link:hover {
-            transform: scale(1.2);
-            color: #E7FAFE;
         }
 
         .products-grid {
@@ -257,16 +240,11 @@
 
 <body>
 
-    <!-- Simple Navbar -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <!-- logo -->
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
-                🐟 SeaLedger
-            </a>
-
-            <!-- center group -->
-            <div class="nav-center-group">
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+            <div class="nav-links">
                 <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
                     <i class="fa-solid fa-fire"></i> Latest
                 </a>
@@ -276,31 +254,34 @@
                 <a href="{{ route('marketplace.shop', ['filter' => 'gear']) }}" class="nav-link {{ (isset($filter) && $filter == 'gear') ? 'active' : '' }}">
                     <i class="fa-solid fa-screwdriver-wrench"></i> Gears
                 </a>
-            </div>
-
-            <!-- right group -->
-            <div class="nav-right-group">
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </a>
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-heart"></i>
-                </a>
-                <a href="#" class="nav-icon-link">
-                    <i class="fa-solid fa-cart-shopping"></i>
+                <a href="#" class="nav-link" onclick="document.getElementById('searchInput').focus(); return false;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
                 </a>
                 @if(Auth::check())
-                    <a href="{{ route('dashboard') }}" title="Dashboard" class="nav-icon-link">
-                        <i class="fa-solid fa-user"></i>
+                    <a href="{{ route('dashboard') }}" class="nav-link">
+                        <i class="fa-solid fa-gauge-high"></i> Dashboard
                     </a>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
                 @else
-                    <a href="{{ route('login') }}" title="Login" class="nav-icon-link">
-                        <i class="fa-solid fa-right-to-bracket"></i>
+                    <a href="{{ route('login') }}" class="nav-link">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
                     </a>
                 @endif
             </div>
         </div>
     </nav>
+
+    <!-- Search Bar -->
+    <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-center">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search for fish, gear, sellers..." style="max-width: 600px; border-radius: 25px; padding: 10px 20px;">
+        </div>
+    </div>
 
     <!-- Fresh Fish Section -->
     @if(!isset($filter) || $filter == 'all' || $filter == 'fish')

@@ -20,10 +20,25 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($products as $product)
         <div class="border rounded p-4">
-            <div class="font-semibold text-lg">{{ $product->name }}</div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="font-semibold text-lg">{{ $product->name }}</div>
+                <x-freshness-badge :product="$product" class="ms-2" />
+            </div>
             <div class="text-sm text-gray-600">Category: {{ $product->category->name ?? '—' }}</div>
             <div class="mt-2 text-sm">Qty: <strong>{{ $product->available_quantity }}</strong> • Price: <strong>{{ $product->unit_price }}</strong></div>
-            <div class="text-xs text-gray-500 mt-1">By: {{ $product->supplier->username ?? ('User #'.$product->supplier_id) }}</div>
+            <div class="d-flex align-items-center gap-2 mt-2">
+                <span class="text-xs text-gray-500">By: {{ $product->supplier->username ?? ('User #'.$product->supplier_id) }}</span>
+                @if($product->supplier)
+                    <x-presence-badge :user="$product->supplier" class="badge-sm" />
+                @endif
+            </div>
+            @if($product->freshness_level === 'Stale' || $product->freshness_level === 'Spoiled')
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-danger w-100">
+                        <i class="fas fa-trash"></i> Remove Listing
+                    </button>
+                </div>
+            @endif
         </div>
         @empty
             <div class="col-span-full text-gray-600">No listings yet.</div>

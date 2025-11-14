@@ -30,6 +30,8 @@ class User extends Authenticatable implements AuditableConract
         'user_type',
         'status',
         'email_verified_at',
+        'last_seen_at',
+        'is_active',
     ];
 
     /**
@@ -53,6 +55,8 @@ class User extends Authenticatable implements AuditableConract
             'registration_date' => 'datetime',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -63,5 +67,18 @@ class User extends Authenticatable implements AuditableConract
     public function vendorPreference()
     {
         return $this->hasOne(VendorPreference::class, 'user_id');
+    }
+
+    public function isOnline(): bool {
+        if(!$this->is_active || !$this->last_seen_at) return false;
+        return $this->last_seen_at->gte(now()->subMinutes(config('presence.window_minutes',5)));
+    }
+    public function getIsOnlineAttribute(): bool { return $this->isOnline(); }
+    public function getLastSeenDiffAttribute(): ?string {
+        return $this->last_seen_at ? $this->last_seen_at->diffForHumans() : null;
+    }
+    public function scopeOnline($q) {
+        return $q->where('is_active', true)
+             ->where('last_seen_at', '>=', now()->subMinutes(config('presence.window_minutes',5)));
     }
 }
