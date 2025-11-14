@@ -1,16 +1,17 @@
 {
-  "mae": 0.07855446635689653,
-  "mse": 0.009663927741790226,
-  "rmse": 0.09830527830076179,
-  "r2_score": 0.7176509257506618,
+  "model_type": "GradientBoostingRegressor",
+  "mae": 0.04381177034850849,
+  "mse": 0.0030150996342100038,
+  "rmse": 0.05490992291207486,
+  "r2_score": 0.9119084275840199,
   "feature_importance": {
-    "freshness_score": 0.14212668121273572,
-    "available_quantity": 0.09744136748275951,
-    "demand_factor": 0.48056397297939785,
-    "seasonality_factor": 0.2259494033342183,
-    "time_of_day": 0.0025176119198908747,
-    "vendor_rating": 0.050429365077972785,
-    "category_id": 0.0009715979930248087
+    "freshness_score": 0.1360624407257533,
+    "available_quantity": 0.10344285563484093,
+    "demand_factor": 0.44808145846727504,
+    "seasonality_factor": 0.20741052473773472,
+    "time_of_day": 0.04578573306723247,
+    "vendor_rating": 0.057873470749804375,
+    "category_id": 0.0013435166173591786
   },
   "n_train": 3750,
   "n_test": 1250

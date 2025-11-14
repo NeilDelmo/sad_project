@@ -14,8 +14,16 @@ return new class extends Migration
         Schema::create('marketplace_listings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('seller_id')->constrained('users')->onDelete('cascade');
-            $table->decimal('asking_price', 10, 2);
+            $table->foreignId('vendor_inventory_id')->nullable()->constrained('vendor_inventory')->onDelete('cascade');
+            $table->foreignId('seller_id')->constrained('users')->onDelete('cascade'); // Vendor who lists
+            $table->decimal('base_price', 10, 2); // Fisherman's cost
+            $table->decimal('ml_multiplier', 5, 2)->default(1.0); // AI multiplier
+            $table->decimal('dynamic_price', 10, 2); // base_price * ml_multiplier
+            $table->decimal('platform_fee', 10, 2); // 10% of dynamic_price
+            $table->decimal('vendor_profit', 10, 2); // dynamic_price - base_price - platform_fee
+            $table->decimal('final_price', 10, 2); // Price shown to buyers (= dynamic_price)
+            $table->decimal('ml_confidence', 5, 4)->nullable(); // ML model confidence
+            $table->decimal('asking_price', 10, 2); // Legacy field, keep for compatibility
             $table->decimal('suggested_price', 10, 2)->nullable();
             $table->decimal('demand_factor', 5, 2)->nullable();
             $table->integer('freshness_score')->nullable();

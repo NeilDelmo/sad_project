@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiskPredictionController; 
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\RentalController;
+use App\Http\Controllers\VendorInventoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -97,6 +98,15 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
 
     Route::get('/dashboard', [VendorOnboardingController::class, 'dashboard'])->name('dashboard');
+    
+    // Vendor Inventory Management
+    Route::get('/inventory', [VendorInventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory/{inventory}', [VendorInventoryController::class, 'show'])->name('inventory.show');
+    Route::post('/inventory/{product}/purchase', [VendorInventoryController::class, 'purchase'])->name('inventory.purchase');
+    
+    // Marketplace Listing Creation (ML Pricing)
+    Route::get('/inventory/{inventory}/create-listing', [VendorInventoryController::class, 'createListing'])->name('inventory.create-listing');
+    Route::post('/inventory/{inventory}/list', [VendorInventoryController::class, 'storeListing'])->name('inventory.store-listing');
 });
 
 // Forum routes (requires authentication)

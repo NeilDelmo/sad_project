@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Log;
 class PricingService
 {
     /**
-     * Path to the Python pricing prediction script
+     * Path to the Python pricing prediction script (Docker path)
      */
-    private const PYTHON_SCRIPT = '/home/neil/projects/sad_project/python/predict_price.py';
+    private const PYTHON_SCRIPT = '/var/www/html/python/predict_price.py';
+    private const PYTHON_CMD = 'python3';
     
     /**
      * Calculate dynamic price for a product using ML model.
@@ -130,7 +131,8 @@ class PricingService
     {
         // Prepare command with feature values
         $command = sprintf(
-            'python3 %s %s %d %s %s %d %s %d 2>&1',
+            '%s %s %s %d %s %s %d %s %d 2>&1',
+            self::PYTHON_CMD,
             escapeshellarg(self::PYTHON_SCRIPT),
             escapeshellarg($features['freshness_score']),
             (int) $features['available_quantity'],
@@ -154,10 +156,12 @@ class PricingService
             return ['multiplier' => 1.0, 'confidence' => 0.0];
         }
         
-        $result = json_decode(implode("\n", $output), true);
+        // Get the last line (JSON result) - warnings may appear in earlier lines
+        $jsonOutput = end($output);
+        $result = json_decode($jsonOutput, true);
         
         if (!$result || !isset($result['multiplier'])) {
-            Log::warning('Invalid pricing model output', ['output' => $output]);
+            Log::warning('Invalid pricing model output', ['output' => $output, 'json' => $jsonOutput]);
             return ['multiplier' => 1.0, 'confidence' => 0.0];
         }
         

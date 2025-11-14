@@ -12,7 +12,15 @@ class MarketplaceListing extends Model
 
     protected $fillable = [
         'product_id',
+        'vendor_inventory_id',
         'seller_id',
+        'base_price',
+        'ml_multiplier',
+        'dynamic_price',
+        'platform_fee',
+        'vendor_profit',
+        'final_price',
+        'ml_confidence',
         'asking_price',
         'suggested_price',
         'demand_factor',
@@ -26,6 +34,13 @@ class MarketplaceListing extends Model
     protected function casts(): array
     {
         return [
+            'base_price' => 'decimal:2',
+            'ml_multiplier' => 'decimal:2',
+            'dynamic_price' => 'decimal:2',
+            'platform_fee' => 'decimal:2',
+            'vendor_profit' => 'decimal:2',
+            'final_price' => 'decimal:2',
+            'ml_confidence' => 'decimal:4',
             'asking_price' => 'decimal:2',
             'suggested_price' => 'decimal:2',
             'demand_factor' => 'decimal:2',
@@ -49,6 +64,14 @@ class MarketplaceListing extends Model
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    /**
+     * Get the vendor inventory item.
+     */
+    public function vendorInventory(): BelongsTo
+    {
+        return $this->belongsTo(VendorInventory::class);
     }
 
     /**

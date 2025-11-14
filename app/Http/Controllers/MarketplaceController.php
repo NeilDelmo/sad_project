@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\MarketplaceListing;
 use Illuminate\Http\Request;
 
 class MarketplaceController extends Controller
@@ -15,14 +16,15 @@ class MarketplaceController extends Controller
 
     public function shop(Request $request)
     {
-        // Only show fish products
-        $fishProducts = Product::with(['supplier', 'category', 'activeMarketplaceListing'])
-            ->whereHas('category', function($q) {
+        // Show only active marketplace listings (vendor-created with ML pricing)
+        $listings = MarketplaceListing::with(['product', 'product.category', 'seller', 'vendorInventory'])
+            ->active()
+            ->whereHas('product.category', function($q) {
                 $q->where('name', 'Fish');
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('listing_date', 'desc')
             ->get();
 
-        return view('marketplaces.marketplacemain', compact('fishProducts'));
+        return view('marketplaces.marketplacemain', compact('listings'));
     }
 }

@@ -17,7 +17,7 @@ from typing import Dict, Tuple
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
@@ -89,7 +89,7 @@ def generate_synthetic_dataset(n_samples: int = 5000) -> pd.DataFrame:
     return df
 
 
-def train_model(df: pd.DataFrame) -> Tuple[DecisionTreeRegressor, Dict]:
+def train_model(df: pd.DataFrame) -> Tuple[GradientBoostingRegressor, Dict]:
     """Train the pricing model and return metrics."""
     X = df[MODEL_FEATURES]
     y = df["optimal_price_multiplier"]
@@ -98,10 +98,13 @@ def train_model(df: pd.DataFrame) -> Tuple[DecisionTreeRegressor, Dict]:
         X, y, test_size=0.25, random_state=42
     )
     
-    model = DecisionTreeRegressor(
-        max_depth=8,
+    model = GradientBoostingRegressor(
+        n_estimators=100,
+        max_depth=5,
+        learning_rate=0.1,
         min_samples_split=10,
         min_samples_leaf=4,
+        subsample=0.8,
         random_state=42,
     )
     
@@ -119,6 +122,7 @@ def train_model(df: pd.DataFrame) -> Tuple[DecisionTreeRegressor, Dict]:
     feature_importance = dict(zip(MODEL_FEATURES, model.feature_importances_.tolist()))
     
     metrics = {
+        "model_type": "GradientBoostingRegressor",
         "mae": float(mae),
         "mse": float(mse),
         "rmse": float(rmse),
@@ -139,7 +143,7 @@ def main() -> None:
     df.to_csv(DATASET_PATH, index=False)
     print(f"💾 Dataset saved to {DATASET_PATH}")
     
-    print("🤖 Training Decision Tree pricing model...")
+    print("🤖 Training Gradient Boosting pricing model...")
     model, metrics = train_model(df)
     
     # Save model
