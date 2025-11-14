@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\User;
+use App\Notifications\NewCatchAvailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -59,7 +61,39 @@ class ProductController extends Controller
             $validated['image_path'] = 'images/products/' . $imageName;
         }
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        // Notify vendors based on their preferences
+        try {
+            $vendors = User::where('user_type', 'vendor')
+                ->with('vendorPreference')
+                ->get();
+
+            foreach ($vendors as $vendor) {
+                $prefs = $vendor->vendorPreference;
+                if (!$prefs) { continue; }
+
+                $matches = $prefs->notify_on === 'all';
+                if (!$matches) {
+                    $matches = true;
+                    if (!empty($prefs->preferred_categories) && !in_array($product->category_id, $prefs->preferred_categories)) {
+                        $matches = false;
+                    }
+                    if ($matches && !is_null($prefs->min_quantity) && $product->available_quantity < $prefs->min_quantity) {
+                        $matches = false;
+                    }
+                    if ($matches && !is_null($prefs->max_unit_price) && $product->unit_price > $prefs->max_unit_price) {
+                        $matches = false;
+                    }
+                }
+
+                if ($matches) {
+                    $vendor->notify(new NewCatchAvailable($product));
+                }
+            }
+        } catch (\Throwable $e) {
+            // Swallow notification errors to not block product creation
+        }
 
         return redirect()->route('fisherman.products.index')
             ->with('success', 'Product added successfully!');

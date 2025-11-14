@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
 use App\Http\Controllers\FishingSafetyController;
+use App\Http\Controllers\VendorOnboardingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 
@@ -34,6 +36,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read.all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 });
 
 require __DIR__.'/auth.php';
@@ -81,6 +88,14 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     
     // Message Inbox
     Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
+});
+
+// Vendor routes (requires authentication)
+Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.')->group(function () {
+    Route::get('/onboarding', [VendorOnboardingController::class, 'show'])->withoutMiddleware('vendor.onboarded')->name('onboarding');
+    Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
+
+    Route::get('/dashboard', [VendorOnboardingController::class, 'dashboard'])->name('dashboard');
 });
 
 // Forum routes (requires authentication)

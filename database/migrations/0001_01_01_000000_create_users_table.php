@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
-            $table->enum('user_type', ['fisherman', 'buyer', 'regulator', 'admin']);
+            $table->enum('user_type', ['fisherman', 'vendor', 'buyer', 'regulator', 'admin']);
             $table->timestamp('registration_date')->useCurrent();
             $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
             

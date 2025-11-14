@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\FishermanProfile;
+use App\Models\VendorPreference;
 
 class User extends Authenticatable implements AuditableConract
 {
@@ -57,5 +58,10 @@ class User extends Authenticatable implements AuditableConract
 
     public function fishermanProfile() {
         return $this->hasOne(FishermanProfile::class, 'user_id');
+    }
+
+    public function vendorPreference()
+    {
+        return $this->hasOne(VendorPreference::class, 'user_id');
     }
 }

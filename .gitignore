@@ -23,6 +23,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /python/venv
+# Local Python virtualenvs at repo root (keep only python/venv)
+/.venv
+/venv
 *Zone.Identifier
 __pycache__/
 *.pyc

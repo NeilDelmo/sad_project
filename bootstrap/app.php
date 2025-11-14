@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             FrameworkVerifyCsrfToken::class,
             AppVerifyCsrfToken::class
         );
+
+        // Route middleware aliases
+        $middleware->alias([
+            'vendor.onboarded' => \App\Http\Middleware\EnsureVendorOnboarded::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

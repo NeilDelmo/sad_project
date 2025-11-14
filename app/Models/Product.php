@@ -34,4 +34,22 @@ class Product extends Model implements AuditableConract
     public function category(): BelongsTo{
         return $this->belongsTo(ProductCategory::class, 'category_id', 'id');
     }
+
+    /**
+     * Get the marketplace listings for this product.
+     */
+    public function marketplaceListings()
+    {
+        return $this->hasMany(\App\Models\MarketplaceListing::class, 'product_id');
+    }
+
+    /**
+     * Get active marketplace listing for this product.
+     */
+    public function activeMarketplaceListing()
+    {
+        return $this->hasOne(\App\Models\MarketplaceListing::class, 'product_id')
+            ->where('status', 'active')
+            ->latest('listing_date');
+    }
 }
