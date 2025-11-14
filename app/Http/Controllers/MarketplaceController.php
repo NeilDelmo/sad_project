@@ -17,7 +17,7 @@ class MarketplaceController extends Controller
     public function shop(Request $request)
     {
         // Show only active marketplace listings (vendor-created with ML pricing)
-        $listings = MarketplaceListing::with(['product', 'product.category', 'seller', 'vendorInventory'])
+        $fishProducts = MarketplaceListing::with(['product', 'product.category', 'seller', 'vendorInventory'])
             ->active()
             ->whereHas('product.category', function($q) {
                 $q->where('name', 'Fish');
@@ -25,6 +25,6 @@ class MarketplaceController extends Controller
             ->orderBy('listing_date', 'desc')
             ->get();
 
-        return view('marketplaces.marketplacemain', compact('listings'));
+        return view('marketplaces.marketplacemain', compact('fishProducts'));
     }
 }

@@ -255,7 +255,8 @@
     @if(!isset($filter) || $filter == 'all' || $filter == 'fish')
     <div class="section-title" id="fish-section">Fresh Fish</div>
     <div class="products-grid">
-        @forelse($fishProducts as $product)
+        @forelse($fishProducts as $listing)
+        @php $product = $listing->product ?? $listing @endphp
         <div class="product-card">
             <div class="product-image">
                 @if($product->image_path)
@@ -265,7 +266,12 @@
                 @endif
             </div>
             <div class="product-title">{{ $product->name }}</div>
-            <div class="product-price">₱{{ number_format($product->unit_price, 2) }}/kg</div>
+            <div class="product-price">
+                ₱{{ number_format($listing->final_price ?? $product->unit_price, 2) }}/kg
+                @if(isset($listing->ml_multiplier) && $listing->ml_multiplier > 1)
+                    <span style="font-size: 11px; color: #0075B5; margin-left: 5px;">🤖 AI Priced</span>
+                @endif
+            </div>
             <div class="product-info">
                 {{ $product->description ?? 'Fresh catch' }}
             </div>
@@ -274,16 +280,22 @@
                 🌟 {{ $product->freshness_metric }}
             </div>
             @endif
-            <div class="product-info" style="font-size: 12px; color: #999;">
-                Posted {{ $product->created_at->diffForHumans() }}
+            @if(isset($listing->freshness_score))
+            <div class="product-info" style="color: #28a745; font-size: 12px;">
+                Freshness: {{ round($listing->freshness_score) }}/100
             </div>
-            @if($product->supplier && $product->supplier->phone)
-            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $product->supplier->phone }}">
-                📞 {{ $product->supplier->phone }} (Click to copy)
+            @endif
+            <div class="product-info" style="font-size: 12px; color: #999;">
+                Posted {{ ($listing->listing_date ?? $product->created_at)->diffForHumans() }}
+            </div>
+            @php $seller = $listing->seller ?? $product->supplier @endphp
+            @if($seller && $seller->phone)
+            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $seller->phone }}">
+                📞 {{ $seller->phone }} (Click to copy)
             </div>
             @endif
             @auth
-                @if($product->supplier_id === auth()->id())
+                @if(($listing->seller_id ?? $product->supplier_id) === auth()->id())
                     <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
                 @else
                     <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
