@@ -5,6 +5,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RiskPredictionController; 
 use App\Http\Controllers\ForumController;
+use App\Http\Controllers\RentalController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -106,6 +107,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/forums/category/{category_id}/thread', [ForumController::class, 'storeThread'])->name('forums.thread.store');
     Route::post('/forums/thread/{thread_id}/reply', [ForumController::class, 'storeReply'])->name('forums.reply.store');
     Route::post('/forums/upload-image', [ForumController::class, 'uploadImage'])->name('forums.upload-image');
+});
+
+// Rental routes (requires authentication for rentals, public for browsing)
+Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
+Route::get('/rentals/{product}', [RentalController::class, 'show'])->name('rentals.show');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/rentals/create', [RentalController::class, 'create'])->name('rentals.create');
+    Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
+    Route::get('/my-rentals', [RentalController::class, 'myRentals'])->name('rentals.myrentals');
+    Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel');
 });
 
 // Fishing Safety API routes (proxies to Flask)

@@ -25,6 +25,18 @@ class Product extends Model implements AuditableConract
         'available_quantity',
         'seasonality_factor',
         'quality_rating',
+        'is_rentable',
+        'rental_price_per_day',
+        'rental_stock',
+        'rental_available',
+        'rental_condition',
+    ];
+
+    protected $casts = [
+        'is_rentable' => 'boolean',
+        'rental_price_per_day' => 'decimal:2',
+        'rental_stock' => 'integer',
+        'rental_available' => 'integer',
     ];
 
     public function supplier(): BelongsTo{
@@ -51,6 +63,14 @@ class Product extends Model implements AuditableConract
         return $this->hasOne(\App\Models\MarketplaceListing::class, 'product_id')
             ->where('status', 'active')
             ->latest('listing_date');
+    }
+
+    /**
+     * Get rental items for this product.
+     */
+    public function rentalItems()
+    {
+        return $this->hasMany(\App\Models\RentalItem::class, 'product_id');
     }
 
     /**

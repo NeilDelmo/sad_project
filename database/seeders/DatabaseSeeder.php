@@ -104,6 +104,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MarketplaceSeeder::class,
             ForumCategorySeeder::class,
+            GearRentalSeeder::class,
         ]);
     }
 }

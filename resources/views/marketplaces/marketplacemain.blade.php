@@ -157,35 +157,6 @@
             padding-bottom: 5px;
         }
 
-        .gear-contact {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            margin: 10px 20px;
-            background: #E7FAFE;
-            padding: 10px;
-            border-radius: 6px;
-        }
-
-        .contact-btn {
-            width: 100%;
-            padding: 8px 12px;
-            background: #1B5E88;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 8px;
-            transition: background 0.2s;
-        }
-
-        .contact-btn:hover {
-            background: #0075B5;
-            transform: translateY(-1px);
-        }
-
         .time-posted {
             font-size: 12px;
             color: #999;
@@ -251,9 +222,6 @@
                 <a href="{{ route('marketplace.shop', ['filter' => 'fish']) }}" class="nav-link {{ (isset($filter) && $filter == 'fish') ? 'active' : '' }}">
                     <i class="fa-solid fa-fish"></i> Fish
                 </a>
-                <a href="{{ route('marketplace.shop', ['filter' => 'gear']) }}" class="nav-link {{ (isset($filter) && $filter == 'gear') ? 'active' : '' }}">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Gears
-                </a>
                 <a href="#" class="nav-link" onclick="document.getElementById('searchInput').focus(); return false;">
                     <i class="fa-solid fa-magnifying-glass"></i> Search
                 </a>
@@ -279,7 +247,7 @@
     <!-- Search Bar -->
     <div class="container-fluid mt-3">
         <div class="d-flex justify-content-center">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search for fish, gear, sellers..." style="max-width: 600px; border-radius: 25px; padding: 10px 20px;">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search for fish, sellers..." style="max-width: 600px; border-radius: 25px; padding: 10px 20px;">
         </div>
     </div>
 
@@ -331,39 +299,6 @@
             <i class="fa-solid fa-fish fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
             <p style="font-size: 18px; margin: 0;">No fish products available at the moment</p>
             <p style="font-size: 14px; color: #999; margin-top: 5px;">Check back soon for fresh catches!</p>
-        </div>
-        @endforelse
-    </div>
-    @endif
-
-    <!-- Fishing Gear Section -->
-    @if(!isset($filter) || $filter == 'all' || $filter == 'gear')
-    <div class="section-title" id="gear-section">Fishing Gear & Equipment</div>
-    <div class="gear-contact" onclick="copyOrgContact(this)" style="cursor: pointer;">
-        Contact Equipment Manager: 📞 0916-777-8888 (Click to copy)
-    </div>
-    <div class="products-grid">
-        @forelse($gearProducts as $product)
-        <div class="product-card">
-            <div class="product-image">
-                <i class="fa-solid fa-toolbox fa-2x" style="color: #0075B5;"></i>
-            </div>
-            <div class="product-title">{{ $product->name }}</div>
-            <div class="product-price">₱{{ number_format($product->unit_price, 2) }}</div>
-            <div class="product-info">
-                {{ $product->description ?? 'Quality equipment' }}
-            </div>
-            @if($product->available_quantity > 0)
-            <div class="product-info" style="color: #28a745; font-size: 12px;">
-                ✓ {{ $product->available_quantity }} units available
-            </div>
-            @endif
-        </div>
-        @empty
-        <div style="padding: 40px; text-align: center; width: 100%; color: #666;">
-            <i class="fa-solid fa-toolbox fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
-            <p style="font-size: 18px; margin: 0;">No fishing gear available at the moment</p>
-            <p style="font-size: 14px; color: #999; margin-top: 5px;">Check back soon for equipment!</p>
         </div>
         @endforelse
     </div>
