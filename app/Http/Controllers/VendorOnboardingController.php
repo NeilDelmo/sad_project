@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\VendorPreference;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\VendorOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class VendorOnboardingController extends Controller
 {
@@ -68,11 +70,74 @@ class VendorOnboardingController extends Controller
 
         $products = $query->limit(20)->get();
 
+        // Calculate total spending from accepted offers
+        $totalSpending = VendorOffer::where('vendor_id', $user->id)
+            ->where('status', 'accepted')
+            ->sum(DB::raw('offered_price * quantity'));
+
+        // Count accepted offers
+        $acceptedOffersCount = VendorOffer::where('vendor_id', $user->id)
+            ->where('status', 'accepted')
+            ->count();
+
+        // Get recent accepted offers
+        $recentAcceptedOffers = VendorOffer::where('vendor_id', $user->id)
+            ->where('status', 'accepted')
+            ->with(['fisherman', 'product'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get recent countered offers awaiting vendor response
+        $recentCounterOffers = VendorOffer::where('vendor_id', $user->id)
+            ->where('status', 'countered')
+            ->with(['fisherman', 'product'])
+            ->orderBy('responded_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Count unread messages
+        $unreadCount = \App\Models\Conversation::where(function($q) use ($user) {
+            $q->where('buyer_id', $user->id)->orWhere('seller_id', $user->id);
+        })->whereHas('messages', function($q) use ($user) {
+            $q->where('is_read', false)->where('sender_id', '!=', $user->id);
+        })->count();
+
         return view('vendor.dashboard', [
             'products' => $products,
             'prefs' => $prefs,
             'applyFilters' => $applyFilters,
+            'totalSpending' => $totalSpending,
+            'acceptedOffersCount' => $acceptedOffersCount,
+            'recentAcceptedOffers' => $recentAcceptedOffers,
+            'recentCounterOffers' => $recentCounterOffers,
+            'unreadCount' => $unreadCount,
         ]);
+    }
+
+    /**
+     * Vendor inbox: show all conversations where vendor is a participant
+     * (buyer in fisherman chats, or seller in other contexts).
+     */
+    public function messages()
+    {
+        $conversations = \App\Models\Conversation::where(function ($q) {
+                $q->where('buyer_id', Auth::id())
+                  ->orWhere('seller_id', Auth::id());
+            })
+            ->with(['buyer', 'product', 'latestMessage', 'messages'])
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+
+        // Add unread count for each conversation
+        $conversations->each(function ($conversation) {
+            $conversation->unread_count = $conversation->messages()
+                ->where('is_read', false)
+                ->where('sender_id', '!=', Auth::id())
+                ->count();
+        });
+
+        return view('vendor.messages.inbox', compact('conversations'));
     }
 
     /**

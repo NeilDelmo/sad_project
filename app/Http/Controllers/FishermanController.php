@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Product;
+use App\Models\VendorOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FishermanController extends Controller
 {
@@ -40,11 +42,32 @@ class FishermanController extends Controller
             ->limit(5)
             ->get();
 
+        // Calculate total income from accepted vendor offers
+        $totalIncome = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->where('status', 'accepted')
+            ->sum(DB::raw('offered_price * quantity'));
+
+        // Count accepted offers
+        $acceptedOffersCount = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->where('status', 'accepted')
+            ->count();
+
+        // Get recent accepted offers
+        $recentAcceptedOffers = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->where('status', 'accepted')
+            ->with(['vendor', 'product'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(5)
+            ->get();
+
         return view('fisherman.dashboard', compact(
             'productsCount',
             'recentConversations',
             'unreadCount',
-            'recentProducts'
+            'recentProducts',
+            'totalIncome',
+            'acceptedOffersCount',
+            'recentAcceptedOffers'
         ));
     }
 

@@ -413,31 +413,7 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center" style="max-width: 1400px; margin: 0 auto; padding: 0 30px;">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
-            <div class="nav-links">
-                <a href="{{ route('vendor.dashboard') }}" class="nav-link">
-                    <i class="fa-solid fa-gauge-high"></i> Dashboard
-                </a>
-                <a href="{{ route('vendor.products.index') }}" class="nav-link active">
-                    <i class="fa-solid fa-fish"></i> Browse Products
-                </a>
-                <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
-                    <i class="fa-solid fa-box"></i> My Inventory
-                </a>
-                <a href="{{ route('marketplace.index') }}" class="nav-link">
-                    <i class="fa-solid fa-store"></i> Marketplace
-                </a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('vendor.partials.nav')>
 
     <div class="container-custom">
         <div class="page-header">

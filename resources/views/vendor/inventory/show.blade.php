@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+@include('vendor.partials.nav')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
         <div class="mb-6">

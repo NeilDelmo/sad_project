@@ -116,6 +116,8 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
 
     Route::get('/dashboard', [VendorOnboardingController::class, 'dashboard'])->name('dashboard');
+    // Vendor Messages (inbox)
+    Route::get('/messages', [VendorOnboardingController::class, 'messages'])->name('messages');
     // Vendor Browse Products (see all products; optional filters)
     Route::get('/products', [VendorOnboardingController::class, 'browseProducts'])->name('products.index');
     
@@ -131,6 +133,7 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     // Vendor Offers
     Route::post('/offers/{product}', [\App\Http\Controllers\VendorOfferController::class, 'store'])->name('offers.store');
     Route::post('/offers/{offer}/accept-counter', [\App\Http\Controllers\VendorOfferController::class, 'acceptCounter'])->name('offers.accept-counter');
+    Route::post('/offers/{offer}/decline-counter', [\App\Http\Controllers\VendorOfferController::class, 'declineCounter'])->name('offers.decline-counter');
 });
 
 // Forum routes (requires authentication)

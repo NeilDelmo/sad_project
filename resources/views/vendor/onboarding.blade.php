@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+@include('vendor.partials.nav')
 <html lang="en">
 <head>
     <meta charset="UTF-8">

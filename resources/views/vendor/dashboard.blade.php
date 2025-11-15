@@ -144,6 +144,90 @@
             margin-top: 20px;
         }
 
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            color: #0075B5;
+            margin-bottom: 15px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1B5E88;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .section-title {
+            font-family: "Koulen", sans-serif;
+            font-size: 28px;
+            color: #1B5E88;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #0075B5;
+            padding-bottom: 10px;
+        }
+
+        .offer-list {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .offer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .offer-item:last-child {
+            border-bottom: none;
+        }
+
+        .offer-info {
+            flex-grow: 1;
+        }
+
+        .offer-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1B5E88;
+            margin-bottom: 5px;
+        }
+
+        .offer-details {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .offer-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #16a34a;
+            margin-right: 20px;
+        }
+
         .alert-success {
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -157,31 +241,7 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
-            <div class="nav-links">
-                <a href="{{ route('vendor.dashboard') }}" class="nav-link active">
-                    <i class="fa-solid fa-gauge-high"></i> Dashboard
-                </a>
-                <a href="{{ route('vendor.products.index') }}" class="nav-link">
-                    <i class="fa-solid fa-fish"></i> Browse Products
-                </a>
-                <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
-                    <i class="fa-solid fa-box"></i> My Inventory
-                </a>
-                <a href="{{ route('marketplace.index') }}" class="nav-link">
-                    <i class="fa-solid fa-store"></i> Marketplace
-                </a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('vendor.partials.nav')>
 
     <div class="dashboard-container">
         @if(session('success'))
@@ -209,6 +269,88 @@
                 </a>
             </div>
         </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-peso-sign"></i>
+                </div>
+                <div class="stat-number">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
+                <div class="stat-label">Total Spending (Accepted Offers)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <div class="stat-number">{{ $acceptedOffersCount ?? 0 }}</div>
+                <div class="stat-label">Accepted Offers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div class="stat-number">{{ $unreadCount ?? 0 }}</div>
+                <div class="stat-label">Unread Messages</div>
+            </div>
+        </div>
+
+        <!-- Recent Accepted Offers -->
+        @if(isset($recentAcceptedOffers) && $recentAcceptedOffers->count() > 0)
+        <div class="section-title">Recent Accepted Offers</div>
+        <div class="offer-list">
+            @foreach($recentAcceptedOffers as $offer)
+            <div class="offer-item">
+                <div class="offer-info">
+                    <div class="offer-name">
+                        <i class="fa-solid fa-check-circle" style="color: #16a34a; margin-right: 8px;"></i>
+                        {{ $offer->product->name ?? 'Product' }}
+                    </div>
+                    <div class="offer-details">
+                        Fisherman: {{ $offer->fisherman->username ?? $offer->fisherman->email }}
+                        • {{ $offer->quantity }} kg @ ₱{{ number_format($offer->offered_price, 2) }}/kg
+                        <span style="color: #999; margin-left: 10px;">Accepted {{ $offer->updated_at->diffForHumans() }}</span>
+                    </div>
+                </div>
+                <div class="offer-price">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        <!-- Counter Offers Awaiting Response -->
+        @if(isset($recentCounterOffers) && $recentCounterOffers->count() > 0)
+        <div class="section-title" style="margin-top:30px;">Counter Offers Awaiting Your Response</div>
+        <div class="offer-list">
+            @foreach($recentCounterOffers as $offer)
+            <div class="offer-item" style="background:#fff8e6;">
+                <div class="offer-info">
+                    <div class="offer-name">
+                        <i class="fa-solid fa-hourglass-half" style="color: #d97706; margin-right: 8px;"></i>
+                        {{ $offer->product->name ?? 'Product' }}
+                    </div>
+                    <div class="offer-details">
+                        Fisherman: {{ $offer->fisherman->username ?? $offer->fisherman->email }} • Counter: ₱{{ number_format($offer->fisherman_counter_price, 2) }}
+                        <span style="color:#999; margin-left:10px;">Sent {{ $offer->responded_at?->diffForHumans() }}</span>
+                        @if($offer->expires_at)
+                        <span style="color:#b91c1c; margin-left:10px;">Expires {{ $offer->expires_at->diffForHumans() }}</span>
+                        @endif
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <form method="POST" action="{{ route('vendor.offers.accept-counter', $offer) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm" style="background:#16a34a; color:#fff; border:none; padding:8px 12px; border-radius:6px;">Accept Counter</button>
+                    </form>
+                    <form method="POST" action="{{ route('vendor.offers.decline-counter', $offer) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff; border:none; padding:8px 12px; border-radius:6px;">Reject</button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 
 </body>

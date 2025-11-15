@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Models\VendorOffer;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+
+class NewVendorOffer extends Notification
+{
+    use Queueable;
+
+    public function __construct(public VendorOffer $offer)
+    {
+    }
+
+    public function via(object $notifiable): array
+    {
+        return ['database'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $product = $this->offer->product;
+        $vendor = $this->offer->vendor;
+
+        return [
+            'type' => 'new_vendor_offer',
+            'offer_id' => $this->offer->id,
+            'product_id' => $product?->id,
+            'product_name' => $product?->name,
+            'vendor_id' => $vendor?->id,
+            'vendor_name' => $vendor?->username ?? $vendor?->name,
+            'offered_price' => (float) $this->offer->offered_price,
+            'quantity' => (int) $this->offer->quantity,
+            'message' => $this->offer->vendor_message,
+            'status' => $this->offer->status,
+            'link' => '/fisherman/offers?status=pending',
+        ];
+    }
+}

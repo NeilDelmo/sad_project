@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Product;
+use App\Models\VendorOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,7 +33,15 @@ class MessageController extends Controller
 
         $product = $conversation->product;
 
-        return view('marketplaces.message', compact('conversation', 'product'));
+        // Find a latest active offer between buyer (vendor) and seller (fisherman) for this product
+        $pendingOffer = VendorOffer::where('vendor_id', $conversation->buyer_id)
+            ->where('fisherman_id', $conversation->seller_id)
+            ->where('product_id', $conversation->product_id)
+            ->whereIn('status', ['pending', 'countered'])
+            ->latest()
+            ->first();
+
+        return view('marketplaces.message', compact('conversation', 'product', 'pendingOffer'));
     }
 
     /**

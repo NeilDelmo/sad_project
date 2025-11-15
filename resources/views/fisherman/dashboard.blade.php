@@ -330,6 +330,20 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
+                    <i class="fa-solid fa-peso-sign"></i>
+                </div>
+                <div class="stat-number">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
+                <div class="stat-label">Total Income (Accepted Offers)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+                <div class="stat-number">{{ $acceptedOffersCount ?? 0 }}</div>
+                <div class="stat-label">Accepted Offers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
                     <i class="fa-solid fa-users"></i>
                 </div>
                 <div class="stat-number">{{ isset($recentConversations) ? $recentConversations->count() : 0 }}</div>
@@ -378,6 +392,29 @@
                 </div>
             @endif
         </div>
+
+        <!-- Recent Accepted Offers -->
+        @if(isset($recentAcceptedOffers) && $recentAcceptedOffers->count() > 0)
+        <div class="section-title" style="margin-top: 30px;">Recent Accepted Offers</div>
+        <div class="product-list">
+            @foreach($recentAcceptedOffers as $offer)
+            <div class="product-item">
+                <div class="product-info">
+                    <div class="product-name">
+                        <i class="fa-solid fa-handshake" style="color: #16a34a; margin-right: 8px;"></i>
+                        {{ $offer->product->name ?? 'Product' }}
+                    </div>
+                    <div class="product-details">
+                        Vendor: {{ $offer->vendor->username ?? $offer->vendor->email }}
+                        • {{ $offer->quantity }} kg
+                        <span style="color: #999; margin-left: 10px;">Accepted {{ $offer->updated_at->diffForHumans() }}</span>
+                    </div>
+                </div>
+                <div class="product-price" style="color: #16a34a;">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </div>
 
 </body>
