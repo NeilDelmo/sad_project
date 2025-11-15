@@ -298,9 +298,16 @@
                 @if(($listing->seller_id ?? $product->supplier_id) === auth()->id())
                     <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
                 @else
-                    <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
-                        <button type="submit" class="contact-btn">Message Seller</button>
-                    </form>
+                    <div style="display:flex; gap:8px;">
+                        <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
+                            <button type="submit" class="contact-btn">Message Seller</button>
+                        </form>
+                        <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:6px; align-items:center;">
+                            @csrf
+                            <input type="number" name="quantity" min="1" value="1" style="width:70px; padding:6px 8px; border:1px solid #ccc; border-radius:6px;">
+                            <button type="submit" class="contact-btn" style="background:#16a34a; border-color:#16a34a;">Buy</button>
+                        </form>
+                    </div>
                 @endif
             @else
                 <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>

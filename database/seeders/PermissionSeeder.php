@@ -53,7 +53,6 @@ class PermissionSeeder extends Seeder
 
         // Create roles
         $admin = Role::create(['name' => 'admin']);
-        $regulator = Role::create(['name' => 'regulator']);
         $fisherman = Role::create(['name' => 'fisherman']);
         $buyer = Role::create(['name' => 'buyer']);
 
@@ -73,17 +72,14 @@ class PermissionSeeder extends Seeder
 
         // Credit scoring permissions
         $fisherman->givePermissionTo(['view own credit score']);
-        $regulator->givePermissionTo(['view all credit scores']);
         $admin->givePermissionTo(['view all credit scores', 'update credit scores']);
 
-        // Regulator dashboard permissions
-        $regulator->givePermissionTo(['access regulator dashboard', 'view heatmaps', 'view compliance reports', 'monitor fishing activities', 'generate forecasts']);
+        // Regulator role removed; keep admin dashboard access if needed
         $admin->givePermissionTo(['access regulator dashboard', 'view heatmaps', 'view compliance reports']);
 
         // Community hub permissions
         $fisherman->givePermissionTo(['access community hub', 'create posts', 'comment on posts']);
         $buyer->givePermissionTo(['access community hub', 'create posts', 'comment on posts']);
-        $regulator->givePermissionTo(['access community hub']);
         $admin->givePermissionTo(['access community hub', 'create posts', 'comment on posts', 'moderate content']);
     }
 
