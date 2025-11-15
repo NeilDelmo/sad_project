@@ -3,49 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ asset('bootstrap5/css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <title>SeaLedger - Browse Products</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 18px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .nav-brand {
             color: white;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
             font-family: "Koulen", sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
         }
 
         .nav-links {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            align-items: center;
         }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .nav-link:hover {
             color: white;
             background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
         }
 
         .nav-link.active {
@@ -54,141 +68,250 @@
             font-weight: 600;
         }
 
+        .nav-link i {
+            margin-right: 6px;
+        }
+
         .container-custom {
             max-width: 1400px;
-            margin: 30px auto;
-            padding: 20px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+
+        .page-header {
+            margin-bottom: 35px;
         }
 
         .page-title {
             font-family: "Koulen", sans-serif;
-            font-size: 36px;
+            font-size: 42px;
             color: #1B5E88;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 16px;
         }
 
         .filter-card {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
+            padding: 28px 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 35px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .filter-card .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .filter-card .form-control {
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .filter-card .form-control:focus {
+            border-color: #0075B5;
+            box-shadow: 0 0 0 3px rgba(0, 117, 181, 0.1);
+        }
+
+        .filter-card .form-check {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 0;
+        }
+
+        .filter-card .form-check-input {
+            cursor: pointer;
+            margin-top: 0.25em;
+        }
+
+        .filter-card .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .filter-card .btn-primary {
+            background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .filter-card .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 117, 181, 0.4);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 28px;
+            margin-bottom: 40px;
         }
 
         .product-card {
             background: white;
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
-            border: 1px solid #f0f0f0;
+            border: 2px solid transparent;
+            height: fit-content;
         }
 
         .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.12);
             border-color: #0075B5;
         }
 
         .product-header {
-            display: flex;
-            align-items: start;
-            justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
         }
 
         .product-name {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
             color: #1B5E88;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .product-name i {
+            font-size: 20px;
         }
 
         .product-category {
             display: inline-block;
-            background: #E7FAFE;
+            background: linear-gradient(135deg, #E7FAFE 0%, #d4f4fa 100%);
             color: #0075B5;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         .product-details {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 16px;
-            line-height: 1.8;
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .product-detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .product-detail-row:last-child {
+            border-bottom: none;
         }
 
         .detail-label {
-            color: #999;
+            color: #6c757d;
             font-weight: 500;
+            font-size: 14px;
         }
 
         .detail-value {
-            color: #333;
-            font-weight: 600;
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 14px;
         }
 
         .product-price {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
             color: #1B5E88;
-            margin: 20px 0;
-            padding: 16px;
+            margin: 24px 0;
+            padding: 20px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             text-align: center;
+            border: 2px dashed #dee2e6;
         }
 
         .price-label {
             font-size: 12px;
-            color: #666;
-            font-weight: 500;
+            color: #6c757d;
+            font-weight: 600;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .offer-section {
-            background: #f8f9fa;
-            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 24px;
             border-radius: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
+            border: 2px solid #e9ecef;
         }
 
         .offer-input-group {
-            margin-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .offer-input-group:last-of-type {
+            margin-bottom: 20px;
         }
 
         .offer-label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 6px;
-            display: block;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .offer-label i {
+            color: #0075B5;
+            font-size: 14px;
         }
 
         .form-control-custom {
             width: 100%;
-            padding: 12px 14px;
+            padding: 12px 16px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
             font-size: 15px;
             transition: all 0.2s;
+            font-family: inherit;
         }
 
         .form-control-custom:focus {
             border-color: #0075B5;
             outline: none;
             box-shadow: 0 0 0 3px rgba(0, 117, 181, 0.1);
+        }
+
+        .form-control-custom::placeholder {
+            color: #adb5bd;
         }
 
         .btn-make-offer {
@@ -199,41 +322,53 @@
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 16px;
             width: 100%;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-make-offer:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 117, 181, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 117, 181, 0.5);
         }
 
-        .btn-make-offer i {
-            margin-right: 8px;
+        .btn-make-offer:active {
+            transform: translateY(0);
         }
 
         .supplier-info {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #f0f0f0;
-            font-size: 13px;
-            color: #666;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .supplier-info i {
+            color: #0075B5;
+            font-size: 16px;
         }
 
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
-            color: #999;
+            padding: 100px 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
 
         .empty-state i {
-            font-size: 72px;
-            color: #ddd;
+            font-size: 80px;
+            color: #dee2e6;
             margin-bottom: 24px;
             display: block;
         }
@@ -241,7 +376,37 @@
         .empty-state h3 {
             color: #1B5E88;
             margin-bottom: 12px;
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .empty-state p {
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .product-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .container-custom {
+                padding: 30px 20px;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
+
+            .filter-card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -249,7 +414,7 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center" style="max-width: 1400px; margin: 0 auto; padding: 0 30px;">
             <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
             <div class="nav-links">
                 <a href="{{ route('vendor.dashboard') }}" class="nav-link">
@@ -275,48 +440,53 @@
     </nav>
 
     <div class="container-custom">
-        <div class="page-title">Browse Fisherman Products</div>
-
-    <form method="get" class="filter-card">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Search</label>
-                <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Product name or description">
-            </div>
-            <div class="col-md-2">
-                <div class="form-check">
-                    <input type="checkbox" name="only_fish" value="1" class="form-check-input" id="onlyFish" @if($onlyFish) checked @endif>
-                    <label class="form-check-label" for="onlyFish">Only Fish</label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-check">
-                    <input type="checkbox" name="apply_filters" value="1" class="form-check-input" id="applyFilters" @if($applyFilters) checked @endif>
-                    <label class="form-check-label" for="applyFilters">My Preferences</label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-primary w-100"><i class="fa-solid fa-filter"></i> Apply</button>
-            </div>
+        <div class="page-header">
+            <div class="page-title">Browse Fisherman Products</div>
+            <div class="page-subtitle">Discover fresh catches and make your offers</div>
         </div>
-    </form>
 
-    <div class="product-grid">
-        @forelse($products as $product)
+        <!-- Filter Section -->
+        <form method="get" class="filter-card">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Search Products</label>
+                    <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Product name or description">
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check">
+                        <input type="checkbox" name="only_fish" value="1" class="form-check-input" id="onlyFish" @if($onlyFish) checked @endif>
+                        <label class="form-check-label" for="onlyFish">Only Fish</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="apply_filters" value="1" class="form-check-input" id="applyFilters" @if($applyFilters) checked @endif>
+                        <label class="form-check-label" for="applyFilters">My Preferences</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Product Grid -->
+        <div class="product-grid">
+            @forelse($products as $product)
+            <!-- Product Card -->
             <div class="product-card">
                 <div class="product-header">
-                    <div>
-                        <div class="product-name">
-                            <i class="fa-solid fa-fish" style="color: #0075B5;"></i> {{ $product->name }}
-                        </div>
-                        <span class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</span>
+                    <div class="product-name">
+                        <i class="fa-solid fa-fish"></i>
+                        <span>{{ $product->name }}</span>
                     </div>
+                    <span class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</span>
                 </div>
 
                 <div class="product-details">
                     <div class="product-detail-row">
                         <span class="detail-label">Available</span>
-                        <span class="detail-value">{{ $product->available_quantity }} kg</span>
+                        <span class="detail-value">{{ $product->available_quantity }} {{ $product->unit_of_measure ?? 'kg' }}</span>
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Quality</span>
@@ -330,51 +500,62 @@
 
                 <div class="product-price">
                     <span class="price-label">Fisherman's Asking Price</span>
-                    ₱{{ number_format($product->unit_price, 2) }}/kg
+                    ₱{{ number_format($product->unit_price, 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
                 </div>
 
                 <div class="offer-section">
                     <form action="{{ route('vendor.offers.store', $product) }}" method="post">
                         @csrf
                         <div class="offer-input-group">
-                            <label class="offer-label"><i class="fa-solid fa-weight"></i> Quantity (kg)</label>
+                            <label class="offer-label">
+                                <i class="fa-solid fa-weight"></i>
+                                Quantity ({{ $product->unit_of_measure ?? 'kg' }})
+                            </label>
                             <input type="number" name="quantity" min="1" max="{{ $product->available_quantity }}" 
                                    class="form-control-custom" placeholder="Enter quantity" required>
                         </div>
                         <div class="offer-input-group">
-                            <label class="offer-label"><i class="fa-solid fa-peso-sign"></i> Your Offer Price (₱/kg)</label>
+                            <label class="offer-label">
+                                <i class="fa-solid fa-peso-sign"></i>
+                                Your Offer Price (₱/{{ $product->unit_of_measure ?? 'kg' }})
+                            </label>
                             <input type="number" step="0.01" name="offered_price" 
                                    class="form-control-custom" placeholder="Enter your offer" required>
                         </div>
                         <div class="offer-input-group">
-                            <label class="offer-label"><i class="fa-solid fa-message"></i> Message (Optional)</label>
+                            <label class="offer-label">
+                                <i class="fa-solid fa-message"></i>
+                                Message (Optional)
+                            </label>
                             <textarea name="message" rows="2" class="form-control-custom" 
                                       placeholder="Add a message to the fisherman..." maxlength="500"></textarea>
                         </div>
                         <button type="submit" class="btn-make-offer">
-                            <i class="fa-solid fa-handshake"></i> Make Offer
+                            <i class="fa-solid fa-handshake"></i>
+                            <span>Make Offer</span>
                         </button>
                     </form>
                 </div>
 
                 <div class="supplier-info">
                     <i class="fa-solid fa-user"></i>
-                    <span>{{ $product->supplier->username ?? 'Fisherman #'.$product->supplier_id }}</span>
+                    <span>{{ $product->supplier->name ?? $product->supplier->username ?? 'Fisherman #'.$product->supplier_id }}</span>
                 </div>
             </div>
-        @empty
-            <div class="empty-state">
+            @empty
+            <div class="empty-state" style="grid-column: 1 / -1;">
                 <i class="fa-solid fa-fish-fins"></i>
                 <h3>No Products Available</h3>
                 <p>Try adjusting your filters or check back later for new listings from fishermen.</p>
             </div>
-        @endforelse
-    </div>
+            @endforelse
+        </div>
 
-    <div style="margin-top: 30px;">
-        {{ $products->links() }}
+        <!-- Pagination -->
+        <div style="margin-top: 30px; text-align: center;">
+            {{ $products->links() }}
+        </div>
     </div>
-</div>
 
 </body>
 </html>
