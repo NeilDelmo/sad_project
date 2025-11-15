@@ -102,6 +102,12 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     
     // Message Inbox
     Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
+
+    // Fisherman Offers Management
+    Route::get('/offers', [\App\Http\Controllers\VendorOfferController::class, 'fishermanIndex'])->name('offers.index');
+    Route::post('/offers/{offer}/accept', [\App\Http\Controllers\VendorOfferController::class, 'accept'])->name('offers.accept');
+    Route::post('/offers/{offer}/reject', [\App\Http\Controllers\VendorOfferController::class, 'reject'])->name('offers.reject');
+    Route::post('/offers/{offer}/counter', [\App\Http\Controllers\VendorOfferController::class, 'counter'])->name('offers.counter');
 });
 
 // Vendor routes (requires authentication)
@@ -121,6 +127,10 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     // Marketplace Listing Creation (ML Pricing)
     Route::get('/inventory/{inventory}/create-listing', [VendorInventoryController::class, 'createListing'])->name('inventory.create-listing');
     Route::post('/inventory/{inventory}/list', [VendorInventoryController::class, 'storeListing'])->name('inventory.store-listing');
+
+    // Vendor Offers
+    Route::post('/offers/{product}', [\App\Http\Controllers\VendorOfferController::class, 'store'])->name('offers.store');
+    Route::post('/offers/{offer}/accept-counter', [\App\Http\Controllers\VendorOfferController::class, 'acceptCounter'])->name('offers.accept-counter');
 });
 
 // Forum routes (requires authentication)

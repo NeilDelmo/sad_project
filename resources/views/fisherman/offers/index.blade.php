@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Offers - Fisherman Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Koulen&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-family: 'Koulen', cursive;
+            font-size: 28px;
+            color: white !important;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 20px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .page-header h1 {
+            font-family: 'Koulen', cursive;
+            color: #1B5E88;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .offer-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #0075B5;
+        }
+
+        .offer-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .offer-status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-countered {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-expired {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .offer-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .offer-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .offer-detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .offer-detail-value {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .price-original {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+
+        .price-offered {
+            color: #0075B5;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .price-difference {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .price-difference.negative {
+            color: #dc3545;
+        }
+
+        .price-difference.positive {
+            color: #28a745;
+        }
+
+        .message-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .message-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .message-text {
+            color: #333;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-accept {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            color: white;
+        }
+
+        .btn-counter {
+            background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-counter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
+            color: white;
+        }
+
+        .counter-form {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .counter-form.show {
+            display: block;
+        }
+
+        .form-control-custom {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-custom:focus {
+            border-color: #0075B5;
+            box-shadow: 0 0 0 0.2rem rgba(0, 117, 181, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #999;
+        }
+
+        .vendor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #1B5E88;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: #0075B5;
+        }
+
+        .tab.active {
+            color: #0075B5;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #0075B5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ route('fisherman.dashboard') }}">
+                <i class="fas fa-fish"></i> FISHERMAN DASHBOARD
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('fisherman.dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('fisherman.products.index') }}">
+                            <i class="fas fa-box"></i> My Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ route('fisherman.offers.index') }}">
+                            <i class="fas fa-handshake"></i> Offers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('fisherman.messages') }}">
+                            <i class="fas fa-envelope"></i> Messages
+                        </a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-handshake"></i> Vendor Offers</h1>
+            <p class="text-muted mb-0">Review and negotiate offers from vendors for your products</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="tabs">
+            <button class="tab {{ request('status') == 'pending' || !request('status') ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'pending']) }}'">
+                Pending Offers
+            </button>
+            <button class="tab {{ request('status') == 'countered' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'countered']) }}'">
+                Countered Offers
+            </button>
+            <button class="tab {{ request('status') == 'accepted' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'accepted']) }}'">
+                Accepted Offers
+            </button>
+            <button class="tab {{ request('status') == 'rejected' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'rejected']) }}'">
+                Rejected Offers
+            </button>
+        </div>
+
+        @if($offers->isEmpty())
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No Offers Found</h3>
+                <p>You don't have any {{ request('status') ?? 'pending' }} offers at the moment.</p>
+            </div>
+        @else
+            @foreach($offers as $offer)
+                <div class="offer-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h4 class="mb-2">{{ $offer->product->name }}</h4>
+                            <div class="vendor-info">
+                                <i class="fas fa-store"></i>
+                                <span>{{ $offer->vendor->name }}</span>
+                            </div>
+                        </div>
+                        <span class="offer-status status-{{ $offer->status }}">
+                            {{ ucfirst($offer->status) }}
+                        </span>
+                    </div>
+
+                    <div class="offer-detail-row">
+                        <span class="offer-detail-label">Your Asking Price</span>
+                        <span class="offer-detail-value">₱{{ number_format($offer->product->unit_price, 2) }}</span>
+                    </div>
+
+                    <div class="offer-detail-row">
+                        <span class="offer-detail-label">Vendor's Offer</span>
+                        <div>
+                            <span class="price-offered">₱{{ number_format($offer->offered_price, 2) }}</span>
+                            @php
+                                $difference = $offer->offered_price - $offer->product->unit_price;
+                                $percentage = ($difference / $offer->product->unit_price) * 100;
+                            @endphp
+                            <span class="price-difference {{ $difference < 0 ? 'negative' : 'positive' }}">
+                                ({{ $difference < 0 ? '' : '+' }}{{ number_format($percentage, 1) }}%)
+                            </span>
+                        </div>
+                    </div>
+
+                    @if($offer->status === 'countered' && $offer->fisherman_counter_price)
+                        <div class="offer-detail-row">
+                            <span class="offer-detail-label">Your Counter Offer</span>
+                            <span class="offer-detail-value price-offered">₱{{ number_format($offer->fisherman_counter_price, 2) }}</span>
+                        </div>
+                    @endif
+
+                    <div class="offer-detail-row">
+                        <span class="offer-detail-label">Quantity</span>
+                        <span class="offer-detail-value">{{ $offer->quantity }} {{ $offer->product->unit_of_measure }}</span>
+                    </div>
+
+                    <div class="offer-detail-row">
+                        <span class="offer-detail-label">Total Value</span>
+                        <span class="offer-detail-value">
+                            ₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}
+                        </span>
+                    </div>
+
+                    <div class="offer-detail-row">
+                        <span class="offer-detail-label">Expires</span>
+                        <span class="offer-detail-value">
+                            {{ $offer->expires_at ? $offer->expires_at->diffForHumans() : 'No expiration' }}
+                        </span>
+                    </div>
+
+                    @if($offer->vendor_message)
+                        <div class="message-section">
+                            <div class="message-label">Vendor's Message</div>
+                            <div class="message-text">{{ $offer->vendor_message }}</div>
+                        </div>
+                    @endif
+
+                    @if($offer->fisherman_message && $offer->status === 'countered')
+                        <div class="message-section">
+                            <div class="message-label">Your Response</div>
+                            <div class="message-text">{{ $offer->fisherman_message }}</div>
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'pending' && !$offer->isExpired())
+                        <div class="action-buttons">
+                            <form method="POST" action="{{ route('fisherman.offers.accept', $offer) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-accept" onclick="return confirm('Accept this offer for ₱{{ number_format($offer->offered_price, 2) }} per unit?')">
+                                    <i class="fas fa-check"></i> Accept Offer
+                                </button>
+                            </form>
+
+                            <button type="button" class="btn btn-counter" onclick="toggleCounterForm('counter-{{ $offer->id }}')">
+                                <i class="fas fa-reply"></i> Counter Offer
+                            </button>
+
+                            <form method="POST" action="{{ route('fisherman.offers.reject', $offer) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-reject" onclick="return confirm('Are you sure you want to reject this offer?')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Counter Offer Form (Hidden by default) -->
+                        <div id="counter-{{ $offer->id }}" class="counter-form">
+                            <form method="POST" action="{{ route('fisherman.offers.counter', $offer) }}">
+                                @csrf
+                                <h5 class="mb-3">Make a Counter Offer</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Counter Price (per {{ $offer->product->unit_of_measure }})</label>
+                                    <input type="number" 
+                                           name="counter_price" 
+                                           class="form-control form-control-custom" 
+                                           step="0.01" 
+                                           min="0.01"
+                                           value="{{ $offer->product->unit_price }}"
+                                           required>
+                                    <small class="text-muted">Original asking price: ₱{{ number_format($offer->product->unit_price, 2) }}</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Message to Vendor (Optional)</label>
+                                    <textarea name="message" 
+                                              class="form-control form-control-custom" 
+                                              rows="3" 
+                                              placeholder="Explain your counter offer..."></textarea>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-counter">
+                                        <i class="fas fa-paper-plane"></i> Send Counter Offer
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleCounterForm('counter-{{ $offer->id }}')">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'accepted')
+                        <div class="alert alert-success mt-3 mb-0">
+                            <i class="fas fa-check-circle"></i> 
+                            This offer was accepted on {{ $offer->responded_at?->format('M d, Y g:i A') }}. 
+                            The product has been added to the vendor's inventory.
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'rejected')
+                        <div class="alert alert-danger mt-3 mb-0">
+                            <i class="fas fa-times-circle"></i> 
+                            This offer was rejected on {{ $offer->responded_at?->format('M d, Y g:i A') }}.
+                        </div>
+                    @endif
+
+                    @if($offer->isExpired() && $offer->status === 'pending')
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <i class="fas fa-clock"></i> 
+                            This offer has expired and can no longer be accepted.
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4">
+                {{ $offers->links() }}
+            </div>
+        @endif
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleCounterForm(id) {
+            const form = document.getElementById(id);
+            form.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

@@ -75,58 +75,173 @@
             margin-bottom: 25px;
         }
 
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
         .product-card {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
         }
 
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #0075B5;
+        }
+
+        .product-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 16px;
         }
 
         .product-name {
             font-size: 20px;
-            font-weight: bold;
+            font-weight: 600;
             color: #1B5E88;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-category {
+            display: inline-block;
+            background: #E7FAFE;
+            color: #0075B5;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .product-details {
             color: #666;
             font-size: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .product-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .detail-label {
+            color: #999;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #333;
+            font-weight: 600;
         }
 
         .product-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #B12704;
-            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1B5E88;
+            margin: 20px 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            text-align: center;
         }
 
-        .btn-purchase {
-            background: #0075B5;
+        .price-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .offer-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .offer-input-group {
+            margin-bottom: 14px;
+        }
+
+        .offer-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .form-control-custom:focus {
+            border-color: #0075B5;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 117, 181, 0.1);
+        }
+
+        .btn-make-offer {
+            background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 14px 24px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 15px;
             width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
         }
 
-        .btn-purchase:hover {
-            background: #1B5E88;
+        .btn-make-offer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 117, 181, 0.4);
+        }
+
+        .btn-make-offer i {
+            margin-right: 8px;
+        }
+
+        .supplier-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 72px;
+            color: #ddd;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .empty-state h3 {
+            color: #1B5E88;
+            margin-bottom: 12px;
+            font-size: 24px;
         }
     </style>
 </head>
@@ -189,34 +304,69 @@
     <div class="product-grid">
         @forelse($products as $product)
             <div class="product-card">
-                <div class="product-name">
-                    <i class="fa-solid fa-fish" style="color: #0075B5;"></i> {{ $product->name }}
+                <div class="product-header">
+                    <div>
+                        <div class="product-name">
+                            <i class="fa-solid fa-fish" style="color: #0075B5;"></i> {{ $product->name }}
+                        </div>
+                        <span class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</span>
+                    </div>
                 </div>
+
                 <div class="product-details">
-                    <div><strong>Category:</strong> {{ $product->category->name ?? '—' }}</div>
-                    <div><strong>Available:</strong> {{ $product->available_quantity }} kg</div>
-                    <div><strong>Supplier:</strong> {{ $product->supplier->username ?? 'User #'.$product->supplier_id }}</div>
-                    <div style="color: #999; font-size: 12px; margin-top: 5px;">Posted {{ $product->created_at->diffForHumans() }}</div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Available</span>
+                        <span class="detail-value">{{ $product->available_quantity }} kg</span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Quality</span>
+                        <span class="detail-value">{{ $product->freshness_metric ?? 'Good' }}</span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Listed</span>
+                        <span class="detail-value">{{ $product->created_at->diffForHumans() }}</span>
+                    </div>
                 </div>
-                <div class="product-price">₱{{ number_format($product->unit_price, 2) }}/kg</div>
-                <form action="{{ route('vendor.inventory.purchase', ['product' => $product->id]) }}" method="post">
-                    @csrf
-                    <div class="mb-2">
-                        <label class="form-label" style="font-size: 12px;">Quantity (kg)</label>
-                        <input type="number" name="quantity" min="1" max="{{ $product->available_quantity }}" class="form-control form-control-sm" placeholder="Qty" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size: 12px;">Your Buy Price (₱/kg)</label>
-                        <input type="number" step="0.01" name="purchase_price" class="form-control form-control-sm" placeholder="Price" required>
-                    </div>
-                    <button class="btn-purchase"><i class="fa-solid fa-cart-plus"></i> Purchase</button>
-                </form>
+
+                <div class="product-price">
+                    <span class="price-label">Fisherman's Asking Price</span>
+                    ₱{{ number_format($product->unit_price, 2) }}/kg
+                </div>
+
+                <div class="offer-section">
+                    <form action="{{ route('vendor.offers.store', $product) }}" method="post">
+                        @csrf
+                        <div class="offer-input-group">
+                            <label class="offer-label"><i class="fa-solid fa-weight"></i> Quantity (kg)</label>
+                            <input type="number" name="quantity" min="1" max="{{ $product->available_quantity }}" 
+                                   class="form-control-custom" placeholder="Enter quantity" required>
+                        </div>
+                        <div class="offer-input-group">
+                            <label class="offer-label"><i class="fa-solid fa-peso-sign"></i> Your Offer Price (₱/kg)</label>
+                            <input type="number" step="0.01" name="offered_price" 
+                                   class="form-control-custom" placeholder="Enter your offer" required>
+                        </div>
+                        <div class="offer-input-group">
+                            <label class="offer-label"><i class="fa-solid fa-message"></i> Message (Optional)</label>
+                            <textarea name="message" rows="2" class="form-control-custom" 
+                                      placeholder="Add a message to the fisherman..." maxlength="500"></textarea>
+                        </div>
+                        <button type="submit" class="btn-make-offer">
+                            <i class="fa-solid fa-handshake"></i> Make Offer
+                        </button>
+                    </form>
+                </div>
+
+                <div class="supplier-info">
+                    <i class="fa-solid fa-user"></i>
+                    <span>{{ $product->supplier->username ?? 'Fisherman #'.$product->supplier_id }}</span>
+                </div>
             </div>
         @empty
-            <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #999;">
-                <i class="fa-solid fa-fish" style="font-size: 64px; color: #ddd; display: block; margin-bottom: 20px;"></i>
-                <h3 style="color: #1B5E88;">No Products Found</h3>
-                <p>Try adjusting your filters or check back later for new listings.</p>
+            <div class="empty-state">
+                <i class="fa-solid fa-fish-fins"></i>
+                <h3>No Products Available</h3>
+                <p>Try adjusting your filters or check back later for new listings from fishermen.</p>
             </div>
         @endforelse
     </div>
