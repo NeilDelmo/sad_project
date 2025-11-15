@@ -96,8 +96,12 @@ Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('m
 Route::middleware('auth')->group(function () {
     Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])->name('marketplace.buy');
     Route::get('/marketplace/orders', [CustomerOrderController::class, 'index'])->name('marketplace.orders.index');
+    Route::post('/marketplace/orders/{order}/in-transit', [CustomerOrderController::class, 'markInTransit'])->name('marketplace.orders.intransit');
     Route::post('/marketplace/orders/{order}/delivered', [CustomerOrderController::class, 'vendorDelivered'])->name('marketplace.orders.delivered');
     Route::post('/marketplace/orders/{order}/received', [CustomerOrderController::class, 'buyerReceived'])->name('marketplace.orders.received');
+    Route::post('/marketplace/orders/{order}/refund-request', [CustomerOrderController::class, 'requestRefund'])->name('marketplace.orders.refund.request');
+    Route::post('/marketplace/orders/{order}/refund-approve', [CustomerOrderController::class, 'approveRefund'])->name('marketplace.orders.refund.approve');
+    Route::post('/marketplace/orders/{order}/refund-decline', [CustomerOrderController::class, 'declineRefund'])->name('marketplace.orders.refund.decline');
 });
 
 // Messaging routes (requires authentication)

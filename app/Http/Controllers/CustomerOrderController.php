@@ -49,7 +49,11 @@ class CustomerOrderController extends Controller
             if (!$inventory || $inventory->quantity < $qty) {
                 throw ValidationException::withMessages(['quantity' => 'Not enough stock available.']);
             }
-            $unitPrice = $listing->final_price ?? $listing->asking_price ?? $listing->dynamic_price ?? 0;
+            // Use final_price as authoritative price (the AI-optimized buyer-facing price)
+            $unitPrice = $listing->final_price ?? $listing->asking_price ?? 0;
+            if ($unitPrice <= 0) {
+                throw ValidationException::withMessages(['price' => 'Invalid listing price.']);
+            }
             $total = $unitPrice * $qty;
 
             $order = CustomerOrder::create([
@@ -87,10 +91,25 @@ class CustomerOrderController extends Controller
         });
     }
 
+    public function markInTransit(CustomerOrder $order)
+    {
+        $user = Auth::user();
+        if ($order->vendor_id !== $user->id) abort(403);
+        if ($order->status !== CustomerOrder::STATUS_PENDING_PAYMENT) {
+            throw ValidationException::withMessages(['status' => 'Only pending orders can be marked in transit.']);
+        }
+        $order->update(['status' => CustomerOrder::STATUS_IN_TRANSIT]);
+        $this->notify($order, "Order #{$order->id} is now in transit.");
+        return back()->with('success', 'Order marked as in transit.');
+    }
+
     public function vendorDelivered(Request $request, CustomerOrder $order)
     {
         $user = Auth::user();
         if ($order->vendor_id !== $user->id) abort(403);
+        if (!in_array($order->status, [CustomerOrder::STATUS_PENDING_PAYMENT, CustomerOrder::STATUS_IN_TRANSIT])) {
+            throw ValidationException::withMessages(['status' => 'Order cannot be marked delivered from current status.']);
+        }
         $data = $request->validate([
             'proof' => ['required','image','max:4096'],
             'notes' => ['nullable','string','max:500']
@@ -115,6 +134,69 @@ class CustomerOrderController extends Controller
         $order->update(['status' => 'received', 'received_at' => now()]);
         $this->notify($order, "Order #{$order->id} confirmed received.");
         return back()->with('success', 'Order confirmed received.');
+    }
+
+    public function requestRefund(Request $request, CustomerOrder $order)
+    {
+        $user = Auth::user();
+        if ($order->buyer_id !== $user->id) abort(403);
+        if (!in_array($order->status, ['delivered', 'received'])) {
+            throw ValidationException::withMessages(['status' => 'Refunds can only be requested after delivery.']);
+        }
+        $data = $request->validate([
+            'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
+            'notes' => ['nullable','string','max:500'],
+            'proof' => ['required','image','max:4096'],
+        ]);
+        $proof = $request->file('proof')->store('customer_orders/refunds', 'public');
+        $order->update([
+            'status' => CustomerOrder::STATUS_REFUND_REQUESTED,
+            'refund_reason' => $data['reason'],
+            'refund_notes' => $data['notes'] ?? null,
+            'refund_proof_path' => $proof,
+        ]);
+        $this->notify($order, "Refund requested for Order #{$order->id} (Reason: {$data['reason']}).");
+        return back()->with('success', 'Refund requested. Vendor will review.');
+    }
+
+    public function approveRefund(CustomerOrder $order)
+    {
+        $user = Auth::user();
+        if ($order->vendor_id !== $user->id) abort(403);
+        if ($order->status !== CustomerOrder::STATUS_REFUND_REQUESTED) {
+            throw ValidationException::withMessages(['status' => 'Only requested refunds can be approved.']);
+        }
+        
+        // Restore vendor inventory
+        $listing = $order->listing;
+        if ($listing && $listing->vendor_inventory_id) {
+            VendorInventory::where('id', $listing->vendor_inventory_id)
+                ->increment('quantity', $order->quantity);
+        }
+        
+        $order->update([
+            'status' => CustomerOrder::STATUS_REFUNDED,
+            'refund_at' => now(),
+        ]);
+        $this->notify($order, "Refund approved for Order #{$order->id}.");
+        return back()->with('success', 'Refund approved.');
+    }
+
+    public function declineRefund(Request $request, CustomerOrder $order)
+    {
+        $user = Auth::user();
+        if ($order->vendor_id !== $user->id) abort(403);
+        if ($order->status !== CustomerOrder::STATUS_REFUND_REQUESTED) {
+            throw ValidationException::withMessages(['status' => 'Only requested refunds can be declined.']);
+        }
+        $data = $request->validate(['notes' => ['nullable','string','max:500']]);
+        $order->update([
+            'status' => CustomerOrder::STATUS_REFUND_DECLINED,
+            'refund_notes' => $data['notes'] ?? $order->refund_notes,
+            'refund_at' => now(),
+        ]);
+        $this->notify($order, "Refund declined for Order #{$order->id}.");
+        return back()->with('success', 'Refund declined.');
     }
 
     private function notify(CustomerOrder $order, string $text): void

@@ -115,7 +115,7 @@
                   <button class="btn btn-sm btn-success">Confirm Received</button>
                 </form>
               @endif
-              @if($order->status === 'received')
+              @if(in_array($order->status, ['delivered','received']))
                 <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}">Request Refund</button>
               @endif
             @endif
@@ -167,6 +167,8 @@
                     <select name="reason" class="form-select" required>
                       <option value="bad_delivery">Bad Delivery</option>
                       <option value="poor_quality">Poor Quality (smelly/rotten)</option>
+                      <option value="never_received">Never Received</option>
+                      <option value="damaged_on_arrival">Damaged on Arrival</option>
                     </select>
                   </div>
                   <div class="mb-3">

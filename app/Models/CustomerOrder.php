@@ -10,6 +10,14 @@ class CustomerOrder extends Model
 {
     use HasFactory;
 
+    public const STATUS_PENDING_PAYMENT = 'pending_payment';
+    public const STATUS_IN_TRANSIT = 'in_transit';
+    public const STATUS_DELIVERED = 'delivered';
+    public const STATUS_RECEIVED = 'received';
+    public const STATUS_REFUND_REQUESTED = 'refund_requested';
+    public const STATUS_REFUNDED = 'refunded';
+    public const STATUS_REFUND_DECLINED = 'refund_declined';
+
     protected $fillable = [
         'buyer_id',
         'vendor_id',
@@ -21,11 +29,16 @@ class CustomerOrder extends Model
         'proof_photo_path',
         'delivered_at',
         'received_at',
+        'refund_reason',
+        'refund_notes',
+        'refund_at',
+        'refund_proof_path',
     ];
 
     protected $casts = [
         'delivered_at' => 'datetime',
         'received_at' => 'datetime',
+        'refund_at' => 'datetime',
     ];
 
     public function buyer(): BelongsTo { return $this->belongsTo(User::class, 'buyer_id'); }

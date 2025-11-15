@@ -104,11 +104,11 @@ class OrdersController extends Controller
         if ($order->vendor_id !== $user->id) {
             abort(403);
         }
-        if ($order->status !== Order::STATUS_RECEIVED) {
-            throw ValidationException::withMessages(['status' => 'Refunds can only be requested after the order is confirmed received.']);
+        if (!in_array($order->status, [Order::STATUS_DELIVERED, Order::STATUS_RECEIVED])) {
+            throw ValidationException::withMessages(['status' => 'Refunds can only be requested after delivery.']);
         }
         $data = $request->validate([
-            'reason' => ['required','in:bad_delivery,poor_quality'],
+            'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
             'notes' => ['nullable','string','max:500'],
             'proof' => ['required','image','max:4096'],
         ]);
@@ -136,6 +136,13 @@ class OrdersController extends Controller
         if ($order->status !== Order::STATUS_REFUND_REQUESTED) {
             throw ValidationException::withMessages(['status' => 'Only requested refunds can be approved.']);
         }
+        
+        // Restore fisherman's product inventory
+        $product = $order->product;
+        if ($product) {
+            $product->increment('available_quantity', $order->quantity);
+        }
+        
         $order->update([
             'status' => Order::STATUS_REFUNDED,
             'refund_at' => now(),
