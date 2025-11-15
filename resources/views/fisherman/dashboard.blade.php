@@ -263,6 +263,9 @@
                 <a href="{{ route('fisherman.products.index') }}" class="nav-link">
                     <i class="fa-solid fa-box"></i> My Products
                 </a>
+                <a href="{{ route('orders.index') }}" class="nav-link">
+                    <i class="fa-solid fa-clipboard-list"></i> Orders
+                </a>
                 <a href="{{ route('fisherman.messages') }}" class="nav-link">
                     <i class="fa-solid fa-envelope"></i> Messages
                 </a>

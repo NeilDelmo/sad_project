@@ -15,7 +15,7 @@ class PricingService
      * Path to the Python pricing prediction script (Docker path)
      */
     private const PYTHON_SCRIPT = '/var/www/html/python/predict_price.py';
-    private const PYTHON_CMD = 'python3';
+    private const PYTHON_CMD = '/var/www/html/python/venv/bin/python3';
     
     /**
      * Calculate dynamic price for a product using ML model.

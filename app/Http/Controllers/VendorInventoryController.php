@@ -9,9 +9,11 @@ use App\Services\PricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class VendorInventoryController extends Controller
 {
+    use AuthorizesRequests;
     protected $pricingService;
 
     public function __construct(PricingService $pricingService)
@@ -45,6 +47,12 @@ class VendorInventoryController extends Controller
 
         DB::beginTransaction();
         try {
+            // Lock product to prevent oversell between concurrent purchases/offers
+            $productLocked = Product::where('id', $product->id)->lockForUpdate()->first();
+            if ($productLocked->available_quantity < (int) $request->quantity) {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Insufficient stock available.']);
+            }
             // Create inventory entry
             $inventory = VendorInventory::create([
                 'vendor_id' => auth()->id(),

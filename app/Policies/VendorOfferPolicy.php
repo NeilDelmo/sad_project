@@ -47,4 +47,20 @@ class VendorOfferPolicy
     {
         return $user->id === $offer->fisherman_id;
     }
+
+    /**
+     * Determine if the vendor can accept a fisherman's counter offer.
+     */
+    public function acceptCounter(User $user, VendorOffer $offer): bool
+    {
+        return $user->id === $offer->vendor_id && $offer->status === 'countered' && !$offer->isExpired();
+    }
+
+    /**
+     * Determine if the vendor can decline a fisherman's counter offer.
+     */
+    public function declineCounter(User $user, VendorOffer $offer): bool
+    {
+        return $user->id === $offer->vendor_id && $offer->status === 'countered' && !$offer->isExpired();
+    }
 }

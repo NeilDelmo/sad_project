@@ -7,6 +7,7 @@ use App\Http\Controllers\RiskPredictionController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\VendorInventoryController;
+use App\Http\Controllers\OrdersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -55,6 +56,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read.all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+
+    // Orders
+    Route::get('/orders', [OrdersController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{order}/in-transit', [OrdersController::class, 'markInTransit'])->name('orders.in-transit');
+    Route::post('/orders/{order}/delivered', [OrdersController::class, 'markDelivered'])->name('orders.delivered');
+    Route::post('/orders/{order}/received', [OrdersController::class, 'confirmReceived'])->name('orders.received');
+    Route::post('/orders/{order}/refund-request', [OrdersController::class, 'requestRefund'])->name('orders.refund.request');
+    Route::post('/orders/{order}/refund-approve', [OrdersController::class, 'approveRefund'])->name('orders.refund.approve');
+    Route::post('/orders/{order}/refund-decline', [OrdersController::class, 'declineRefund'])->name('orders.refund.decline');
 });
 
 require __DIR__.'/auth.php';

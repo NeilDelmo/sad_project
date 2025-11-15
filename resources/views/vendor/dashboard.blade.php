@@ -241,7 +241,7 @@
 <body>
 
     <!-- Navbar -->
-    @include('vendor.partials.nav')>
+    @include('vendor.partials.nav')
 
     <div class="dashboard-container">
         @if(session('success'))
@@ -262,6 +262,10 @@
                 <a href="{{ route('vendor.inventory.index') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-box"></i>
                     My Inventory
+                </a>
+                <a href="{{ route('orders.index') }}" class="btn-secondary-custom">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    Orders
                 </a>
                 <a href="{{ route('vendor.onboarding') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-gear"></i>

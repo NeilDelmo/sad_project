@@ -7,7 +7,11 @@ use App\Models\VendorOffer;
 use App\Models\User;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\Order;
 use App\Notifications\NewVendorOffer;
+use App\Notifications\VendorOfferAccepted;
+use App\Notifications\VendorOfferRejected;
+use App\Notifications\VendorAcceptedCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +126,12 @@ class VendorOfferController extends Controller
 
         DB::beginTransaction();
         try {
+            // Lock product row to prevent oversell
+            $product = \App\Models\Product::where('id', $offer->product_id)->lockForUpdate()->first();
+            if ($product->available_quantity < $offer->quantity) {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Insufficient stock available for this product.']);
+            }
             $offer->update([
                 'status' => 'accepted',
                 'responded_at' => now(),
@@ -140,9 +150,26 @@ class VendorOfferController extends Controller
             // Decrement product quantity
             $offer->product->decrement('available_quantity', $offer->quantity);
 
+            // Create order (pending_payment)
+            $unitPrice = (float) ($offer->fisherman_counter_price ?? $offer->offered_price);
+            \App\Models\Order::create([
+                'vendor_id' => $offer->vendor_id,
+                'fisherman_id' => $offer->fisherman_id,
+                'product_id' => $offer->product_id,
+                'offer_id' => $offer->id,
+                'quantity' => (int) $offer->quantity,
+                'unit_price' => $unitPrice,
+                'total' => $unitPrice * (int) $offer->quantity,
+                'status' => 'pending_payment',
+            ]);
+
             DB::commit();
 
-            // TODO: Notify vendor of acceptance
+            // Notify vendor of acceptance
+            $vendor = \App\Models\User::find($offer->vendor_id);
+            if ($vendor) {
+                $vendor->notify(new \App\Notifications\VendorOfferAccepted($offer));
+            }
 
             return back()->with('success', 'Offer accepted! The vendor has been notified.');
 
@@ -169,7 +196,11 @@ class VendorOfferController extends Controller
             'fisherman_message' => $request->message,
         ]);
 
-        // TODO: Notify vendor of rejection
+        // Notify vendor of rejection
+        $vendor = \App\Models\User::find($offer->vendor_id);
+        if ($vendor) {
+            $vendor->notify(new \App\Notifications\VendorOfferRejected($offer));
+        }
 
         return back()->with('success', 'Offer rejected.');
     }
@@ -210,7 +241,8 @@ class VendorOfferController extends Controller
         Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => $offer->fisherman_id,
-            'body' => 'Fisherman sent a counter offer: ₱' . number_format($offer->fisherman_counter_price, 2) . ' per unit. ' . ($request->message ? 'Message: ' . $request->message : ''),
+            'message' => 'Fisherman sent a counter offer: ₱' . number_format((float) $offer->fisherman_counter_price, 2) . ' per unit. ' . ($request->message ? 'Message: ' . $request->message : ''),
+            'is_read' => false,
         ]);
 
         $conversation->update(['last_message_at' => now()]);
@@ -229,6 +261,7 @@ class VendorOfferController extends Controller
      */
     public function acceptCounter(VendorOffer $offer)
     {
+        $this->authorize('acceptCounter', $offer);
         // Vendor accepts a fisherman's counter offer
         if ($offer->vendor_id !== Auth::id() || $offer->status !== 'countered') {
             return back()->withErrors(['error' => 'Cannot accept this counter offer.']);
@@ -240,6 +273,12 @@ class VendorOfferController extends Controller
 
         DB::beginTransaction();
         try {
+            // Lock product row to prevent oversell
+            $product = \App\Models\Product::where('id', $offer->product_id)->lockForUpdate()->first();
+            if ($product->available_quantity < $offer->quantity) {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Insufficient stock available for this product.']);
+            }
             $offer->update([
                 'status' => 'accepted',
                 'responded_at' => now(),
@@ -268,12 +307,31 @@ class VendorOfferController extends Controller
             Message::create([
                 'conversation_id' => $conversation->id,
                 'sender_id' => Auth::id(),
-                'message' => 'Vendor accepted the counter offer at ₱' . number_format($offer->fisherman_counter_price ?? $offer->offered_price, 2) . '.',
+                'message' => 'Vendor accepted the counter offer at ₱' . number_format((float) ($offer->fisherman_counter_price ?? $offer->offered_price), 2) . '.',
                 'is_read' => false,
             ]);
             $conversation->update(['last_message_at' => now()]);
 
+            // Create order (pending_payment)
+            $unitPriceCounter = (float) ($offer->fisherman_counter_price ?? $offer->offered_price);
+            \App\Models\Order::create([
+                'vendor_id' => $offer->vendor_id,
+                'fisherman_id' => $offer->fisherman_id,
+                'product_id' => $offer->product_id,
+                'offer_id' => $offer->id,
+                'quantity' => (int) $offer->quantity,
+                'unit_price' => $unitPriceCounter,
+                'total' => $unitPriceCounter * (int) $offer->quantity,
+                'status' => 'pending_payment',
+            ]);
+
             DB::commit();
+            
+            // Notify fisherman of vendor acceptance of counter
+            $fisherman = \App\Models\User::find($offer->fisherman_id);
+            if ($fisherman) {
+                $fisherman->notify(new \App\Notifications\VendorAcceptedCounter($offer));
+            }
             return back()->with('success', 'Counter offer accepted!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -286,6 +344,7 @@ class VendorOfferController extends Controller
      */
     public function declineCounter(VendorOffer $offer)
     {
+        $this->authorize('declineCounter', $offer);
         if ($offer->vendor_id !== Auth::id() || $offer->status !== 'countered') {
             return back()->withErrors(['error' => 'Cannot decline this counter offer.']);
         }

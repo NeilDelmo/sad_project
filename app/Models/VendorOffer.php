@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
+use OwenIt\Auditing\Auditable as AuditableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class VendorOffer extends Model
+class VendorOffer extends Model implements AuditableConract
 {
-    use HasFactory;
+    use HasFactory, AuditableTrait;
 
     protected $fillable = [
         'vendor_id',
