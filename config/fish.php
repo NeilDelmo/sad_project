@@ -18,4 +18,19 @@ return [
         'Stale' => 1680,   // <= 28 hours
         // Beyond 28 hours = Spoiled
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fish Category Aliases
+    |--------------------------------------------------------------------------
+    |
+    | Names that should be treated as fish categories across the app.
+    | Used to normalize queries (e.g., marketplace filters) regardless
+    | of whether categories are labeled "Fish", "Fresh Fish", etc.
+    |
+    */
+    'category_aliases' => [
+        'Fish',
+        'Fresh Fish',
+    ],
 ];

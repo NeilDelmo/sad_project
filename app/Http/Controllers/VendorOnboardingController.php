@@ -25,8 +25,6 @@ class VendorOnboardingController extends Controller
             'preferred_categories.*' => 'integer|exists:product_categories,id',
             'min_quantity' => 'nullable|integer|min:0',
             'max_unit_price' => 'nullable|numeric|min:0',
-            'notify_channels' => 'array',
-            'notify_channels.*' => 'in:in_app,email',
             'notify_on' => 'required|in:all,matching',
         ]);
 
@@ -36,7 +34,7 @@ class VendorOnboardingController extends Controller
                 'preferred_categories' => $validated['preferred_categories'] ?? [],
                 'min_quantity' => $validated['min_quantity'] ?? null,
                 'max_unit_price' => $validated['max_unit_price'] ?? null,
-                'notify_channels' => $validated['notify_channels'] ?? ['in_app'],
+                'notify_channels' => ['in_app'],
                 'notify_on' => $validated['notify_on'] ?? 'matching',
                 'onboarding_completed_at' => now(),
             ]
@@ -50,9 +48,13 @@ class VendorOnboardingController extends Controller
         $user = Auth::user();
         $prefs = $user->vendorPreference;
 
-        $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])->orderByDesc('created_at');
+        // Always show all products by default; apply filters only on request
+        $applyFilters = $request->boolean('apply_filters', false);
 
-        if ($prefs && $prefs->notify_on === 'matching') {
+        $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])
+            ->orderByDesc('created_at');
+
+        if ($applyFilters && $prefs) {
             if (!empty($prefs->preferred_categories)) {
                 $query->whereIn('category_id', $prefs->preferred_categories);
             }
@@ -66,6 +68,62 @@ class VendorOnboardingController extends Controller
 
         $products = $query->limit(20)->get();
 
-        return view('vendor.dashboard', compact('products', 'prefs'));
+        return view('vendor.dashboard', [
+            'products' => $products,
+            'prefs' => $prefs,
+            'applyFilters' => $applyFilters,
+        ]);
+    }
+
+    /**
+     * Vendor browse page: show all fisherman products with optional filters/search.
+     */
+    public function browseProducts(Request $request)
+    {
+        $user = Auth::user();
+        $prefs = $user->vendorPreference;
+
+        $applyFilters = $request->boolean('apply_filters', false);
+        $onlyFish = $request->boolean('only_fish', false);
+        $q = trim((string) $request->get('q', ''));
+
+        $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])
+            ->orderByDesc('created_at');
+
+        if ($onlyFish) {
+            $aliases = config('fish.category_aliases', ['Fish', 'Fresh Fish']);
+            $query->whereHas('category', function ($cat) use ($aliases) {
+                $cat->whereIn('name', $aliases);
+            });
+        }
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%");
+            });
+        }
+
+        if ($applyFilters && $prefs) {
+            if (!empty($prefs->preferred_categories)) {
+                $query->whereIn('category_id', $prefs->preferred_categories);
+            }
+            if (!is_null($prefs->min_quantity)) {
+                $query->where('available_quantity', '>=', $prefs->min_quantity);
+            }
+            if (!is_null($prefs->max_unit_price)) {
+                $query->where('unit_price', '<=', $prefs->max_unit_price);
+            }
+        }
+
+        $products = $query->paginate(24)->withQueryString();
+
+        return view('vendor.products.index', [
+            'products' => $products,
+            'prefs' => $prefs,
+            'applyFilters' => $applyFilters,
+            'onlyFish' => $onlyFish,
+            'q' => $q,
+        ]);
     }
 }

@@ -25,6 +25,18 @@ Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->n
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
+        $user = auth()->user();
+        if ($user) {
+            switch ($user->user_type) {
+                case 'vendor':
+                    return redirect()->route('vendor.dashboard');
+                case 'fisherman':
+                    return redirect()->route('fisherman.dashboard');
+                case 'buyer':
+                    return redirect()->route('marketplace.shop');
+            }
+        }
+        // Admin/regulator or fallback uses Breeze dashboard view
         return view('dashboard');
     })->name('dashboard');
 
@@ -98,6 +110,8 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
 
     Route::get('/dashboard', [VendorOnboardingController::class, 'dashboard'])->name('dashboard');
+    // Vendor Browse Products (see all products; optional filters)
+    Route::get('/products', [VendorOnboardingController::class, 'browseProducts'])->name('products.index');
     
     // Vendor Inventory Management
     Route::get('/inventory', [VendorInventoryController::class, 'index'])->name('inventory.index');
