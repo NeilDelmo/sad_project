@@ -17,6 +17,9 @@
         <option value="in_transit" {{ request('status')==='in_transit' ? 'selected' : '' }}>In Transit</option>
         <option value="delivered" {{ request('status')==='delivered' ? 'selected' : '' }}>Delivered</option>
         <option value="received" {{ request('status')==='received' ? 'selected' : '' }}>Received</option>
+        <option value="refund_requested" {{ request('status')==='refund_requested' ? 'selected' : '' }}>Refund Requested</option>
+        <option value="refunded" {{ request('status')==='refunded' ? 'selected' : '' }}>Refunded</option>
+        <option value="refund_declined" {{ request('status')==='refund_declined' ? 'selected' : '' }}>Refund Declined</option>
       </select>
       <noscript><button class="btn btn-outline-secondary" type="submit">Filter</button></noscript>
     </form>
