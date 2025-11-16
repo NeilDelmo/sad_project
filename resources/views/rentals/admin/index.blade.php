@@ -499,13 +499,15 @@
 
                     @if($rental->status === 'approved')
                         <div class="action-buttons">
-                            <form action="{{ route('rentals.activate', $rental) }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-approve" onclick="return confirm('Mark this rental as active (equipment picked up)?')">
-                                    <i class="fa-solid fa-play"></i>
-                                    Mark as Picked Up
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-approve" onclick="showOtpModal({{ $rental->id }}, '{{ $rental->pickup_otp }}')">
+                                <i class="fa-solid fa-play"></i>
+                                Mark as Picked Up
+                            </button>
+                            @if($rental->pickup_otp)
+                                <span style="background: #d1ecf1; color: #0c5460; padding: 10px 15px; border-radius: 8px; font-size: 14px;">
+                                    <i class="fa-solid fa-key"></i> OTP: {{ $rental->pickup_otp }}
+                                </span>
+                            @endif
                         </div>
                     @endif
 
@@ -556,7 +558,48 @@
         </div>
     </div>
 
+    <!-- OTP Verification Modal -->
+    <div id="otpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%;">
+            <h2 style="color: #1B5E88; margin-bottom: 20px;">
+                <i class="fa-solid fa-key"></i> Verify Pickup OTP
+            </h2>
+            
+            <form id="otpForm" method="POST">
+                @csrf
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Enter 6-digit OTP:</label>
+                    <input type="text" name="otp" maxlength="6" pattern="[0-9]{6}" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 24px; text-align: center; letter-spacing: 8px;">
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        <i class="fa-solid fa-info-circle"></i> Ask the fisherman for their OTP
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-approve">
+                        <i class="fa-solid fa-check"></i> Verify & Activate
+                    </button>
+                    <button type="button" class="btn btn-reject" onclick="closeOtpModal()">
+                        <i class="fa-solid fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function showOtpModal(rentalId, expectedOtp) {
+            const modal = document.getElementById('otpModal');
+            const form = document.getElementById('otpForm');
+            form.action = `/rentals/${rentalId}/activate`;
+            modal.style.display = 'flex';
+        }
+        
+        function closeOtpModal() {
+            document.getElementById('otpModal').style.display = 'none';
+        }
+
         function showReturnModal(rentalId, items) {
             const modal = document.getElementById('returnModal');
             const form = document.getElementById('returnForm');
@@ -598,10 +641,13 @@
                         </div>
                         <div id="photo-upload-${iid}" style="display: none; margin-top: 10px;">
                             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #dc3545;">
-                                <i class="fa fa-camera"></i> Upload Photos (Required if Damaged/Lost > 0):
+                                <i class="fa fa-camera"></i> Upload Photos (Required if Damaged/Lost > 0, max 5):
                             </label>
-                            <input type="file" name="items[${iid}][photos][]" accept="image/*" multiple
+                            <input type="file" name="items[${iid}][photos][]" accept="image/jpeg,image/jpg,image/png,image/webp" multiple
                                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                            <p style="margin-top: 5px; color: #666; font-size: 12px;">
+                                <i class="fa fa-info-circle"></i> Max 5 photos, 5MB each. JPEG, PNG, WebP only.
+                            </p>
                         </div>
                     </div>
                 `;

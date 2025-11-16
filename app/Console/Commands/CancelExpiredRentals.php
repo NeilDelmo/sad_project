@@ -42,6 +42,13 @@ class CancelExpiredRentals extends Command
 
                 $rental->status = 'cancelled';
                 $rental->save();
+
+                // Notify user of auto-cancellation
+                try {
+                    $rental->user->notify(new \App\Notifications\RentalApprovalCancelled($rental));
+                } catch (\Throwable $t) {
+                    // Silent fail
+                }
             });
 
             $count++;

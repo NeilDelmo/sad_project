@@ -166,6 +166,8 @@ class RentalController extends Controller
         DB::beginTransaction();
         try {
             $expiresAt = now()->addDays(2);
+            $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            
             // Reserve units by incrementing reserved_stock only
             foreach ($rental->rentalItems as $item) {
                 $product = $item->product()->lockForUpdate()->first();
@@ -181,6 +183,8 @@ class RentalController extends Controller
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
                 'expires_at' => $expiresAt,
+                'pickup_otp' => $otp,
+                'otp_generated_at' => now(),
             ]);
 
             DB::commit();
@@ -188,7 +192,7 @@ class RentalController extends Controller
             // Send notification to user
             $rental->user->notify(new RentalApproved($rental));
 
-            return back()->with('success', 'Rental approved. Units reserved until pickup.');
+            return back()->with('success', "Rental approved. Pickup OTP: {$otp}. Units reserved until pickup.");
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -225,7 +229,7 @@ class RentalController extends Controller
     /**
      * Admin: Activate a rental (mark equipment as picked up)
      */
-    public function activate(Rental $rental)
+    public function activate(Request $request, Rental $rental)
     {
         // Only admin can activate
         if (!auth()->user()->hasRole('admin')) {
@@ -234,6 +238,15 @@ class RentalController extends Controller
 
         if ($rental->status !== 'approved') {
             return back()->withErrors(['error' => 'Only approved rentals can be activated.']);
+        }
+
+        // Validate OTP
+        $validated = $request->validate([
+            'otp' => 'required|string|size:6',
+        ]);
+
+        if ($validated['otp'] !== $rental->pickup_otp) {
+            return back()->withErrors(['error' => 'Invalid OTP. Please verify the code.']);
         }
 
         DB::beginTransaction();
@@ -247,6 +260,7 @@ class RentalController extends Controller
             $rental->update([
                 'status' => 'active',
                 'picked_up_at' => now(),
+                'otp_verified_at' => now(),
             ]);
 
             DB::commit();
@@ -278,8 +292,8 @@ class RentalController extends Controller
             'items.*.fair' => 'required|integer|min:0',
             'items.*.damaged' => 'required|integer|min:0',
             'items.*.lost' => 'required|integer|min:0',
-            'items.*.photos' => 'nullable|array',
-            'items.*.photos.*' => 'image|max:5120',
+            'items.*.photos' => 'nullable|array|max:5',
+            'items.*.photos.*' => 'image|mimes:jpeg,jpg,png,webp|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -392,10 +406,34 @@ class RentalController extends Controller
                 return $sum >= (int)$it->quantity;
             });
             if ($allReturned) {
+                // Calculate settlement charges
+                $damageFee = 0;
+                $lostFee = 0;
+                foreach ($rental->rentalItems as $item) {
+                    // Damage fee: 50% of item price per damaged unit
+                    $damageCount = (int)($item->damaged_count ?? 0);
+                    if ($damageCount > 0) {
+                        $damageFee += ($item->price_per_day * 10) * $damageCount * 0.5; // estimate full price as 10x daily
+                    }
+                    // Lost fee: 100% of item price per lost unit
+                    $lostCount = (int)($item->lost_count ?? 0);
+                    if ($lostCount > 0) {
+                        $lostFee += ($item->price_per_day * 10) * $lostCount;
+                    }
+                }
+                
+                $totalCharges = $rental->total_price + $lateFee + $damageFee + $lostFee;
+                $amountDue = max(0, $totalCharges - ($rental->deposit_paid ?? 0));
+                
                 $rental->update([
                     'status' => 'completed',
                     'returned_at' => now(),
                     'late_fee' => $lateFee,
+                    'damage_fee' => $damageFee,
+                    'lost_fee' => $lostFee,
+                    'total_charges' => $totalCharges,
+                    'amount_due' => $amountDue,
+                    'payment_status' => $amountDue > 0 ? 'pending' : 'paid',
                 ]);
                 try { $rental->user->notify(new \App\Notifications\ReturnProcessed($rental)); } catch (\Throwable $t) {}
             }
