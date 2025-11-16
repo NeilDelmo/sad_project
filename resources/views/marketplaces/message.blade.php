@@ -623,6 +623,16 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     const notifAudio = document.getElementById('notifSound');
     let lastMessageId = 0;
+    let notificationPermission = 'default';
+
+    // Request desktop notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        notificationPermission = permission;
+      });
+    } else if ('Notification' in window) {
+      notificationPermission = Notification.permission;
+    }
 
     // Load messages on page load
     loadMessages();
@@ -668,17 +678,44 @@
       }
 
       let shouldPlay = false;
+      let shouldNotify = false;
+      let latestSenderName = '';
+      let latestMessage = '';
+      
       messages.forEach(msg => {
         const messageDiv = document.createElement('div');
         messageDiv.className = msg.is_own ? 'message sent' : 'message received';
         messageDiv.textContent = msg.message;
         messagesContainer.appendChild(messageDiv);
-        if (!msg.is_own) shouldPlay = true;
+        
+        if (!msg.is_own) {
+          shouldPlay = true;
+          shouldNotify = true;
+          latestSenderName = msg.sender_name;
+          latestMessage = msg.message;
+        }
       });
 
       if (shouldPlay && notifAudio) {
         notifAudio.currentTime = 0;
         notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
+      }
+
+      // Show desktop notification
+      if (shouldNotify && notificationPermission === 'granted' && document.hidden) {
+        const notification = new Notification(latestSenderName, {
+          body: latestMessage.length > 60 ? latestMessage.substring(0, 60) + '...' : latestMessage,
+          icon: '/images/logo.png', // Optional: add your logo
+          tag: 'sealedger-message',
+          requireInteraction: false
+        });
+        
+        notification.onclick = function() {
+          window.focus();
+          notification.close();
+        };
+        
+        setTimeout(() => notification.close(), 5000);
       }
 
       // Scroll to bottom
