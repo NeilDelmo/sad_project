@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Rentals - SeaLedger</title>
+    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -202,6 +203,80 @@
         .browse-btn:hover {
             background: #0075B5;
         }
+
+        /* Circular progress loader */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 15px;
+        }
+
+        .progress-circle {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .progress-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: #f0f0f0;
+            stroke-width: 6;
+        }
+
+        .progress-spinner {
+            fill: none;
+            stroke: #ffc107;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 157;
+            animation: spin 1.5s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes spin {
+            0% {
+                stroke-dashoffset: 157;
+            }
+            50% {
+                stroke-dashoffset: 39.25;
+            }
+            100% {
+                stroke-dashoffset: 157;
+            }
+        }
+
+        .progress-info {
+            flex-grow: 1;
+        }
+
+        .progress-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .waiting-time {
+            font-weight: bold;
+            color: #ffc107;
+        }
     </style>
 </head>
 <body>
@@ -276,6 +351,26 @@
                     @endif
 
                     @if($rental->status === 'pending')
+                        <!-- Circular progress indicator for pending rentals -->
+                        <div class="progress-container">
+                            <div class="progress-circle">
+                                <svg class="progress-svg" viewBox="0 0 60 60">
+                                    <circle class="progress-bg" cx="30" cy="30" r="25"></circle>
+                                    <circle class="progress-spinner" cx="30" cy="30" r="25"></circle>
+                                </svg>
+                            </div>
+                            <div class="progress-info">
+                                <div class="progress-title">
+                                    <i class="fa-solid fa-clock"></i> Awaiting Admin Approval
+                                </div>
+                                <div class="progress-text">
+                                    Waiting for <span class="waiting-time">{{ $rental->created_at->diffForHumans() }}</span>
+                                    <br>
+                                    <small style="color: #999;">Your rental request is being reviewed by the administrator.</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <form action="{{ route('rentals.cancel', $rental) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this rental request?')">
                             @csrf
                             <button type="submit" class="cancel-btn">Cancel Request</button>

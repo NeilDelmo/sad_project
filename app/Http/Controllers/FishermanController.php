@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Product;
+use App\Models\Rental;
 use App\Models\VendorOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +61,15 @@ class FishermanController extends Controller
             ->limit(5)
             ->get();
 
+        // Get rental statistics
+        $activeRentalsCount = Rental::where('user_id', $fisherman->id)
+            ->whereIn('status', ['pending', 'approved', 'active'])
+            ->count();
+
+        $pendingRentalsCount = Rental::where('user_id', $fisherman->id)
+            ->where('status', 'pending')
+            ->count();
+
         return view('fisherman.dashboard', compact(
             'productsCount',
             'recentConversations',
@@ -67,7 +77,9 @@ class FishermanController extends Controller
             'recentProducts',
             'totalIncome',
             'acceptedOffersCount',
-            'recentAcceptedOffers'
+            'recentAcceptedOffers',
+            'activeRentalsCount',
+            'pendingRentalsCount'
         ));
     }
 

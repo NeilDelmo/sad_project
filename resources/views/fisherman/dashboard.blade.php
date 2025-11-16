@@ -301,6 +301,13 @@
                     <i class="fa-solid fa-box"></i>
                     View All Products
                 </a>
+                <a href="{{ route('rentals.index') }}" class="btn-secondary-custom">
+                    <i class="fa-solid fa-toolbox"></i>
+                    Rent Equipment
+                    @if(isset($pendingRentalsCount) && $pendingRentalsCount > 0)
+                    <span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px;">{{ $pendingRentalsCount }} pending</span>
+                    @endif
+                </a>
                 <a href="{{ route('fisherman.messages') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-envelope"></i>
                     Messages
@@ -351,6 +358,18 @@
                 </div>
                 <div class="stat-number">{{ isset($recentConversations) ? $recentConversations->count() : 0 }}</div>
                 <div class="stat-label">Active Conversations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-toolbox"></i>
+                </div>
+                <div class="stat-number">{{ $activeRentalsCount ?? 0 }}</div>
+                <div class="stat-label">Active Rentals</div>
+                @if(isset($pendingRentalsCount) && $pendingRentalsCount > 0)
+                <div style="margin-top: 10px; background: #ffc107; color: white; padding: 5px 10px; border-radius: 12px; font-size: 12px; display: inline-block;">
+                    <i class="fa-solid fa-clock"></i> {{ $pendingRentalsCount }} Pending
+                </div>
+                @endif
             </div>
         </div>
 

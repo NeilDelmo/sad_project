@@ -145,4 +145,98 @@ class RentalController extends Controller
 
         return back()->with('success', 'Rental request cancelled successfully.');
     }
+
+    /**
+     * Admin: Approve a rental request
+     */
+    public function approve(Rental $rental)
+    {
+        // Only admin can approve
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($rental->status !== 'pending') {
+            return back()->withErrors(['error' => 'Only pending rentals can be approved.']);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Decrement rental stock for each item
+            foreach ($rental->rentalItems as $item) {
+                $product = $item->product;
+                
+                if ($product->rental_stock < $item->quantity) {
+                    throw new \Exception("Insufficient stock for {$product->name}");
+                }
+
+                $product->decrement('rental_stock', $item->quantity);
+            }
+
+            // Update rental status
+            $rental->update([
+                'status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // TODO: Send notification to user
+            return back()->with('success', 'Rental request approved successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Admin: Reject a rental request
+     */
+    public function reject(Rental $rental)
+    {
+        // Only admin can reject
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($rental->status !== 'pending') {
+            return back()->withErrors(['error' => 'Only pending rentals can be rejected.']);
+        }
+
+        $rental->update([
+            'status' => 'rejected',
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+        ]);
+
+        // TODO: Send notification to user
+        return back()->with('success', 'Rental request rejected.');
+    }
+
+    /**
+     * Admin: View all rentals for management
+     */
+    public function adminIndex()
+    {
+        // Only admin can access
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $rentals = Rental::with(['user', 'rentalItems.product', 'approvedBy'])
+            ->orderByRaw("FIELD(status, 'pending', 'approved', 'active', 'completed', 'rejected', 'cancelled')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'pending' => Rental::where('status', 'pending')->count(),
+            'approved' => Rental::where('status', 'approved')->count(),
+            'active' => Rental::where('status', 'active')->count(),
+            'completed' => Rental::where('status', 'completed')->count(),
+        ];
+
+        return view('rentals.admin.index', compact('rentals', 'stats'));
+    }
 }

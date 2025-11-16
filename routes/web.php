@@ -176,6 +176,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'myRentals'])->name('rentals.myrentals');
     Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel');
+    
+    // Admin rental management
+    Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('rentals.admin.index');
+    Route::post('/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('rentals.approve');
+    Route::post('/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('rentals.reject');
 });
 
 // Fishing Safety API routes (proxies to Flask)
