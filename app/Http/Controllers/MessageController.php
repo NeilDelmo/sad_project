@@ -83,24 +83,44 @@ class MessageController extends Controller
     /**
      * Get messages for a conversation
      */
-    public function getMessages($conversationId)
+    public function getMessages(Request $request, $conversationId)
     {
         if (!Auth::check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $conversation = Conversation::with(['messages.sender'])
-            ->findOrFail($conversationId);
+        $conversation = Conversation::findOrFail($conversationId);
 
         // Ensure user is part of this conversation
         if ($conversation->buyer_id !== Auth::id() && $conversation->seller_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Mark messages as read
-        $this->markMessagesAsRead($conversation);
+        // Optional incremental fetch using since_id (only return new messages)
+        $sinceId = (int) $request->query('since_id', 0);
 
-        $messages = $conversation->messages->map(function ($message) {
+        $messagesQuery = Message::with('sender')
+            ->where('conversation_id', $conversation->id)
+            ->orderBy('id', 'asc');
+
+        if ($sinceId > 0) {
+            $messagesQuery->where('id', '>', $sinceId);
+        }
+
+        $messageModels = $messagesQuery->get();
+
+        // Mark only other-party unread messages as read
+        if ($messageModels->isNotEmpty()) {
+            Message::where('conversation_id', $conversation->id)
+                ->where('sender_id', '!=', Auth::id())
+                ->whereIn('id', $messageModels->pluck('id'))
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
+        }
+
+        $messages = $messageModels->map(function ($message) {
             return [
                 'id' => $message->id,
                 'message' => $message->message,
@@ -115,6 +135,7 @@ class MessageController extends Controller
         return response()->json([
             'messages' => $messages,
             'current_user_id' => Auth::id(),
+            'last_id' => $messages->last()['id'] ?? $sinceId,
         ]);
     }
 

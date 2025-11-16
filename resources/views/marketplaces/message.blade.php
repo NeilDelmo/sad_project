@@ -502,6 +502,7 @@
 
 <body>
   <div class="chat-wrapper">
+    <audio id="notifSound" src="/audio/notify.mp3" preload="auto"></audio>
     @if(session('success'))
     <div class="toast" id="toastBox">{{ session('success') }}</div>
     @endif
@@ -615,19 +616,13 @@
   @endif
 
   <script>
-    const conversationId = {
-      {
-        $conversation - > id
-      }
-    };
-    const currentUserId = {
-      {
-        Auth::id()
-      }
-    };
+    const conversationId = {{ $conversation->id }};
+    const currentUserId = {{ Auth::id() }};
     const input = document.getElementById('messageInput');
     const messagesContainer = document.getElementById('chatMessages');
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const notifAudio = document.getElementById('notifSound');
+    let lastMessageId = 0;
 
     // Load messages on page load
     loadMessages();
@@ -636,7 +631,10 @@
     setInterval(loadMessages, 3000);
 
     function loadMessages() {
-      fetch(`/api/conversations/${conversationId}/messages`, {
+      const url = lastMessageId > 0
+        ? `/api/conversations/${conversationId}/messages?since_id=${lastMessageId}`
+        : `/api/conversations/${conversationId}/messages`;
+      fetch(url, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -646,27 +644,42 @@
         })
         .then(response => response.json())
         .then(data => {
-          displayMessages(data.messages);
+          appendMessages(data.messages || []);
+          if (data.last_id) {
+            lastMessageId = data.last_id;
+          } else if ((data.messages || []).length) {
+            lastMessageId = data.messages[data.messages.length - 1].id;
+          }
         })
         .catch(error => {
           console.error('Error loading messages:', error);
         });
     }
 
-    function displayMessages(messages) {
-      messagesContainer.innerHTML = '';
-
-      if (messages.length === 0) {
+    function appendMessages(messages) {
+      if (!messages.length && messagesContainer.children.length === 0) {
         messagesContainer.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;"><p>No messages yet. Start the conversation!</p></div>';
         return;
       }
 
+      // Remove placeholder if present
+      if (messagesContainer.children.length && messagesContainer.children[0].innerText.includes('Loading messages')) {
+        messagesContainer.innerHTML = '';
+      }
+
+      let shouldPlay = false;
       messages.forEach(msg => {
         const messageDiv = document.createElement('div');
         messageDiv.className = msg.is_own ? 'message sent' : 'message received';
         messageDiv.textContent = msg.message;
         messagesContainer.appendChild(messageDiv);
+        if (!msg.is_own) shouldPlay = true;
       });
+
+      if (shouldPlay && notifAudio) {
+        notifAudio.currentTime = 0;
+        notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
+      }
 
       // Scroll to bottom
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -697,7 +710,9 @@
           if (data.success) {
             input.value = '';
             input.style.height = '38px';
-            loadMessages(); // Reload messages
+            // Optimistically append own message
+            appendMessages([data.message]);
+            lastMessageId = data.message.id;
           }
         })
         .catch(error => {
