@@ -454,9 +454,27 @@
                     @if($rental->approved_by)
                         <div style="padding: 10px; background: #e7f3ff; border-radius: 8px; margin-top: 15px; font-size: 14px;">
                             <i class="fa-solid fa-user-shield"></i>
-                            {{ $rental->status === 'approved' ? 'Approved' : 'Rejected' }} by 
+                            {{ in_array($rental->status, ['approved', 'active', 'completed']) ? 'Approved' : 'Rejected' }} by 
                             <strong>{{ $rental->approvedBy->username ?? $rental->approvedBy->email }}</strong>
                             on {{ $rental->approved_at->format('M d, Y h:i A') }}
+                        </div>
+                    @endif
+
+                    @if($rental->picked_up_at)
+                        <div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-top: 10px; font-size: 14px;">
+                            <i class="fa-solid fa-box"></i>
+                            Equipment picked up on {{ $rental->picked_up_at->format('M d, Y h:i A') }}
+                        </div>
+                    @endif
+
+                    @if($rental->returned_at)
+                        <div style="padding: 10px; background: #e2e3e5; border-radius: 8px; margin-top: 10px; font-size: 14px;">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Equipment returned on {{ $rental->returned_at->format('M d, Y h:i A') }}
+                            @if($rental->late_fee > 0)
+                                <br>
+                                <strong style="color: #dc3545;">Late Fee: ₱{{ number_format($rental->late_fee, 2) }}</strong>
+                            @endif
                         </div>
                     @endif
 
@@ -478,6 +496,32 @@
                             </form>
                         </div>
                     @endif
+
+                    @if($rental->status === 'approved')
+                        <div class="action-buttons">
+                            <form action="{{ route('rentals.activate', $rental) }}" method="POST" style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-approve" onclick="return confirm('Mark this rental as active (equipment picked up)?')">
+                                    <i class="fa-solid fa-play"></i>
+                                    Mark as Picked Up
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
+                    @if($rental->status === 'active')
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-approve" onclick="showReturnModal({{ $rental->id }}, {{ $rental->rentalItems->toJson() }})">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                Process Return
+                            </button>
+                            @if($rental->isOverdue())
+                                <span style="background: #fee2e2; color: #991b1b; padding: 10px 15px; border-radius: 8px; font-size: 14px;">
+                                    <i class="fa-solid fa-exclamation-triangle"></i> OVERDUE
+                                </span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             @endforeach
         @else
@@ -488,5 +532,110 @@
             </div>
         @endif
     </div>
+
+    <!-- Return Equipment Modal -->
+    <div id="returnModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h2 style="color: #1B5E88; margin-bottom: 20px;">
+                <i class="fa-solid fa-rotate-left"></i> Process Equipment Return
+            </h2>
+            
+            <form id="returnForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div id="returnItems"></div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+                    <button type="submit" class="btn btn-approve">
+                        <i class="fa-solid fa-check"></i> Complete Return
+                    </button>
+                    <button type="button" class="btn btn-reject" onclick="closeReturnModal()">
+                        <i class="fa-solid fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showReturnModal(rentalId, items) {
+            const modal = document.getElementById('returnModal');
+            const form = document.getElementById('returnForm');
+            const itemsContainer = document.getElementById('returnItems');
+            
+            // Set form action
+            form.action = `/rentals/${rentalId}/return`;
+            
+            // Build items HTML (per-quantity return)
+            let html = '';
+            items.forEach(item => {
+                const iid = item.id;
+                const qty = item.quantity;
+                html += `
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                        <strong style="color: #1B5E88;">${item.product.name}</strong>
+                        <span style="color: #666; margin-left: 10px;">× ${qty}</span>
+                        <input type="hidden" name="items[${iid}][rental_item_id]" value="${iid}">
+                        <div style="margin-top: 10px; display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; align-items:end;">
+                            <div>
+                                <label style="display:block; font-weight:bold;">Good</label>
+                                <input type="number" name="items[${iid}][good]" min="0" max="${qty}" value="${qty}" oninput="updateCounts(${iid}, ${qty})" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:bold;">Fair</label>
+                                <input type="number" name="items[${iid}][fair]" min="0" max="${qty}" value="0" oninput="updateCounts(${iid}, ${qty})" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:bold;">Damaged</label>
+                                <input type="number" name="items[${iid}][damaged]" min="0" max="${qty}" value="0" oninput="updateCounts(${iid}, ${qty})" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-weight:bold;">Lost</label>
+                                <input type="number" name="items[${iid}][lost]" min="0" max="${qty}" value="0" oninput="updateCounts(${iid}, ${qty})" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                            </div>
+                        </div>
+                        <div style="margin-top:8px; color:#666; font-size:13px;">
+                            <span id="sum-note-${iid}">Total: ${qty} / ${qty}</span>
+                        </div>
+                        <div id="photo-upload-${iid}" style="display: none; margin-top: 10px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #dc3545;">
+                                <i class="fa fa-camera"></i> Upload Photos (Required if Damaged/Lost > 0):
+                            </label>
+                            <input type="file" name="items[${iid}][photos][]" accept="image/*" multiple
+                                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                    </div>
+                `;
+            });
+            
+            itemsContainer.innerHTML = html;
+            modal.style.display = 'flex';
+
+                function updateCounts(itemId, maxQty) {
+                    const g = parseInt(document.querySelector(`[name="items[${itemId}][good]"]`).value || '0');
+                    const f = parseInt(document.querySelector(`[name="items[${itemId}][fair]"]`).value || '0');
+                    const d = parseInt(document.querySelector(`[name="items[${itemId}][damaged]"]`).value || '0');
+                    const l = parseInt(document.querySelector(`[name="items[${itemId}][lost]"]`).value || '0');
+                    const sum = g + f + d + l;
+                    const note = document.getElementById(`sum-note-${itemId}`);
+                    note.textContent = `Total: ${sum} / ${maxQty}`;
+                    note.style.color = (sum === maxQty) ? '#10b981' : '#dc2626';
+
+                    const photoDiv = document.getElementById(`photo-upload-${itemId}`);
+                    const photoInput = photoDiv.querySelector('input[type="file"]');
+                    if ((d + l) > 0) {
+                        photoDiv.style.display = 'block';
+                        photoInput.required = true;
+                    } else {
+                        photoDiv.style.display = 'none';
+                        photoInput.required = false;
+                        photoInput.value = '';
+                    }
+                }
+        }
+        
+        function closeReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+        }
+    </script>
 </body>
 </html>

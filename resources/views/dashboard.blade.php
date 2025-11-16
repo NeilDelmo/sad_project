@@ -36,6 +36,10 @@
                                 <span>🔧</span>
                                 <span>Manage Rentals</span>
                             </a>
+                            <a href="{{ route('rentals.admin.maintenance') }}" class="inline-flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700 transition">
+                                <span>🛠️</span>
+                                <span>Maintenance</span>
+                            </a>
                         </div>
                     </div>
                 </div>

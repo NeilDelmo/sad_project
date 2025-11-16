@@ -19,10 +19,13 @@ class Rental extends Model implements Auditable
         'actual_return_date',
         'total_price',
         'deposit_amount',
+        'late_fee',
         'notes',
         'admin_notes',
         'approved_by',
         'approved_at',
+        'picked_up_at',
+        'returned_at',
     ];
 
     protected $casts = [
@@ -30,8 +33,11 @@ class Rental extends Model implements Auditable
         'return_date' => 'date',
         'actual_return_date' => 'date',
         'approved_at' => 'datetime',
+        'picked_up_at' => 'datetime',
+        'returned_at' => 'datetime',
         'total_price' => 'decimal:2',
         'deposit_amount' => 'decimal:2',
+        'late_fee' => 'decimal:2',
     ];
 
     public function user(): BelongsTo

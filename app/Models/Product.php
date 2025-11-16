@@ -28,15 +28,25 @@ class Product extends Model implements AuditableConract
         'is_rentable',
         'rental_price_per_day',
         'rental_stock',
+        'maintenance_count',
         'rental_available',
         'rental_condition',
+        'equipment_status',
+        'maintenance_notes',
+        'total_repair_cost',
+        'last_maintenance_date',
+        'reserved_stock',
     ];
 
     protected $casts = [
         'is_rentable' => 'boolean',
         'rental_price_per_day' => 'decimal:2',
         'rental_stock' => 'integer',
+        'maintenance_count' => 'integer',
         'rental_available' => 'integer',
+        'total_repair_cost' => 'decimal:2',
+        'last_maintenance_date' => 'datetime',
+        'reserved_stock' => 'integer',
     ];
 
     public function supplier(): BelongsTo{

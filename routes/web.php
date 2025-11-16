@@ -181,6 +181,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('rentals.admin.index');
     Route::post('/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('rentals.approve');
     Route::post('/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('rentals.reject');
+    Route::post('/rentals/{rental}/activate', [RentalController::class, 'activate'])->name('rentals.activate');
+    Route::post('/rentals/{rental}/return', [RentalController::class, 'processReturn'])->name('rentals.return');
+    
+    // Equipment maintenance
+    Route::get('/admin/maintenance', [RentalController::class, 'maintenanceDashboard'])->name('rentals.admin.maintenance');
+    Route::post('/admin/equipment/{product}/repair', [RentalController::class, 'markRepaired'])->name('equipment.repair');
+    Route::post('/admin/equipment/{product}/retire', [RentalController::class, 'retireEquipment'])->name('equipment.retire');
 });
 
 // Fishing Safety API routes (proxies to Flask)

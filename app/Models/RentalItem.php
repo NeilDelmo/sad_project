@@ -14,10 +14,15 @@ class RentalItem extends Model implements Auditable
         'rental_id',
         'product_id',
         'quantity',
+        'good_count',
+        'fair_count',
+        'damaged_count',
+        'lost_count',
         'price_per_day',
         'subtotal',
         'condition_out',
         'condition_in',
+        'condition_in_photo',
         'damage_notes',
     ];
 
@@ -35,6 +40,11 @@ class RentalItem extends Model implements Auditable
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(RentalItemPhoto::class);
     }
 
     public function isDamaged(): bool
