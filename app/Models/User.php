@@ -87,4 +87,16 @@ class User extends Authenticatable implements AuditableConract
         return $q->where('is_active', true)
              ->where('last_seen_at', '>=', now()->subMinutes(config('presence.window_minutes',5)));
     }
+
+    public function isAdmin(): bool
+    {
+        try {
+            if (method_exists($this, 'hasRole') && $this->hasRole('admin')) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            // Fall through to user_type check if Spatie not initialized
+        }
+        return ($this->user_type === 'admin');
+    }
 }

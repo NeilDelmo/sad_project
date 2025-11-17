@@ -53,12 +53,15 @@ class RentalApproved extends Notification
         return [
             'rental_id' => $this->rental->id,
             'title' => 'Rental Request Approved',
-            'message' => 'Your rental request #' . $this->rental->id . ' has been approved! You can now pick up the equipment.',
+            'message' => 'Your rental request #' . $this->rental->id . ' has been approved! Use the OTP at pickup to activate your rental.',
             'action_url' => route('rentals.myrentals'),
             'action_text' => 'View Rental',
             'rental_date' => $this->rental->rental_date->format('M d, Y'),
             'return_date' => $this->rental->return_date->format('M d, Y'),
             'total_price' => number_format($this->rental->total_price, 2),
+            'pickup_otp' => $this->rental->pickup_otp,
+            'expires_at' => $this->rental->expires_at ? $this->rental->expires_at->toDateTimeString() : null,
+            'type' => 'rental_approved',
         ];
     }
 }

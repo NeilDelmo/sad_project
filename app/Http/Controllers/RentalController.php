@@ -155,7 +155,7 @@ class RentalController extends Controller
     public function approve(Rental $rental)
     {
         // Only admin can approve
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -206,7 +206,7 @@ class RentalController extends Controller
     public function reject(Rental $rental)
     {
         // Only admin can reject
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -232,7 +232,7 @@ class RentalController extends Controller
     public function activate(Request $request, Rental $rental)
     {
         // Only admin can activate
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -277,7 +277,7 @@ class RentalController extends Controller
     public function processReturn(Request $request, Rental $rental)
     {
         // Only admin can process return
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -459,7 +459,7 @@ class RentalController extends Controller
     public function adminIndex()
     {
         // Only admin can access
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -484,7 +484,7 @@ class RentalController extends Controller
     public function maintenanceDashboard()
     {
         // Only admin can access
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -517,7 +517,7 @@ class RentalController extends Controller
     public function markRepaired(Request $request, Product $product)
     {
         // Only admin can repair
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -564,7 +564,7 @@ class RentalController extends Controller
     public function retireEquipment(Product $product)
     {
         // Only admin can retire equipment
-        if (!auth()->user()->hasRole('admin')) {
+        if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 

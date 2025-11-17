@@ -353,6 +353,21 @@
                         </div>
                     @endif
 
+                    @if($rental->status === 'approved' && $rental->pickup_otp)
+                        <div style="padding: 14px; background: #e7f3ff; border-left: 4px solid #1e40af; border-radius: 6px; margin-bottom: 15px;">
+                            <div style="font-weight: 700; color: #1e40af; margin-bottom: 6px;">
+                                <i class="fa-solid fa-key"></i> Pickup OTP
+                            </div>
+                            <div style="font-size: 20px; letter-spacing: 4px; font-weight: 800; color: #1B5E88;">{{ $rental->pickup_otp }}</div>
+                            <div style="font-size: 12px; color: #555; margin-top: 6px;">
+                                Show this code to the admin when picking up your gear.
+                                @if($rental->expires_at)
+                                    <br>Expires: {{ $rental->expires_at->format('M d, Y h:i A') }}
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     @if($rental->status === 'pending')
                         <!-- Circular progress indicator for pending rentals -->
                         <div class="progress-container">
