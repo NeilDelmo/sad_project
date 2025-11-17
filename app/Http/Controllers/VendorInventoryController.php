@@ -184,8 +184,8 @@ class VendorInventoryController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('marketplace.index')
-                ->with('success', 'Product listed successfully with AI-optimized pricing!');
+                ->route('marketplace.shop')
+                ->with('success', 'Your listing is live in the Marketplace.');
 
         } catch (\Exception $e) {
             DB::rollBack();

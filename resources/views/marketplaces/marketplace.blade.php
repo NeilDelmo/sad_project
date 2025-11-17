@@ -177,6 +177,24 @@
 
     @include('partials.toast-notifications')
 
+    @if(session('success'))
+    <div id="flash-toast" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">
+        <div style="background: #fff; border-left: 4px solid #16a34a; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); padding: 14px 16px; display:flex; gap:10px; align-items:center; min-width: 320px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; color:#166534; margin-bottom:2px;">Listing Posted</div>
+                <div style="color:#444; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ session('success') }}</div>
+            </div>
+            <button onclick="(function(btn){ var t=btn.closest('[id=flash-toast]'); if(t){ t.remove(); } })(this)" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer;">×</button>
+        </div>
+    </div>
+    <script>
+      setTimeout(function(){ var t=document.getElementById('flash-toast'); if(t){ t.remove(); } }, 4000);
+    </script>
+    @endif
+
     <!-- NAVBAR FROM FISHERMAN DASHBOARD (slightly adjusted for marketplace context) -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">

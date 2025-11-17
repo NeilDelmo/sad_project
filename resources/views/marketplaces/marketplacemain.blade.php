@@ -206,6 +206,30 @@
             color: #999;
             margin: 0;
         }
+
+        /* Improved action buttons */
+        .contact-btn {
+            background: #0075B5;
+            color: #fff;
+            border: 1px solid #0075B5;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .contact-btn:hover { background:#1B5E88; border-color:#1B5E88; }
+        .buy-btn {
+            background:#16a34a;
+            color:#fff;
+            border:1px solid #16a34a;
+            padding:10px 16px;
+            border-radius:8px;
+            font-weight:700;
+            transition: all 0.2s ease;
+        }
+        .buy-btn:hover { background:#15803d; border-color:#15803d; }
+        .qty-input { text-align:center; max-width:100px; }
     </style>
 </head>
 
@@ -243,6 +267,24 @@
             </div>
         </div>
     </nav>
+
+    @if(session('success'))
+    <div id="flash-toast" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">
+        <div style="background: #fff; border-left: 4px solid #16a34a; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); padding: 14px 16px; display:flex; gap:10px; align-items:center; min-width: 320px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:700; color:#166534; margin-bottom:2px;">Listing Posted</div>
+                <div style="color:#444; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ session('success') }}</div>
+            </div>
+            <button onclick="(function(btn){ var t=btn.closest('[id=flash-toast]'); if(t){ t.remove(); } })(this)" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer;">×</button>
+        </div>
+    </div>
+    <script>
+      setTimeout(function(){ var t=document.getElementById('flash-toast'); if(t){ t.remove(); } }, 4000);
+    </script>
+    @endif
 
     <!-- Search Bar -->
     <div class="container-fluid mt-3">
@@ -298,19 +340,26 @@
                 @if(($listing->seller_id ?? $product->supplier_id) === auth()->id())
                     <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
                 @else
-                    <div style="display:flex; gap:8px;">
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                         <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
-                            <button type="submit" class="contact-btn">Message Seller</button>
+                            <button type="submit" class="contact-btn"><i class="fa-solid fa-message"></i> Message Seller</button>
                         </form>
-                        <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:6px; align-items:center;">
+                        <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">
                             @csrf
-                            <input type="number" name="quantity" min="1" value="1" style="width:70px; padding:6px 8px; border:1px solid #ccc; border-radius:6px;">
-                            <button type="submit" class="contact-btn" style="background:#16a34a; border-color:#16a34a;">Buy</button>
+                            <div class="input-group" style="max-width: 180px;">
+                                <button class="btn btn-outline-secondary" type="button" onclick="decQty(this)">-</button>
+                                <input type="number" name="quantity" min="1" value="1" class="form-control qty-input">
+                                <button class="btn btn-outline-secondary" type="button" onclick="incQty(this)">+</button>
+                            </div>
+                            <button type="submit" class="buy-btn"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
                         </form>
                     </div>
                 @endif
             @else
-                <button class="contact-btn" onclick="showLoginPrompt()">Message Seller</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="contact-btn" onclick="showLoginPrompt()"><i class="fa-solid fa-message"></i> Message Seller</button>
+                    <button class="buy-btn" onclick="showLoginPrompt()"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
+                </div>
             @endauth
         </div>
         @empty
@@ -343,6 +392,17 @@
     </div>
 
     <script>
+        function incQty(btn){
+            const input = btn.parentElement.querySelector('input[name="quantity"]');
+            const val = parseInt(input.value || '1', 10);
+            input.value = isNaN(val) ? 1 : val + 1;
+        }
+        function decQty(btn){
+            const input = btn.parentElement.querySelector('input[name="quantity"]');
+            const val = parseInt(input.value || '1', 10);
+            const next = (isNaN(val) ? 1 : Math.max(1, val - 1));
+            input.value = next;
+        }
         function messageSellerClick(button) {
             const url = button.getAttribute('data-url');
             if (url) {
