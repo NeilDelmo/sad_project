@@ -7,11 +7,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
-        body { background: #f5f7fa; }
-        .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 16px 0; }
-        .nav-brand { color: #fff; font-weight: 700; font-size: 24px; text-decoration: none; }
-        .nav-link { color: rgba(255,255,255,.9); margin-left: 12px; }
-        .nav-link.active { color: #fff; font-weight: 600; }
+        @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
+
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-brand {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            font-family: "Koulen", sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         .card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .conv-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #eee; text-decoration: none; color: inherit; }
         .conv-item:hover { background: #f8fafc; }
@@ -20,7 +83,44 @@
     </style>
 </head>
 <body>
-@include('vendor.partials.nav')
+<nav class="navbar">
+    <div class="container-fluid">
+        <!-- Logo row -->
+        <div class="w-100 text-start mb-2">
+            <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">🐟 SeaLedger</a>
+        </div>
+        
+        <!-- Nav links row -->
+        <div class="w-100 text-start">
+            <div class="nav-links">
+                <a href="{{ route('vendor.dashboard') }}" class="nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+                <a href="{{ route('vendor.products.index') }}" class="nav-link {{ request()->routeIs('vendor.products.index') ? 'active' : '' }}">
+                    <i class="fa-solid fa-fish"></i> Browse
+                </a>
+                <a href="{{ route('vendor.inventory.index') }}" class="nav-link {{ request()->routeIs('vendor.inventory.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-box"></i> Inventory
+                </a>
+                <a href="{{ route('vendor.messages') }}" class="nav-link {{ request()->routeIs('vendor.messages') ? 'active' : '' }}">
+                    <i class="fa-solid fa-envelope"></i> Messages
+                    @if(isset($vendorUnread) && $vendorUnread > 0)
+                        <span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;">{{ $vendorUnread }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.*') ? 'active' : '' }}">
+                    <i class="fa-solid fa-store"></i> Marketplace
+                </a>
+                <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
 
 <div class="container my-4">
     <div class="card">

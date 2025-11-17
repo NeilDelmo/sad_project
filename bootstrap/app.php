@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Add this line to apply UpdateLastSeen to web routes:
         $middleware->web(append: [
             \App\Http\Middleware\UpdateLastSeen::class,
+            \App\Http\Middleware\PreventBackHistory::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
