@@ -60,7 +60,6 @@ return [
         'created',
         'updated',
         'deleted',
-        'restored',
     ],
 
     /*

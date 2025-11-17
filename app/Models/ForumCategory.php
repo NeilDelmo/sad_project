@@ -4,15 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class ForumCategory extends Model
+class ForumCategory extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, \OwenIt\Auditing\Auditable;
 
     protected $fillable = ['name', 'description'];
 
-    // Add this for automatic eager loading
-    protected $with = ['threads.user'];
+    // Remove automatic eager loading for better performance with pagination
+    // protected $with = ['threads.user'];
 
     // 👇 specify 'category_id' as the foreign key to avoid 'forum_category_id' assumption
     public function threads()
@@ -26,4 +27,3 @@ class ForumCategory extends Model
         return $this->threads->count();
     }
 }
-

@@ -5,10 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class Order extends Model
+class Order extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, \OwenIt\Auditing\Auditable;
+
+    protected array $auditExclude = [
+        'proof_photo_path',
+        'refund_proof_path',
+        'updated_at',
+    ];
 
     public const STATUS_PENDING_PAYMENT = 'pending_payment';
     public const STATUS_IN_TRANSIT = 'in_transit';

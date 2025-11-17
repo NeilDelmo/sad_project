@@ -5,10 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class Message extends Model
+class Message extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, \OwenIt\Auditing\Auditable;
+
+    protected array $auditExclude = [
+        'message',
+        'read_at',
+        'is_read',
+        'updated_at',
+    ];
 
     protected $fillable = [
         'conversation_id',

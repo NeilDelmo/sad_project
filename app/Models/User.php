@@ -44,6 +44,12 @@ class User extends Authenticatable implements AuditableConract
         'remember_token',
     ];
 
+    // Do not store sensitive secrets in audit logs
+    protected array $auditExclude = [
+        'password',
+        'remember_token',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *

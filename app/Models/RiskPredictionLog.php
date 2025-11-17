@@ -4,13 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable;
 
 /**
  * Stores each ML prediction so we can build historical insights.
  */
-class RiskPredictionLog extends Model
+class RiskPredictionLog extends Model implements Auditable
 {
-    use HasFactory;
+    use HasFactory, \OwenIt\Auditing\Auditable;
+
+    protected array $auditExclude = [
+        'raw_output',
+        'override_reasons',
+        'environmental_flags',
+        'updated_at',
+    ];
 
     protected $fillable = [
         'user_id',
