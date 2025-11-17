@@ -118,6 +118,8 @@
 </head>
 
 <body>
+    @include('partials.toast-notifications')
+    @include('partials.message-notification')
 
     <!-- Navbar -->
     <nav class="navbar">
@@ -245,7 +247,8 @@
                     <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
                 @else
                     <div class="card-actions">
-                        <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
+                        @php $hasListingSeller = isset($listing->seller_id) && $listing->seller_id; @endphp
+                        <form action="{{ $hasListingSeller ? route('marketplace.message.listing', ['listingId' => $listing->id]) : route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
                             <button type="submit" class="contact-btn"><i class="fa-solid fa-message"></i> Message Seller</button>
                         </form>
                         <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">

@@ -108,6 +108,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/marketplace/message/{conversationId}', [MessageController::class, 'show'])->name('marketplace.message');
     Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'startConversation'])->name('marketplace.message.product');
+    Route::get('/marketplace/listing/{listingId}/message', [MessageController::class, 'startConversationForListing'])->name('marketplace.message.listing');
     Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
     Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
     Route::get('/api/messages/unread-count', [MessageController::class, 'getUnreadCount']);

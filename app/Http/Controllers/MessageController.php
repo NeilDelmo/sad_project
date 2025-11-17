@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Product;
+use App\Models\MarketplaceListing;
 use App\Models\VendorOffer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -76,6 +77,43 @@ class MessageController extends Controller
                 'last_message_at' => now(),
             ]);
         }
+
+        return view('marketplaces.message', compact('conversation', 'product'));
+    }
+
+    /**
+     * Start conversation about a marketplace listing (buyer ↔ vendor)
+     */
+    public function startConversationForListing($listingId)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Please login to message sellers');
+        }
+
+        $listing = MarketplaceListing::with(['seller', 'product'])->findOrFail($listingId);
+
+        // Prevent messaging self
+        if ($listing->seller_id === Auth::id()) {
+            return redirect()->route('marketplace.shop')->with('error', 'You cannot message yourself');
+        }
+
+        // Find existing conversation between buyer (auth user) and vendor (listing seller) for this product
+        $conversation = Conversation::where('buyer_id', Auth::id())
+            ->where('seller_id', $listing->seller_id)
+            ->where('product_id', $listing->product_id)
+            ->with(['messages.sender'])
+            ->first();
+
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'buyer_id' => Auth::id(),
+                'seller_id' => $listing->seller_id,
+                'product_id' => $listing->product_id, // keep product context for reference
+                'last_message_at' => now(),
+            ]);
+        }
+
+        $product = $listing->product; // for header context in the chat view
 
         return view('marketplaces.message', compact('conversation', 'product'));
     }

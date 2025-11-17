@@ -788,7 +788,10 @@
         }
       });
 
-      // Show desktop notification only (no sound on this page)
+      // If tab is hidden, optionally play a subtle sound and show desktop notification
+      if (shouldNotify && document.hidden) {
+        try { if (notifAudio) { notifAudio.currentTime = 0; notifAudio.play().catch(()=>{}); } } catch(e) {}
+      }
       if (shouldNotify && notificationPermission === 'granted' && document.hidden) {
         const notification = new Notification(latestSenderName, {
           body: latestMessage.length > 60 ? latestMessage.substring(0, 60) + '...' : latestMessage,

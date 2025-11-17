@@ -2,6 +2,9 @@
 <script>
     // Background notification system for new messages (site-wide)
     (function() {
+        if (window.__messageNotifierInitialized) return; // prevent double init
+        window.__messageNotifierInitialized = true;
+
         let lastUnreadCount = 0;
         let hasNotified = false;
         let isFirstPoll = true;
@@ -28,21 +31,14 @@
                         hasNotified = false; // reset when user has read everything
                     }
 
-                    // Update any badges with data-unread-count attr
-                    const badges = document.querySelectorAll('[data-unread-count]');
-                    badges.forEach(badge => {
-                        badge.textContent = count;
-                        badge.setAttribute('data-unread-count', String(count));
-                    });
-
                     lastUnreadCount = count;
                     if (isFirstPoll) isFirstPoll = false;
                 })
                 .catch(() => { /* ignore errors */ });
         }
 
-        // Poll every 5 seconds and on focus
-        setInterval(checkNewMessages, 2000);
+        // Poll periodically and on focus
+        setInterval(checkNewMessages, 3000);
         window.addEventListener('focus', checkNewMessages);
     })();
 </script>

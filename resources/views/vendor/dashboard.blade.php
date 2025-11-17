@@ -673,6 +673,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         function showReceipt(data) {
             document.getElementById('receiptId').textContent = '#' + data.id;
@@ -698,7 +699,9 @@
         });
 
         // Income Line Chart
-        const ctx = document.getElementById('incomeChart').getContext('2d');
+        const canvas = document.getElementById('incomeChart');
+        if (canvas && window.Chart) {
+        const ctx = canvas.getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -758,8 +761,9 @@
                 }
             }
         });
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
 
 </body>
 </html>

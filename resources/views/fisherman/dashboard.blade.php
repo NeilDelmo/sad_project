@@ -732,6 +732,7 @@
         @endif
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         // Refresh unread message count when window gains focus
         let lastUnreadCount = {{ $unreadCount ?? 0 }};
@@ -851,7 +852,9 @@
         }
 
         // Income Line Chart
-        const ctx = document.getElementById('incomeChart').getContext('2d');
+        const canvas = document.getElementById('incomeChart');
+        if (canvas && window.Chart) {
+        const ctx = canvas.getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -911,8 +914,9 @@
                 }
             }
         });
+        }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
 
 </body>
 </html>

@@ -119,6 +119,8 @@
 
 <script>
     (function() {
+        if (window.__toastNotifierInitialized) return; // prevent double init
+        window.__toastNotifierInitialized = true;
         let shownMessageIds = new Set();
         
         function refreshUnreadCount() {

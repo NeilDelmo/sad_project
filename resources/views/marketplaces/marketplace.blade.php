@@ -176,6 +176,7 @@
 <body style="background-color: #BFBFBF;">
 
     @include('partials.toast-notifications')
+    @include('partials.message-notification')
 
     @if(session('success'))
     <div id="flash-toast" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">
