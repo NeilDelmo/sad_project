@@ -48,3 +48,5 @@
     });
   })();
 </script>
+
+@include('partials.toast-notifications')

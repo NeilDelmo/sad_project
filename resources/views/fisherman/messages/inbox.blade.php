@@ -265,6 +265,8 @@
         </div>
     </nav>
 
+    @include('partials.toast-notifications')
+
     <div class="container-main">
         <a href="{{ route('fisherman.dashboard') }}" class="btn-back">
             <i class="fa-solid fa-arrow-left"></i>

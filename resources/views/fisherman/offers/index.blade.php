@@ -381,6 +381,8 @@
         </div>
     </nav>
 
+    @include('partials.toast-notifications')
+
     <div class="container">
         <div class="page-header">
             <h1><i class="fas fa-handshake"></i> Vendor Offers</h1>

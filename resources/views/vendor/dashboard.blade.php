@@ -733,7 +733,7 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.onclick = () => window.location.href = '/messages/' + conversationId;
+            toast.onclick = () => window.location.href = '/marketplace/message/' + conversationId;
             
             toast.innerHTML = `
                 <div class="toast-icon">

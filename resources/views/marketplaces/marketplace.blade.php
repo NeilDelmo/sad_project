@@ -175,6 +175,8 @@
 </head>
 <body style="background-color: #BFBFBF;">
 
+    @include('partials.toast-notifications')
+
     <!-- NAVBAR FROM FISHERMAN DASHBOARD (slightly adjusted for marketplace context) -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
