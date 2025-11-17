@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\VendorOffer;
 use App\Models\CustomerOrder;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -74,10 +75,10 @@ class VendorOnboardingController extends Controller
 
         $products = $query->limit(20)->get();
 
-        // Calculate total spending from accepted offers (buying from fishermen)
-        $totalSpending = VendorOffer::where('vendor_id', $user->id)
-            ->where('status', 'accepted')
-            ->sum(DB::raw('offered_price * quantity'));
+        // Calculate total spending from received orders (buying from fishermen - cash on delivery)
+        $totalSpending = Order::where('vendor_id', $user->id)
+            ->where('status', Order::STATUS_RECEIVED)
+            ->sum('total');
 
         // Calculate total income from marketplace sales to buyers
         $totalIncome = CustomerOrder::whereHas('listing.vendorInventory', function($q) use ($user) {
@@ -191,10 +192,17 @@ class VendorOnboardingController extends Controller
 
         $products = $query->paginate(24)->withQueryString();
 
+        // Get vendor's pending/countered offers to disable buttons
+        $pendingOffers = \App\Models\VendorOffer::where('vendor_id', $user->id)
+            ->whereIn('status', ['pending', 'countered'])
+            ->pluck('product_id')
+            ->toArray();
+
         return view('vendor.products.index', [
             'products' => $products,
             'prefs' => $prefs,
             'applyFilters' => $applyFilters,
+            'pendingOffers' => $pendingOffers,
             'onlyFish' => $onlyFish,
             'q' => $q,
         ]);

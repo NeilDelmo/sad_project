@@ -177,6 +177,8 @@
 @if($user && $user->user_type === 'fisherman')
   @include('fisherman.partials.nav')
   @include('partials.toast-notifications')
+@elseif($user && $user->user_type === 'vendor')
+  @include('vendor.partials.nav')
 @endif
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">

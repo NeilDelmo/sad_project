@@ -52,7 +52,7 @@ class FishermanController extends Controller
 
         // Calculate total spending from rentals (equipment/gear rentals)
         $totalSpending = Rental::where('user_id', $fisherman->id)
-            ->whereIn('status', ['completed', 'active', 'returned'])
+            ->whereIn('status', ['completed', 'returned'])
             ->sum('total_charges');
 
         // Count accepted offers

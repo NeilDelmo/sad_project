@@ -581,6 +581,15 @@
     </div>
     @endif
 
+    @if(isset($pendingOffer) && $pendingOffer && Auth::id() === $conversation->buyer_id && $pendingOffer->status === 'countered')
+    <div class="offer-panel" style="margin: 8px 12px; background: #fff8e6; border: 1px solid #ffe2a8;">
+      <div class="offer-header">
+        <div class="offer-title">Fisherman Counter Offer for {{ $product?->name }}</div>
+        <button type="button" class="btn-offer btn-counter" onclick="openCounterOfferModal()">Review Counter</button>
+      </div>
+    </div>
+    @endif
+
     <div class="chat-messages" id="chatMessages">
       <!-- Messages will be loaded via AJAX -->
       <div style="text-align: center; color: #999; padding: 20px;">
@@ -655,6 +664,41 @@
           </form>
         </div>
         @endif
+      </div>
+    </div>
+  </div>
+  @endif
+
+  @if(isset($pendingOffer) && $pendingOffer && Auth::id() === $conversation->buyer_id && $pendingOffer->status === 'countered')
+  <div id="counterOfferModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4 class="modal-title">Review Fisherman Counter Offer</h4>
+        <button class="modal-close" onclick="closeCounterOfferModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-row"><span>Product</span><strong>{{ $product?->name }}</strong></div>
+        <div class="modal-row"><span>Your Original Offer</span><strong>₱{{ number_format($pendingOffer->offered_price, 2) }}</strong></div>
+        <div class="modal-row" style="background: #fff8e6;"><span>Fisherman Counter Price</span><strong style="color: #d97706;">₱{{ number_format($pendingOffer->fisherman_counter_price, 2) }}</strong></div>
+        <div class="modal-row"><span>Quantity</span><strong>{{ $pendingOffer->quantity }} {{ $product?->unit_of_measure }}</strong></div>
+        <div class="modal-row"><span>Total</span><strong>₱{{ number_format($pendingOffer->fisherman_counter_price * $pendingOffer->quantity, 2) }}</strong></div>
+        @if($pendingOffer->fisherman_message)
+        <div class="modal-row" style="flex-direction: column; align-items: flex-start;">
+          <span class="modal-form-label">Fisherman message</span>
+          <div style="background:#fff;border:1px solid #eee;border-radius:8px;padding:8px; width:100%; color:#444;">{{ $pendingOffer->fisherman_message }}</div>
+        </div>
+        @endif
+
+        <div class="modal-actions">
+          <form method="POST" action="{{ route('vendor.offers.accept-counter', $pendingOffer) }}">
+            @csrf
+            <button type="submit" class="btn btn-accept">Accept Counter</button>
+          </form>
+          <form method="POST" action="{{ route('vendor.offers.decline-counter', $pendingOffer) }}">
+            @csrf
+            <button type="submit" class="btn btn-reject">Decline</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -832,6 +876,16 @@
 
     function closeOfferModal() {
       const m = document.getElementById('offerModal');
+      if (m) m.classList.remove('show');
+    }
+
+    function openCounterOfferModal() {
+      const m = document.getElementById('counterOfferModal');
+      if (m) m.classList.add('show');
+    }
+
+    function closeCounterOfferModal() {
+      const m = document.getElementById('counterOfferModal');
       if (m) m.classList.remove('show');
     }
 

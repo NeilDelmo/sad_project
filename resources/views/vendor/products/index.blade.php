@@ -439,6 +439,21 @@
     @include('vendor.partials.nav')>
 
     <div class="container-custom">
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ $errors->first() }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        @endif
+
         <div class="page-header">
             <div class="page-title">Browse Fisherman Products</div>
             <div class="page-subtitle">Discover fresh catches and make your offers</div>
@@ -538,10 +553,17 @@
                             <textarea name="message" rows="2" class="form-control-custom" 
                                       placeholder="Add a message to the fisherman..." maxlength="500"></textarea>
                         </div>
+                        @if(in_array($product->id, $pendingOffers))
+                        <button type="button" class="btn-make-offer" disabled style="background: #6c757d; cursor: not-allowed; opacity: 0.7;">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Offer Pending</span>
+                        </button>
+                        @else
                         <button type="submit" class="btn-make-offer">
                             <i class="fa-solid fa-handshake"></i>
                             <span>Make Offer</span>
                         </button>
+                        @endif
                     </form>
                 </div>
 
@@ -567,5 +589,6 @@
 
     @include('partials.message-notification')
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
