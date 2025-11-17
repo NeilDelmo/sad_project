@@ -126,8 +126,7 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     // Message Inbox
     Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
 
-    // Fisherman Offers Management
-    Route::get('/offers', [\App\Http\Controllers\VendorOfferController::class, 'fishermanIndex'])->name('offers.index');
+    // Fisherman Offers actions (keep actions for integrations; index removed)
     Route::post('/offers/{offer}/accept', [\App\Http\Controllers\VendorOfferController::class, 'accept'])->name('offers.accept');
     Route::post('/offers/{offer}/reject', [\App\Http\Controllers\VendorOfferController::class, 'reject'])->name('offers.reject');
     Route::post('/offers/{offer}/counter', [\App\Http\Controllers\VendorOfferController::class, 'counter'])->name('offers.counter');

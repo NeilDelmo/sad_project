@@ -120,8 +120,25 @@
 <script>
     (function() {
         let shownMessageIds = new Set();
-        let lastCheckTime = Date.now();
         
+        function refreshUnreadCount() {
+            fetch('/api/messages/unread-count')
+                .then(r => r.json())
+                .then(data => {
+                    const count = data.unread_count ?? 0;
+                    const badges = document.querySelectorAll('#unread-message-count, #btn-unread-message-count');
+                    if (!badges || badges.length === 0) return;
+                    badges.forEach(b => {
+                        if (!b) return;
+                        b.textContent = count;
+                        if (b.id === 'btn-unread-message-count' || b.tagName.toLowerCase() === 'span') {
+                            b.style.display = count > 0 ? 'inline-block' : 'none';
+                        }
+                    });
+                })
+                .catch(() => {});
+        }
+
         function fetchLatestUnread() {
             fetch('/api/messages/latest-unread')
                 .then(response => response.json())
@@ -178,11 +195,11 @@
             return div.innerHTML;
         }
 
-        // Check for new messages every 3 seconds
-        setInterval(fetchLatestUnread, 3000);
+        // Check for new messages and update badge every 3 seconds
+        setInterval(() => { fetchLatestUnread(); refreshUnreadCount(); }, 3000);
         
-        // Initial check after 2 seconds
-        setTimeout(fetchLatestUnread, 2000);
+        // Initial checks after 2 seconds
+        setTimeout(() => { fetchLatestUnread(); refreshUnreadCount(); }, 2000);
     })();
 </script>
 @endif

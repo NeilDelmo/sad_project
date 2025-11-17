@@ -337,49 +337,7 @@
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('fisherman.dashboard') }}">
-                <i class="fas fa-fish"></i> FISHERMAN DASHBOARD
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('fisherman.dashboard') }}">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('fisherman.products.index') }}">
-                            <i class="fas fa-box"></i> My Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('fisherman.offers.index') }}">
-                            <i class="fas fa-handshake"></i> Offers
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('fisherman.messages') }}">
-                            <i class="fas fa-envelope"></i> Messages
-                        </a>
-                    </li>
-                    <li class="nav-item ms-3">
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-logout">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    @include('fisherman.partials.nav')
 
     @include('partials.toast-notifications')
 

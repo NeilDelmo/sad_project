@@ -308,32 +308,7 @@
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
-            <div class="nav-links">
-                <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
-                    <i class="fa-solid fa-gauge-high"></i> Dashboard
-                </a>
-                <a href="{{ route('fisherman.products.index') }}" class="nav-link active">
-                    <i class="fa-solid fa-box"></i> My Products
-                </a>
-                <a href="{{ route('fisherman.messages') }}" class="nav-link">
-                    <i class="fa-solid fa-envelope"></i> Messages
-                </a>
-                <a href="{{ route('marketplace.index') }}" class="nav-link">
-                    <i class="fa-solid fa-store"></i> Marketplace
-                </a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('fisherman.partials.nav')
 
     <div class="container-main">
         <h1 class="page-title">Add New Product</h1>

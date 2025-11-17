@@ -5,8 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
+  <style>
+    /* Fisherman navbar styling to match dashboard */
+    .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .nav-brand { color: #fff; font-size: 28px; font-weight: bold; font-family: "Koulen", sans-serif; text-decoration: none; }
+    .nav-links { display: flex; gap: 10px; }
+    .nav-link { color: rgba(255,255,255,0.9); text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: 500; transition: all .3s ease; position: relative; }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); }
+    .nav-link.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  </style>
 </head>
 <body>
+@php $user = Auth::user(); @endphp
+@if($user && $user->user_type === 'fisherman')
+  @include('fisherman.partials.nav')
+  @include('partials.toast-notifications')
+@endif
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">My Orders</h1>

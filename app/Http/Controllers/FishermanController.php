@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Product;
+use App\Models\Order;
 use App\Models\Rental;
 use App\Models\VendorOffer;
 use Illuminate\Http\Request;
@@ -43,10 +44,10 @@ class FishermanController extends Controller
             ->limit(5)
             ->get();
 
-        // Calculate total income from accepted vendor offers
-        $totalIncome = VendorOffer::where('fisherman_id', $fisherman->id)
-            ->where('status', 'accepted')
-            ->sum(DB::raw('offered_price * quantity'));
+        // Calculate total income from delivered orders only
+        $totalIncome = Order::where('fisherman_id', $fisherman->id)
+            ->where('status', Order::STATUS_DELIVERED)
+            ->sum('total');
 
         // Count accepted offers
         $acceptedOffersCount = VendorOffer::where('fisherman_id', $fisherman->id)

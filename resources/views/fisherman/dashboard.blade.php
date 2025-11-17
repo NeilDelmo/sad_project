@@ -540,38 +540,7 @@
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
-            <div class="nav-links">
-                <a href="{{ route('fisherman.dashboard') }}" class="nav-link active">
-                    <i class="fa-solid fa-gauge-high"></i> Dashboard
-                </a>
-                <a href="{{ route('fisherman.products.index') }}" class="nav-link">
-                    <i class="fa-solid fa-box"></i> My Products
-                </a>
-                <a href="{{ route('orders.index') }}" class="nav-link">
-                    <i class="fa-solid fa-clipboard-list"></i> Orders
-                </a>
-                <a href="{{ route('fisherman.messages') }}" class="nav-link">
-                    <i class="fa-solid fa-envelope"></i> Messages
-                </a>
-                <a href="{{ route('fishing-safety.public') }}" class="nav-link">
-                    <i class="fa-solid fa-life-ring"></i> Safety Map
-                </a>
-                <a href="{{ route('marketplace.index') }}" class="nav-link">
-                    <i class="fa-solid fa-store"></i> Marketplace
-                </a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('fisherman.partials.nav')
 
     @include('partials.toast-notifications')
 
@@ -601,9 +570,7 @@
                 <a href="{{ route('fisherman.messages') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-envelope"></i>
                     Messages
-                    @if(isset($unreadCount) && $unreadCount > 0)
-                    <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px;">{{ $unreadCount }}</span>
-                    @endif
+                    <span id="btn-unread-message-count" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px; display: {{ isset($unreadCount) && $unreadCount > 0 ? 'inline-block' : 'none' }};">{{ $unreadCount ?? 0 }}</span>
                 </a>
                 <a href="{{ route('fishing-safety.public') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-life-ring"></i>
@@ -633,7 +600,7 @@
                     <i class="fa-solid fa-peso-sign"></i>
                 </div>
                 <div class="stat-number">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
-                <div class="stat-label">Total Income (Accepted Offers)</div>
+                <div class="stat-label">Total Income (Delivered Orders)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
@@ -766,8 +733,8 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Unread count check:', data.unread_count, 'Last:', lastUnreadCount, 'HasNotified:', hasNotified, 'FirstPoll:', isFirstPoll);
-                    const unreadBadge = document.getElementById('unread-message-count');
-                    if (unreadBadge) {
+                    const unreadBadges = document.querySelectorAll('#unread-message-count, #btn-unread-message-count');
+                    if (unreadBadges && unreadBadges.length > 0) {
                         const shouldPlaySound = (isFirstPoll && data.unread_count > 0 && !hasNotified) || 
                                                 (!isFirstPoll && data.unread_count > lastUnreadCount && !hasNotified);
                         
@@ -784,11 +751,19 @@
                         if (data.unread_count === 0) {
                             hasNotified = false;
                         }
-                        
-                        if (data.unread_count !== lastUnreadCount) {
-                            unreadBadge.textContent = data.unread_count;
-                            lastUnreadCount = data.unread_count;
-                        }
+                        // Update all badge instances (nav, stats, button)
+                        unreadBadges.forEach(badge => {
+                            if (!badge) return;
+                            if (typeof data.unread_count === 'number') {
+                                badge.textContent = data.unread_count;
+                                // Show/hide if badge is designed as a pill
+                                if (badge.id === 'btn-unread-message-count' || badge.tagName.toLowerCase() === 'span') {
+                                    badge.style.display = data.unread_count > 0 ? 'inline-block' : 'none';
+                                }
+                            }
+                        });
+
+                        lastUnreadCount = data.unread_count;
                         
                         if (isFirstPoll) {
                             isFirstPoll = false;
