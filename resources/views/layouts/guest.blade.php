@@ -26,5 +26,13 @@
                 {{ $slot }}
             </div>
         </div>
+                <script>
+                    // Ensure BFCache restores trigger a reload to reflect auth state
+                    window.addEventListener('pageshow', function (event) {
+                        if (event.persisted) {
+                            window.location.reload();
+                        }
+                    });
+                </script>
     </body>
 </html>

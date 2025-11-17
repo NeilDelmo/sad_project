@@ -28,6 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\UpdateLastSeen::class,
             \App\Http\Middleware\PreventBackHistory::class,
         ]);
+        
+            // Redirect unauthenticated users to landing page instead of login
+            $middleware->replace(
+                \Illuminate\Auth\Middleware\Authenticate::class,
+                \App\Http\Middleware\Authenticate::class
+            );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

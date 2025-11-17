@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Defense-in-depth: discourage caching at the document level -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Vendor Inbox</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
@@ -158,6 +162,23 @@
             window.location.reload();
         }
     });
+
+    // Force reload if page is restored from BFCache (back/forward)
+    (function() {
+        function shouldReloadFromHistory(e) {
+            if (e && e.persisted) return true;
+            try {
+                var navs = performance.getEntriesByType && performance.getEntriesByType('navigation');
+                if (navs && navs[0] && navs[0].type === 'back_forward') return true;
+            } catch (err) {}
+            return false;
+        }
+        window.addEventListener('pageshow', function(e) {
+            if (shouldReloadFromHistory(e)) {
+                window.location.reload();
+            }
+        });
+    })();
 </script>
 
 @include('partials.message-notification')

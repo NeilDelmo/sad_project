@@ -29,3 +29,22 @@
     </div>
   </div>
 </nav>
+
+<script>
+  // Force reload when page is restored from back/forward cache
+  (function() {
+    function shouldReloadFromHistory(e) {
+      if (e && e.persisted) return true;
+      try {
+        var navs = performance.getEntriesByType && performance.getEntriesByType('navigation');
+        if (navs && navs[0] && navs[0].type === 'back_forward') return true;
+      } catch (err) {}
+      return false;
+    }
+    window.addEventListener('pageshow', function(e) {
+      if (shouldReloadFromHistory(e)) {
+        window.location.reload();
+      }
+    });
+  })();
+</script>
