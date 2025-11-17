@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
     Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
     Route::get('/api/messages/unread-count', [MessageController::class, 'getUnreadCount']);
+    Route::get('/api/messages/latest-unread', [MessageController::class, 'getLatestUnread']);
 });
 
 // Fisherman routes (requires authentication + fisherman role)

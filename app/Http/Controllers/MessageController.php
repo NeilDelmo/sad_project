@@ -214,4 +214,37 @@ class MessageController extends Controller
 
         return response()->json(['unread_count' => $unreadCount]);
     }
+
+    /**
+     * Get latest unread messages for toast notifications
+     */
+    public function getLatestUnread()
+    {
+        $user = Auth::user();
+        
+        // Get latest unread message per conversation
+        $latestMessages = Message::where('sender_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->whereHas('conversation', function($q) use ($user) {
+                $q->where('buyer_id', $user->id)->orWhere('seller_id', $user->id);
+            })
+            ->with(['sender', 'conversation'])
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function($message) use ($user) {
+                return [
+                    'id' => $message->id,
+                    'sender_name' => $message->sender->username ?? $message->sender->email,
+                    'message' => \Illuminate\Support\Str::limit($message->message, 50),
+                    'conversation_id' => $message->conversation_id,
+                    'created_at' => $message->created_at->diffForHumans(),
+                ];
+            });
+
+        return response()->json([
+            'messages' => $latestMessages,
+            'count' => $latestMessages->count()
+        ]);
+    }
 }
