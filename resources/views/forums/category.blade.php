@@ -1,77 +1,483 @@
+<style>
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%);
+        border: none;
+        color: white;
+        padding: 10px 24px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 117, 181, 0.4);
+    }
+    .form-control {
+        background-color: #1a3b70;
+        border: 1px solid #2d5a8f;
+        color: #f1f3f5;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    .form-control:focus {
+        background-color: #1e4580;
+        border-color: #17a2b8;
+        color: #f1f3f5;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    .form-control::placeholder {
+        color: #7A96AC;
+    }
+    .thread-preview-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #2d5a8f;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        flex-shrink: 0;
+    }
+    .thread-content-wrapper {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    .thread-text-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .image-upload-area {
+        background: #1a3b70;
+        border: 2px dashed #2d5a8f;
+        border-radius: 12px;
+        padding: 30px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+    .image-upload-area:hover {
+        border-color: #17a2b8;
+        background: #1e4580;
+    }
+    .image-upload-area.dragover {
+        border-color: #20c997;
+        background: #1e4580;
+        border-style: solid;
+    }
+    .image-upload-area input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 15px;
+    }
+    .image-preview-item {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid #2d5a8f;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .image-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .image-preview-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    .image-preview-remove:hover {
+        background: rgba(220, 53, 69, 1);
+        transform: scale(1.1);
+    }
+    
+    .sort-dropdown {
+        background-color: #1a3b70;
+        border: 1px solid #2d5a8f;
+        color: #f1f3f5;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .sort-dropdown:hover {
+        background-color: #1e4580;
+        border-color: #17a2b8;
+    }
+    .sort-dropdown:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    .pagination {
+        gap: 8px;
+    }
+    .page-link {
+        background-color: #1a3b70;
+        border: 1px solid #2d5a8f;
+        color: #f1f3f5;
+        padding: 8px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .page-link:hover {
+        background-color: #1e4580;
+        border-color: #17a2b8;
+        color: #fff;
+    }
+    .page-item.active .page-link {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: #fff;
+    }
+    .page-item.disabled .page-link {
+        background-color: #0d1f3a;
+        border-color: #1f3b6e;
+        color: #7A96AC;
+    }
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        position: relative;
+    }
+    .search-input {
+        background-color: #1a3b70;
+        border: 1px solid #2d5a8f;
+        color: #f1f3f5;
+        padding: 8px 16px;
+        border-radius: 8px 0 0 8px;
+        min-width: 250px;
+        transition: all 0.3s ease;
+    }
+    .search-input:focus {
+        outline: none;
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+    .search-input::placeholder {
+        color: #7A96AC;
+    }
+    .search-btn {
+        background-color: #17a2b8;
+        border: 1px solid #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .search-btn:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+    .clear-search-btn {
+        background: transparent;
+        border: none;
+        color: #dc3545;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 8px;
+        margin-left: -40px;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+    .clear-search-btn:hover {
+        color: #c82333;
+        transform: scale(1.2);
+    }
+</style>
+
 <div id="forum-category" class="animate-fadeIn" data-category="{{ $category->id }}">
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div>
-                <h3 class="mb-0 text-white">{{ $category->name }}</h3>
-                <small class="text-muted">{{ $category->description }}</small>
-            </div>
-        </div>
-        <small class="text-muted">
-            {{ $category->threads->count() }} {{ Str::plural('thread', $category->threads->count()) }}
-        </small>
+    <div class="mb-4">
+        <button id="backToCategories" class="btn btn-sm btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Back to Categories
+        </button>
     </div>
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <button id="backToCategories" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-arrow-left"></i> Back to Categories
+
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1">{{ $category->name }}</h2>
+            <p class="text-muted mb-0">{{ $category->description }}</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" 
+                       id="searchThreads" 
+                       class="search-input" 
+                       placeholder="Search threads..." 
+                       value="{{ $search ?? '' }}">
+                <button id="searchBtn" class="search-btn">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display: {{ $search ? 'block' : 'none' }};">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+            
+            <select id="sortThreads" class="sort-dropdown">
+                <option value="newest" {{ $sort === 'newest' ? 'selected' : '' }}>Newest First</option>
+                <option value="oldest" {{ $sort === 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                <option value="best" {{ $sort === 'best' ? 'selected' : '' }}>Best (Most Upvotes)</option>
+            </select>
+            
+            <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#newThreadModal">
+                <i class="bi bi-plus-circle"></i> New Thread
             </button>
         </div>
     </div>
-    <!-- New Thread -->
-    <div class="card forum-card mb-4">
-        <div class="card-body">
-            <h5 class="fw-semibold mb-3">
-                <i class="bi bi-pencil-square text-success"></i> Start New Discussion
-            </h5>
-            <form id="new-thread-form" data-category="{!! $category->id !!}">
-                @csrf
-                <div class="mb-3">
-                    <input type="text" name="title" class="form-control bg-secondary text-white border-0"
-                           placeholder="What's your question or topic?" required>
+
+    <!-- Show search results info -->
+    <div id="searchResultsInfo" class="alert alert-info d-flex justify-content-between align-items-center" style="display: {{ $search ? 'flex' : 'none' }} !important;">
+        <span>
+            <i class="bi bi-search"></i> Showing results for: <strong id="searchTerm">"{{ $search }}"</strong> 
+            (<span id="searchCount">{{ $threads->total() }}</span> {{ Str::plural('thread', $threads->total()) }} found)
+        </span>
+        <button id="clearSearchBtn2" class="btn btn-sm btn-outline-dark">
+            Clear Search
+        </button>
+    </div>
+
+    <!-- New Thread Modal -->
+    <div class="modal fade" id="newThreadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background-color:#132d55; color:#f1f3f5;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">Create New Thread</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mb-3">
-                    <textarea id="new-thread-body" name="body" rows="4" class="form-control bg-secondary text-white border-0"
-          placeholder="Describe your topic in detail..."></textarea>
+                <div class="modal-body">
+                    <form id="new-thread-form" data-category="{{ $category->id }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="thread-title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="thread-title" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-thread-body" class="form-label">Body</label>
+                            <textarea class="form-control" id="new-thread-body" name="body" rows="6"></textarea>
+                            <small class="text-muted">You can paste or insert images directly in the editor above</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-paperclip"></i> Or Attach Additional Images
+                            </label>
+                            <small class="d-block text-muted mb-2">Images uploaded here will appear in the "All Attached Images" section</small>
+                            <div id="thread-image-upload" class="image-upload-area">
+                                <input type="file" id="thread-image-input" accept="image/*" multiple style="display: none;">
+                                <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #17a2b8;"></i>
+                                <p class="mb-0 mt-2">Click to upload or drag & drop</p>
+                                <small class="text-muted">PNG, JPG, GIF, WEBP up to 5MB each</small>
+                            </div>
+                            <div id="thread-image-previews" class="image-preview-container"></div>
+                            <input type="hidden" id="thread-image-urls" name="image_urls">
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send"></i> Post Thread
+                        </button>
+                    </form>
                 </div>
-                <div class="text-end">
-                    <button class="btn btn-success">
-                        Post Thread <i class="bi bi-send ms-1"></i>
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
-    <!-- Threads -->
-    @if($category->threads->count() > 0)
-        <div class="d-flex flex-column gap-3">
-            @foreach($category->threads as $thread)
-                <div class="thread-card card forum-card p-3" data-thread="{{ $thread->id }}" style="cursor: pointer;">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="text-info mb-2"><i class="bi bi-chat-dots"></i> {{ $thread->title }}</h5>
-                            <p class="text-muted small mb-2">{!! Str::limit($thread->body, 120) !!}</p>
-                            <div class="text-muted small">
-                                <i class="bi bi-person"></i> {{ $thread->user->username }} •
-                                <i class="bi bi-clock"></i> {{ $thread->created_at->diffForHumans() }} •
-                                <i class="bi bi-chat-left-text"></i>
-                                {{ $thread->replies_count ?? $thread->replies->count() }}
-                                {{ Str::plural('reply', $thread->replies_count ?? $thread->replies->count()) }}
-                            </div>
-                        </div>
-                        <div class="align-self-center text-secondary">
-                            <i class="bi bi-chevron-right fs-5"></i>
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <h5>{{ $threads->total() }} Thread(s)</h5>
+        <span class="text-muted">Page {{ $threads->currentPage() }} of {{ $threads->lastPage() }}</span>
+    </div>
+
+    @if($threads->count() > 0)
+        @foreach($threads as $thread)
+            <div class="card forum-card mb-3 thread-card" data-thread="{{ $thread->id }}" style="cursor:pointer;">
+                <div class="card-body">
+                    <div class="thread-content-wrapper">
+                        @if($thread->thumbnail)
+                            <img src="{{ $thread->thumbnail }}" alt="Thread preview" class="thread-preview-image">
+                        @endif
+                        <div class="thread-text-content">
+                            <h5 class="card-title mb-2">{{ $thread->title }}</h5>
+                            <p class="text-muted small mb-2">
+                                By <strong>{{ $thread->user->username }}</strong> • 
+                                {{ $thread->created_at->diffForHumans() }}
+                            </p>
+                            <p class="card-text text-secondary small">
+                                <i class="bi bi-chat-dots"></i> {{ $thread->replies->count() }} replies
+                                @if($thread->image_count > 0)
+                                    • <i class="bi bi-images"></i> {{ $thread->image_count }} {{ Str::plural('image', $thread->image_count) }}
+                                @endif
+                                • <i class="bi bi-arrow-up"></i> {{ $thread->net_votes }} votes
+                            </p>
                         </div>
                     </div>
                 </div>
-            @endforeach
+            </div>
+        @endforeach
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center mt-4">
+            {{ $threads->links('pagination::bootstrap-5') }}
         </div>
     @else
-        <div class="text-center text-muted py-5">
-            <i class="bi bi-inboxes fs-1 mb-2 d-block"></i>
-            <p>No discussions yet. Be the first to start one!</p>
+        <div class="alert alert-info">
+            @if($search)
+                No threads found matching "{{ $search }}". Try a different search term.
+            @else
+                No threads yet. Be the first to start a discussion!
+            @endif
         </div>
     @endif
 </div>
+
+<script>
+console.log('=== Category Search Script Loading ===');
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded');
+    
+    const categoryEl = document.getElementById('forum-category');
+    const searchInput = document.getElementById('searchThreads');
+    const sortDropdown = document.getElementById('sortThreads');
+    const searchBtn = document.getElementById('searchBtn');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const clearSearchBtn2 = document.getElementById('clearSearchBtn2');
+    
+    console.log('Elements found:', {
+        categoryEl: !!categoryEl,
+        searchInput: !!searchInput,
+        sortDropdown: !!sortDropdown,
+        searchBtn: !!searchBtn,
+        clearSearchBtn: !!clearSearchBtn
+    });
+    
+    if (!categoryEl) {
+        console.error('❌ forum-category element not found!');
+        return;
+    }
+    
+    if (!searchInput) {
+        console.error('❌ searchThreads input not found!');
+        return;
+    }
+    
+    const categoryId = categoryEl.dataset.category;
+    console.log('Category ID:', categoryId);
+    console.log('Initial search value:', searchInput.value);
+    
+    let searchTimeout;
+    
+    // Auto-search as you type
+    searchInput.addEventListener('input', function(e) {
+        const searchValue = e.target.value.trim();
+        console.log('🔍 Input event - Search value:', searchValue);
+        
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            console.log('⏰ Timeout fired, performing search...');
+            performSearch(searchValue);
+        }, 500);
+    });
+    
+    // Search on Enter key
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const searchValue = e.target.value.trim();
+            console.log('⏎ Enter pressed - Search value:', searchValue);
+            clearTimeout(searchTimeout);
+            performSearch(searchValue);
+        }
+    });
+    
+    // Search button click
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            const searchValue = searchInput.value.trim();
+            console.log('🔘 Search button clicked - Search value:', searchValue);
+            performSearch(searchValue);
+        });
+    }
+    
+    // Clear search buttons
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function() {
+            console.log('❌ Clear button 1 clicked');
+            searchInput.value = '';
+            performSearch('');
+        });
+    }
+    
+    if (clearSearchBtn2) {
+        clearSearchBtn2.addEventListener('click', function() {
+            console.log('❌ Clear button 2 clicked');
+            searchInput.value = '';
+            performSearch('');
+        });
+    }
+    
+    // Sort dropdown
+    if (sortDropdown) {
+        sortDropdown.addEventListener('change', function() {
+            const searchValue = searchInput.value.trim();
+            console.log('📊 Sort changed:', this.value, '- Search value:', searchValue);
+            performSearch(searchValue);
+        });
+    }
+    
+    function performSearch(searchValue) {
+        const sort = sortDropdown ? sortDropdown.value : 'newest';
+        
+        console.log('🚀 Performing search with:', {
+            categoryId: categoryId,
+            sort: sort,
+            search: searchValue
+        });
+        
+        let url = `/forums/category/${categoryId}?sort=${sort}`;
+        if (searchValue && searchValue.length > 0) {
+            url += `&search=${encodeURIComponent(searchValue)}`;
+        }
+        
+        console.log('📍 Navigating to URL:', url);
+        
+        // Update clear button visibility
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = searchValue ? 'block' : 'none';
+        }
+        
+        // Navigate to URL
+        window.location.href = url;
+    }
+    
+    console.log('✅ Category search initialized');
+});
+</script>

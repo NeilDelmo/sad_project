@@ -1,356 +1,520 @@
-<!-- forum-script.blade.php -->
-<script src="https://cdn.tiny.cloud/1/eeqmij25flkdyumonik6xoofb4fu0bb4sfg76ahpf6mogxet/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<!DOCTYPE html>
 
+<script src="https://cdn.tiny.cloud/1/eeqmij25flkdyumonik6xoofb4fu0bb4sfg76ahpf6mogxet/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const forumContent = document.getElementById('forum-content');
-    
-    console.log('Forum script loaded. forumContent:', forumContent);
-    console.log('Category links found:', document.querySelectorAll('.category-link').length);
+    const csrf = document.querySelector("meta[name='csrf-token']").content;
+    let uploadHandlersInitialized = false;
 
-    // 🧠 Utility: initialize TinyMCE if textarea exists
-    function initTinyMCE() {
-        if (typeof tinymce === 'undefined') return;
+    function initEditors() {
+        if (!window.tinymce) return;
+        tinymce.remove();
+        ['#reply-body','#new-thread-body','#thread-editor'].forEach(sel => {
+            if (document.querySelector(sel)) {
+                const textarea = document.querySelector(sel);
+                if (textarea) {
+                    textarea.removeAttribute('required');
+                }
+                
+                tinymce.init({
+                    selector: sel,
+                    menubar: false,
+                    plugins: 'link image code lists',
+                    toolbar: 'bold italic underline | bullist numlist | link image | code',
+                    height: sel === '#reply-body' ? 250 : 300,
+                    automatic_uploads: true,
+                    images_upload_handler: async (blobInfo, progress) => {
+                        return new Promise(async (resolve, reject) => {
+                            const formData = new FormData();
+                            formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-        tinymce.remove(); // clear previous instances
+                            try {
+                                const response = await fetch('{{ route("forums.upload-image") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': csrf
+                                    },
+                                    body: formData
+                                });
 
-        // Thread reply editor
-        if (document.querySelector('#reply-body')) {
-            tinymce.init({
-                selector: '#reply-body',
-                plugins: 'image emoticons link lists code',
-                toolbar: 'undo redo | bold italic underline | bullist numlist | emoticons | image link | code',
-                menubar: false,
-                skin: 'oxide-dark',
-                content_css: 'dark',
-                height: 300,
-                branding: false,
-                automatic_uploads: true,
-                images_upload_url: '/forums/upload',
-                file_picker_types: 'image',
-                relative_urls: false,
-                remove_script_host: false,
-                convert_urls: true,
-                images_upload_handler: uploadHandler
-            });
-        }
+                                if (!response.ok) {
+                                    throw new Error(`Upload failed: ${response.status}`);
+                                }
 
-        // New thread editor
-        if (document.querySelector('#new-thread-body')) {
-            tinymce.init({
-                selector: '#new-thread-body',
-                plugins: 'image emoticons link lists code',
-                toolbar: 'undo redo | bold italic underline | bullist numlist | emoticons | image link | code',
-                menubar: false,
-                skin: 'oxide-dark',
-                content_css: 'dark',
-                height: 300,
-                branding: false,
-                automatic_uploads: true,
-                images_upload_url: '/forums/upload',
-                file_picker_types: 'image',
-                relative_urls: false,
-                remove_script_host: false,
-                convert_urls: true,
-                images_upload_handler: uploadHandler
-            });
+                                const json = await response.json();
+                                
+                                if (json.location) {
+                                    resolve(json.location);
+                                } else {
+                                    reject('Upload failed: No location returned');
+                                }
+                            } catch (err) {
+                                reject('Upload failed: ' + err.message);
+                            }
+                        });
+                    },
+                    file_picker_types: 'image',
+                    convert_urls: false,
+                    relative_urls: false,
+                    remove_script_host: false,
+                    content_style: "body { font-family:Arial; font-size:14px; color:#212529; } img { max-width:100%; height:auto; border-radius:4px; }",
+                    setup: (editor) => {
+                        editor.on('init', () => {
+                            console.log('TinyMCE initialized for:', sel);
+                        });
+                    }
+                });
+            }
+        });
+        
+        if (!uploadHandlersInitialized) {
+            setTimeout(() => {
+                initImageUpload('thread');
+                initImageUpload('reply');
+                uploadHandlersInitialized = true;
+            }, 100);
         }
     }
 
-// 🧩 Image upload handler shared by both editors
-function uploadHandler(blobInfo, success, failure) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/forums/upload');
-    xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector("meta[name='csrf-token']").content);
-    xhr.setRequestHeader('Accept', 'application/json');
-    
-    xhr.onload = function() {
-        if (xhr.status !== 200) {
-            failure('HTTP Error: ' + xhr.status);
+    function initImageUpload(type) {
+        const uploadArea = document.getElementById(`${type}-image-upload`);
+        const fileInput = document.getElementById(`${type}-image-input`);
+        const previewContainer = document.getElementById(`${type}-image-previews`);
+        const hiddenInput = document.getElementById(`${type}-image-urls`);
+
+        if (!uploadArea || !fileInput || !previewContainer || !hiddenInput) {
+            return;
+        }
+
+        let uploadedImages = [];
+        let isUploading = false;
+
+        const newUploadArea = uploadArea.cloneNode(true);
+        uploadArea.parentNode.replaceChild(newUploadArea, uploadArea);
+        const uploadAreaRef = newUploadArea;
+
+        const newFileInput = fileInput.cloneNode(true);
+        fileInput.parentNode.replaceChild(newFileInput, fileInput);
+        const fileInputRef = newFileInput;
+
+        uploadAreaRef.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isUploading) {
+                fileInputRef.click();
+            }
+        });
+
+        uploadAreaRef.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadAreaRef.classList.add('dragover');
+        });
+
+        uploadAreaRef.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadAreaRef.classList.remove('dragover');
+        });
+
+        uploadAreaRef.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadAreaRef.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                await handleFiles(files);
+            }
+        });
+
+        fileInputRef.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                await handleFiles(files);
+            }
+            e.target.value = '';
+        });
+
+        async function handleFiles(files) {
+            if (isUploading) return;
+            isUploading = true;
+
+            for (const file of files) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`${file.name} is too large. Max 5MB per image.`, 'error');
+                    continue;
+                }
+
+                if (!file.type.startsWith('image/')) {
+                    showNotification(`${file.name} is not an image file.`, 'error');
+                    continue;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch('{{ route("forums.upload-image") }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf
+                        },
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.status}`);
+                    }
+
+                    const json = await response.json();
+
+                    if (json.location) {
+                        uploadedImages.push(json.location);
+                        addImagePreview(json.location);
+                        updateHiddenInput();
+                        showNotification(`${file.name} uploaded!`, 'success');
+                    }
+                } catch (err) {
+                    showNotification(`Upload failed: ${err.message}`, 'error');
+                }
+            }
+
+            isUploading = false;
+        }
+
+        function addImagePreview(url) {
+            const item = document.createElement('div');
+            item.className = 'image-preview-item';
+            item.innerHTML = `
+                <img src="${url}" alt="Preview">
+                <button type="button" class="image-preview-remove" data-url="${url}">×</button>
+            `;
+            previewContainer.appendChild(item);
+
+            const removeBtn = item.querySelector('.image-preview-remove');
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const urlToRemove = e.currentTarget.dataset.url;
+                uploadedImages = uploadedImages.filter(u => u !== urlToRemove);
+                item.remove();
+                updateHiddenInput();
+                showNotification('Image removed', 'info');
+            });
+        }
+
+        function updateHiddenInput() {
+            hiddenInput.value = JSON.stringify(uploadedImages);
+        }
+
+        function resetUpload() {
+            uploadedImages = [];
+            previewContainer.innerHTML = '';
+            hiddenInput.value = '';
+            isUploading = false;
+        }
+
+        window[`reset_${type}_upload`] = resetUpload;
+    }
+
+    async function loadCategory(id, sort) {
+        uploadHandlersInitialized = false;
+        const res = await fetch(`/forums/category/${id}${sort ? '?sort=' + sort : ''}`);
+        const html = await res.text();
+        forumContent.innerHTML = html;
+        initEditors();
+    }
+
+    async function loadThread(id) {
+        uploadHandlersInitialized = false;
+        const res = await fetch(`/forums/thread/${id}`);
+        const html = await res.text();
+        forumContent.innerHTML = html;
+        initEditors();
+        
+        // Make sure modal handlers are ready after content load
+        setTimeout(() => {
+            console.log('Thread loaded, modal handlers should be active');
+        }, 100);
+    }
+
+    forumContent.addEventListener('click', e => {
+        const catLink = e.target.closest('.category-link');
+        if (catLink) {
+            e.preventDefault();
+            loadCategory(catLink.href.split('/').pop());
+            return;
+        }
+        const threadCard = e.target.closest('.thread-card');
+        if (threadCard) {
+            loadThread(threadCard.dataset.thread);
+            return;
+        }
+        if (e.target.id === 'backToCategories' || e.target.closest('#backToCategories')) {
+            window.location.href = '{{ route("forums.index") }}';
+            return;
+        }
+        if (e.target.id === 'backToCategory' || e.target.closest('#backToCategory')) {
+            const wrapper = document.getElementById('forum-thread');
+            if (wrapper) loadCategory(wrapper.dataset.category);
+        }
+    });
+
+    document.addEventListener('submit', async e => {
+        const form = e.target;
+        if (!['new-thread-form','reply-form'].includes(form.id)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (window.tinymce) tinymce.triggerSave();
+
+        const isThread = form.id === 'new-thread-form';
+        
+        const titleInput = form.querySelector('input[name="title"]');
+        const bodyTextarea = form.querySelector('textarea[name="body"]');
+        
+        if (isThread && titleInput && !titleInput.value.trim()) {
+            showNotification('Please enter a title', 'error');
+            titleInput.focus();
             return;
         }
         
+        if (bodyTextarea && !bodyTextarea.value.trim()) {
+            showNotification('Please enter a message', 'error');
+            const editorId = bodyTextarea.id;
+            const editor = tinymce.get(editorId);
+            if (editor) {
+                editor.focus();
+            }
+            return;
+        }
+
+        const endpoint = isThread
+            ? `/forums/category/${form.dataset.category}/thread`
+            : `/forums/thread/${form.dataset.thread}/reply`;
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Posting...';
+
         try {
-            const json = JSON.parse(xhr.responseText);
-            if (!json || typeof json.location != 'string') {
-                failure('Invalid response format');
-                return;
-            }
-            success(json.location);
-        } catch (e) {
-            failure('Invalid JSON response: ' + xhr.responseText.substring(0, 100));
-        }
-    };
-    
-    xhr.onerror = function() {
-        failure('Upload failed');
-    };
-    
-    const formData = new FormData();
-    formData.append('file', blobInfo.blob(), blobInfo.filename());
-    xhr.send(formData);
-}
-
-    // 🗂️ Load category from initial page (category links on index)
-    document.querySelectorAll('.category-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Category link clicked, preventing default');
-            const categoryId = link.dataset.categoryId;
-            console.log('Loading category ID:', categoryId);
+            const formData = new FormData(form);
             
-            if (!categoryId) {
-                console.error('No category ID found');
-                return;
-            }
-            
-            fetch(`/forums/category/${categoryId}`)
-                .then(res => {
-                    console.log('Fetch response:', res);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.text();
-                })
-                .then(html => {
-                    console.log('HTML received, length:', html.length);
-                    forumContent.innerHTML = html;
-                    initTinyMCE(); // ✅ Initialize TinyMCE for new-thread form
-                })
-                .catch(err => {
-                    console.error('Category load error:', err);
-                    showNotification('Failed to load category: ' + err.message, 'error');
-                });
-        });
-    });
-
-    // 🧭 Load a category (from forum-card elements)
-    document.querySelectorAll('.forum-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const categoryId = card.dataset.category;
-            fetch(`/forums/category/${categoryId}`)
-                .then(res => res.text())
-                .then(html => {
-                    forumContent.innerHTML = html;
-                    initTinyMCE(); // ✅ Initialize TinyMCE for new-thread form
-                })
-                .catch(err => {
-                    console.error('Category load error:', err);
-                    showNotification('Failed to load category', 'error');
-                });
-        });
-    });
-
-    // 🔙 Back navigation (categories and threads)
-    forumContent.addEventListener('click', e => {
-        if (e.target.id === 'backToCategories' || e.target.closest('#backToCategories')) {
-            window.location.href = '/forums';
-        }
-
-        if (e.target.id === 'backToCategory' || e.target.closest('#backToCategory')) {
-            const container = e.target.closest('.animate-fadeIn');
-            const category_id = container ? container.dataset.category : null;
-
-            if (category_id) {
-                fetch(`/forums/category/${category_id}`)
-                    .then(res => res.text())
-                    .then(html => {
-                        forumContent.innerHTML = html;
-                        initTinyMCE(); // ✅ reinit for new-thread form
-                    })
-                    .catch(err => {
-                        console.error('Back to category error:', err);
-                        window.location.reload();
-                    });
-            } else {
-                window.location.reload();
-            }
-        }
-    });
-
-    // 🧨 Load a thread
-    forumContent.addEventListener('click', e => {
-        const threadCard = e.target.closest('.thread-card');
-        if (!threadCard) return;
-        const threadId = threadCard.dataset.thread;
-        if (!threadId) return;
-
-        fetch(`/forums/thread/${threadId}`)
-            .then(res => {
-                if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-                return res.text();
-            })
-            .then(html => {
-                forumContent.innerHTML = html;
-                initTinyMCE(); // ✅ initialize reply editor
-            })
-            .catch(err => {
-                console.error('Thread load error:', err);
-                showNotification('Failed to load thread', 'error');
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': csrf, 
+                    'Accept':'application/json' 
+                },
+                body: formData
             });
-    });
-
-// 📨 Handle thread + reply form submissions
-document.addEventListener('submit', e => {
-    e.preventDefault();
-    const form = e.target;
-
-    // ✅ Collect TinyMCE data before sending
-    if (typeof tinymce !== 'undefined') {
-        tinymce.triggerSave();
-    }
-
-    // New thread form
-    if (form.id === 'new-thread-form') {
-        const formData = new FormData(form);
-        const category_id = form.dataset.category;
-
-        fetch(`/forums/category/${category_id}/thread`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(async res => {
-            const text = await res.text();
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            
+            const json = await res.json();
+            
+            if (!res.ok || !json.success) {
+                showNotification(json.message || 'Validation failed', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
             }
-        })
-        .then(data => {
-            if (data.success) {
-                form.reset();
-                if (typeof tinymce !== 'undefined') {
-                    tinymce.get('new-thread-body').setContent('');
-                }
-                showNotification(data.message || 'Thread posted successfully!', 'success');
-                
-                // Reload the category view
-                fetch(`/forums/category/${category_id}`)
-                    .then(r => r.text())
-                    .then(html => {
-                        forumContent.innerHTML = html;
-                        initTinyMCE();
-                    });
+            
+            showNotification(json.message || 'Posted!', 'success');
+            form.reset();
+            
+            if (window.tinymce) {
+                tinymce.get('reply-body')?.setContent('');
+                tinymce.get('new-thread-body')?.setContent('');
+            }
+
+            if (isThread && window.reset_thread_upload) {
+                window.reset_thread_upload();
+            } else if (!isThread && window.reset_reply_upload) {
+                window.reset_reply_upload();
+            }
+            
+            if (isThread) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newThreadModal'));
+                if (modal) modal.hide();
+            }
+            
+            uploadHandlersInitialized = false;
+            
+            if (isThread) {
+                await loadCategory(json.category_id);
             } else {
-                showNotification(data.errors ? Object.values(data.errors).flat().join(', ') : 'Failed to post thread.', 'error');
+                await loadThread(json.thread_id);
             }
-        })
-        .catch(err => {
-            console.error('Thread submission error:', err);
-            showNotification('Failed to post thread.', 'error');
-        });
-    }
-
-    // Reply form
-    if (form.id === 'reply-form') {
-        const formData = new FormData(form);
-        const thread_id = form.dataset.thread;
-
-        fetch(`/forums/thread/${thread_id}/reply`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: formData
-        })
-        .then(async res => {
-            const text = await res.text();
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
-            }
-        })
-        .then(data => {
-            if (data.success) {
-                form.reset();
-                if (typeof tinymce !== 'undefined') {
-                    tinymce.get('reply-body').setContent('');
-                }
-                showNotification(data.message || 'Reply posted successfully!', 'success');
-                
-                // Reload the thread view
-                fetch(`/forums/thread/${thread_id}`)
-                    .then(r => r.text())
-                    .then(html => {
-                        forumContent.innerHTML = html;
-                        initTinyMCE();
-                    });
-            } else {
-                showNotification(data.errors ? Object.values(data.errors).flat().join(', ') : 'Failed to post reply.', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Reply submission error:', err);
-            showNotification('Failed to post reply.', 'error');
-        });
-    }
-});
-
-    // Initialize editors for first load
-    initTinyMCE();
-});
-
-// 🔔 Notification helper
-function showNotification(message, type = 'info') {
-    const n = document.createElement('div');
-    n.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        'bg-blue-500 text-white'
-    }`;
-    n.textContent = message;
-    document.body.appendChild(n);
-    setTimeout(() => n.remove(), 3000);
-}
-
-
-// New thread form
-if (form.id === 'new-thread-form') {
-    const formData = new FormData(form);
-    const category_id = form.dataset.category;
-
-    console.log('Submitting thread to:', `/forums/category/${category_id}/thread`);
-    
-    fetch(`/forums/category/${category_id}/thread`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(async res => {
-        console.log('Response status:', res.status);
-        console.log('Response URL:', res.url);
-        console.log('Response headers:', Object.fromEntries(res.headers.entries()));
-        
-        const text = await res.text();
-        console.log('Raw response:', text.substring(0, 200)); // First 200 chars
-        
-        try {
-            return JSON.parse(text);
-        } catch (e) {
-            // If it's HTML and contains error messages, handle accordingly
-            if (text.includes('error') || text.includes('Error') || res.status !== 200) {
-                throw new Error('Server returned HTML error page instead of JSON');
-            }
-            throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            
+        } catch(err) {
+            console.error('Form submission error:', err);
+            showNotification('Request failed: ' + err.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
         }
-    })
-    .then(data => {
-        // ... rest of your success handling
-    })
-    .catch(err => {
-        console.error('Thread submission error:', err);
-        showNotification('Failed to post thread. Please check console for details.', 'error');
     });
-}
+
+    // Handle sort dropdown change
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'sortThreads') {
+            const categoryId = document.getElementById('forum-category')?.dataset.category;
+            const sortValue = e.target.value;
+            if (categoryId) {
+                loadCategory(categoryId, sortValue);
+            }
+        }
+    });
+
+    // === Search Functionality (Add at the end) ===
+    let searchTimeout;
+
+    // Handle search input with debounce
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'searchThreads') {
+            console.log('Search input detected:', e.target.value);
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performCategorySearch();
+            }, 500);
+        }
+    });
+
+    // Handle Enter key in search
+    document.addEventListener('keypress', function(e) {
+        if (e.target.id === 'searchThreads' && e.key === 'Enter') {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            performCategorySearch();
+        }
+    });
+
+    // Handle search button click
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'searchBtn' || e.target.closest('#searchBtn')) {
+            e.preventDefault();
+            performCategorySearch();
+        }
+
+        // Clear search buttons
+        if (e.target.id === 'clearSearchBtn' || e.target.closest('#clearSearchBtn') ||
+            e.target.id === 'clearSearchBtn2' || e.target.closest('#clearSearchBtn2')) {
+            e.preventDefault();
+            const searchInput = document.getElementById('searchThreads');
+            if (searchInput) {
+                searchInput.value = '';
+                performCategorySearch();
+            }
+        }
+    });
+
+    function performCategorySearch() {
+        const categoryEl = document.getElementById('forum-category');
+        if (!categoryEl) return;
+
+        const categoryId = categoryEl.dataset.category;
+        const sortDropdown = document.getElementById('sortThreads');
+        const searchInput = document.getElementById('searchThreads');
+
+        const sort = sortDropdown ? sortDropdown.value : 'newest';
+        const search = searchInput ? searchInput.value.trim() : '';
+
+        console.log('Searching via AJAX:', { categoryId, sort, search });
+
+        let url = `/forums/category/${categoryId}?sort=${sort}`;
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+
+        // Update clear button visibility
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) {
+            clearBtn.style.display = search ? 'block' : 'none';
+        }
+
+        // Use AJAX instead of full page reload
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newCategoryContent = doc.getElementById('forum-category');
+                
+                if (newCategoryContent && categoryEl) {
+                    // Replace only the category content
+                    categoryEl.outerHTML = newCategoryContent.outerHTML;
+                }
+                
+                // Update browser URL without reload
+                window.history.pushState({}, '', url);
+            })
+            .catch(error => console.error('Search error:', error));
+    }
+
+    console.log('✅ Search functionality initialized');
+
+    document.addEventListener('click', function(e) {
+        const categoryLink = e.target.closest('.category-link');
+        if (categoryLink) {
+            e.preventDefault();
+            const categoryId = categoryLink.getAttribute('data-category-id') || 
+                              categoryLink.getAttribute('href').split('/').pop().split('?')[0];
+            loadCategory(categoryId);
+        }
+
+        // Navigate to thread (ADD THIS UPDATED VERSION)
+        const threadCard = e.target.closest('.thread-card');
+        if (threadCard && !e.target.closest('button') && !e.target.closest('a')) {
+            e.preventDefault();
+            const threadId = threadCard.getAttribute('data-thread');
+            if (threadId) {
+                loadThread(threadId);
+            }
+        }
+
+        // Back to categories
+        if (e.target.id === 'backToCategories' || e.target.closest('#backToCategories')) {
+            e.preventDefault();
+            loadCategories();
+        }
+
+        // === Pagination Handler ===
+        const paginationLink = e.target.closest('.page-link');
+        if (paginationLink && paginationLink.getAttribute('href')) {
+            e.preventDefault();
+            const url = paginationLink.getAttribute('href');
+            
+            // Extract category ID from current page
+            const categoryEl = document.getElementById('forum-category');
+            if (categoryEl) {
+                console.log('📄 Pagination clicked:', url);
+                
+                // Fetch the new page via AJAX
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newCategoryContent = doc.getElementById('forum-category');
+                        
+                        if (newCategoryContent) {
+                            const currentCategoryEl = document.getElementById('forum-category');
+                            if (currentCategoryEl) {
+                                // Replace category content
+                                currentCategoryEl.outerHTML = newCategoryContent.outerHTML;
+                                
+                                // Scroll to top of content
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                        }
+                        
+                        // Update browser URL
+                        window.history.pushState({}, '', url);
+                    })
+                    .catch(error => console.error('Pagination error:', error));
+            }
+            return;
+        }
+    });
+});
 </script>

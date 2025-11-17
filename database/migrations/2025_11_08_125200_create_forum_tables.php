@@ -20,7 +20,16 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('body');
+            $table->boolean('is_pinned')->default(false);
+            $table->boolean('is_locked')->default(false);
+            $table->integer('views_count')->default(0);
             $table->timestamps();
+            $table->softDeletes();
+            
+            $table->index('category_id');
+            $table->index('user_id');
+            $table->index('is_pinned');
+            $table->index('created_at');
         });
 
         Schema::create('forum_replies', function (Blueprint $table) {
@@ -28,7 +37,13 @@ return new class extends Migration {
             $table->foreignId('thread_id')->constrained('forum_threads')->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->text('body');
+            $table->timestamp('edited_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+            
+            $table->index('thread_id');
+            $table->index('user_id');
+            $table->index('created_at');
         });
     }
 
