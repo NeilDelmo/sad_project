@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
         // Role-based redirection
         $user = Auth::user();
         
-        return redirect()->intended($this->redirectPath($user));
+        return redirect($this->redirectPath($user));
     }
 
     /**

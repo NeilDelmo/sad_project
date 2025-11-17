@@ -140,6 +140,51 @@
     background: #ccc;
     border-radius: 3px;
   }
+
+  /* Toast notification styling */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #16a34a;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideInRight 0.3s ease;
+    max-width: 400px;
+  }
+
+  .toast.error {
+    background: #dc2626;
+  }
+
+  .toast::before {
+    content: '✓';
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .toast.error::before {
+    content: '✕';
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
 </style>
 <style>
   /* Offer panel */
@@ -510,7 +555,7 @@
     <div class="toast error" id="toastBox">{{ $errors->first() }}</div>
     @endif
     <div class="chat-header">
-      <button class="back-btn" onclick="window.history.back()">←</button>
+      <button class="back-btn" onclick="window.location.href='{{ Auth::user()->user_type === 'fisherman' ? route('fisherman.dashboard') : (Auth::user()->user_type === 'vendor' ? route('vendor.dashboard') : route('marketplace.shop')) }}'">←</button>
       <div class="seller-info">
         <h3>{{ $conversation->buyer_id === Auth::id() ? $conversation->seller->username : $conversation->buyer->username }}</h3>
         @if($product)

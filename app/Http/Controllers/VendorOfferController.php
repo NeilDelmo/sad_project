@@ -31,6 +31,16 @@ class VendorOfferController extends Controller
      */
     public function store(Request $request, Product $product)
     {
+        // Check if vendor already has a pending or countered offer for this product
+        $existingOffer = VendorOffer::where('vendor_id', Auth::id())
+            ->where('product_id', $product->id)
+            ->whereIn('status', ['pending', 'countered'])
+            ->first();
+
+        if ($existingOffer) {
+            return back()->withErrors(['error' => 'You already have a pending offer for this product. Please wait for the fisherman to respond.']);
+        }
+
         $request->validate([
             'offered_price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:1|max:' . $product->available_quantity,
@@ -85,9 +95,7 @@ class VendorOfferController extends Controller
             $fisherman->notify(new NewVendorOffer($offer));
         }
 
-        return redirect()
-            ->route('vendor.products.index')
-            ->with('success', 'Offer sent to fisherman! They have 3 days to respond.');
+        return back()->with('success', 'Offer sent successfully! The fisherman has been notified and has 3 days to respond.');
     }
 
     /**

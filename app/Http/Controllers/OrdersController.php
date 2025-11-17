@@ -147,6 +147,18 @@ class OrdersController extends Controller
         if ($product) {
             $product->increment('available_quantity', $order->quantity);
         }
+
+        // Handle vendor inventory - remove from their stock since it's being returned
+        $vendorInventory = \App\Models\VendorInventory::where('order_id', $order->id)->first();
+        if ($vendorInventory) {
+            // If it was listed on marketplace, delist it
+            \App\Models\MarketplaceListing::where('vendor_inventory_id', $vendorInventory->id)
+                ->where('status', 'active')
+                ->update(['status' => 'inactive']);
+            
+            // Mark inventory as refunded
+            $vendorInventory->update(['status' => 'refunded']);
+        }
         
         $order->update([
             'status' => Order::STATUS_REFUNDED,

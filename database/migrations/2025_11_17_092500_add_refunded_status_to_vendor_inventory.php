@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE vendor_inventory MODIFY COLUMN status ENUM('pending_delivery', 'in_stock', 'listed', 'sold') DEFAULT 'pending_delivery'");
+        Schema::table('vendor_inventory', function (Blueprint $table) {
+            //
+        });
     }
 
     /**
@@ -20,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE vendor_inventory MODIFY COLUMN status ENUM('in_stock', 'listed', 'sold') DEFAULT 'in_stock'");
+        Schema::table('vendor_inventory', function (Blueprint $table) {
+            //
+        });
     }
 };
