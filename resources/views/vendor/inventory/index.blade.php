@@ -332,5 +332,7 @@
         @endif
     </div>
 
+@include('partials.message-notification')
+
 </body>
 </html>

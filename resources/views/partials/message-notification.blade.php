@@ -1,53 +1,49 @@
+@auth
 <script>
-    // Background notification system for new messages
+    // Background notification system for new messages (site-wide)
     (function() {
-        let lastUnreadCount = {{ Auth::user() ? (Auth::user()->conversations()->whereHas('messages', function($q) { $q->where('is_read', false)->where('sender_id', '!=', Auth::id()); })->count()) : 0 }};
+        let lastUnreadCount = 0;
         let hasNotified = false;
         let isFirstPoll = true;
-        
+
         const notifAudio = new Audio('/audio/notify.mp3');
-        
+
         function checkNewMessages() {
-            fetch('/api/messages/unread-count')
+            fetch('/api/messages/unread-count', { headers: { 'Accept': 'application/json' } })
                 .then(response => response.json())
                 .then(data => {
-                    // Play sound on first poll if unread messages exist, or on subsequent polls if count increases
-                    const shouldPlaySound = (isFirstPoll && data.unread_count > 0 && !hasNotified) || 
-                                            (!isFirstPoll && data.unread_count > lastUnreadCount && !hasNotified);
-                    
+                    const count = Number(data.unread_count || 0);
+
+                    // First poll: play if there are any unread. Later: play only if count increased
+                    const shouldPlaySound = (isFirstPoll && count > 0 && !hasNotified) ||
+                                            (!isFirstPoll && count > lastUnreadCount && !hasNotified);
+
                     if (shouldPlaySound) {
                         notifAudio.currentTime = 0;
                         notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
                         hasNotified = true;
                     }
-                    
-                    // Reset notification flag when count goes to 0
-                    if (data.unread_count === 0) {
-                        hasNotified = false;
+
+                    if (count === 0) {
+                        hasNotified = false; // reset when user has read everything
                     }
-                    
-                    // Update any unread count badges on the page
+
+                    // Update any badges with data-unread-count attr
                     const badges = document.querySelectorAll('[data-unread-count]');
                     badges.forEach(badge => {
-                        if (data.unread_count !== lastUnreadCount) {
-                            badge.textContent = data.unread_count;
-                            badge.setAttribute('data-unread-count', data.unread_count);
-                        }
+                        badge.textContent = count;
+                        badge.setAttribute('data-unread-count', String(count));
                     });
-                    
-                    lastUnreadCount = data.unread_count;
-                    
-                    if (isFirstPoll) {
-                        isFirstPoll = false;
-                    }
+
+                    lastUnreadCount = count;
+                    if (isFirstPoll) isFirstPoll = false;
                 })
-                .catch(() => {/* ignore errors */});
+                .catch(() => { /* ignore errors */ });
         }
-        
-        // Poll every 5 seconds
+
+        // Poll every 5 seconds and on focus
         setInterval(checkNewMessages, 5000);
-        
-        // Also check when window gains focus
         window.addEventListener('focus', checkNewMessages);
     })();
 </script>
+@endauth

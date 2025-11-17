@@ -533,5 +533,7 @@
         </div>
     </div>
 
+    @include('partials.message-notification')
+
 </body>
 </html>

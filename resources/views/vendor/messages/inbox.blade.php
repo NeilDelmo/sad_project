@@ -60,5 +60,7 @@
     });
 </script>
 
+@include('partials.message-notification')
+
 </body>
 </html>

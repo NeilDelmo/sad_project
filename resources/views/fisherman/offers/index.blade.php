@@ -582,5 +582,8 @@
             form.classList.toggle('show');
         }
     </script>
+
+    @include('partials.message-notification')
+
 </body>
 </html>
