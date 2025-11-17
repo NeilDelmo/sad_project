@@ -173,7 +173,7 @@ Route::middleware('auth')->group(function () {
 
 // Rental routes (requires authentication for rentals, public for browsing)
 Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
-Route::get('/rentals/{product}', [RentalController::class, 'show'])->name('rentals.show');
+Route::get('/rentals/{product}', [RentalController::class, 'show'])->whereNumber('product')->name('rentals.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/rentals/create', [RentalController::class, 'create'])->name('rentals.create');

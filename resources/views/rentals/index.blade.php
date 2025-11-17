@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gear Rental Catalog - SeaLedger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -13,14 +15,14 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            padding: 20px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 30px 20px;
         }
 
         .header {
@@ -40,27 +42,16 @@
             color: #666;
         }
 
-        .nav-bar {
-            background: white;
+        /* Navbar (aligned with app theme) */
+        .navbar {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
             padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .nav-link {
-            text-decoration: none;
-            color: #1B5E88;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover {
-            background: #E7FAFE;
-        }
+        .nav-brand { color:#fff; font-size:28px; font-weight:bold; text-decoration:none; }
+        .nav-link { color: rgba(255,255,255,0.9); text-decoration:none; padding:10px 16px; border-radius:8px; transition: all .2s; }
+        .nav-link:hover { color:#fff; background: rgba(255,255,255,0.15); }
+        .nav-link.active { background: rgba(255,255,255,0.25); color:#fff; font-weight:600; }
 
         .gear-grid {
             display: grid;
@@ -163,22 +154,34 @@
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
+            <div class="d-flex align-items-center" style="gap:8px;">
+                <a href="{{ route('rentals.index') }}" class="nav-link active"><i class="fa-solid fa-toolbox"></i> Gear Rentals</a>
+                @auth
+                    <a href="{{ route('rentals.myrentals') }}" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> My Rentals</a>
+                    <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="nav-link"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                @endauth
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <div class="header">
             <h1>🛠️ Gear Rental Catalog</h1>
             <p>Browse and rent fishing gear from our organization</p>
         </div>
 
-        <div class="nav-bar">
-            <a href="{{ route('marketplace.index') }}" class="nav-link">🐟 Marketplace</a>
-            <a href="{{ route('rentals.index') }}" class="nav-link" style="background: #E7FAFE;">🛠️ Gear Rentals</a>
-            @auth
-                <a href="{{ route('rentals.myrentals') }}" class="nav-link">📋 My Rentals</a>
-                <a href="{{ route('dashboard') }}" class="nav-link">🏠 Dashboard</a>
-            @else
-                <a href="{{ route('login') }}" class="nav-link">🔑 Login</a>
-            @endauth
-        </div>
 
         @if($gearItems->count() > 0)
             <div class="gear-grid">
@@ -194,7 +197,7 @@
                         
                         <div class="gear-info">
                             <div class="gear-name">{{ $gear->name }}</div>
-                            <div class="gear-description">{{ Str::limit($gear->description, 80) }}</div>
+                            <div class="gear-description">{{ \Illuminate\Support\Str::limit($gear->description, 80) }}</div>
                             <div class="gear-price">₱{{ number_format($gear->rental_price_per_day, 2) }}/day</div>
                             <div class="gear-stock {{ $gear->rental_stock > 5 ? 'stock-available' : 'stock-low' }}">
                                 {{ $gear->rental_stock }} available

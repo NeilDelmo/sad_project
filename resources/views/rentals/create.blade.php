@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Rental Request - SeaLedger</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -13,9 +15,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
-            padding: 20px;
         }
 
         .container {
@@ -153,20 +154,12 @@
             background: #0075B5;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .back-link:hover {
-            background: rgba(255,255,255,0.3);
-        }
+        /* Navbar */
+        .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-brand { color:#fff; font-size:28px; font-weight:bold; text-decoration:none; }
+        .nav-link { color: rgba(255,255,255,0.9); text-decoration:none; padding:10px 16px; border-radius:8px; transition: all .2s; }
+        .nav-link:hover { color:#fff; background: rgba(255,255,255,0.15); }
+        .nav-link.active { background: rgba(255,255,255,0.25); color:#fff; font-weight:600; }
 
         .alert {
             padding: 15px;
@@ -188,8 +181,19 @@
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
+            <div class="d-flex align-items-center" style="gap:8px;">
+                <a href="{{ route('rentals.index') }}" class="nav-link"><i class="fa-solid fa-toolbox"></i> Gear Rentals</a>
+                <a href="{{ route('rentals.myrentals') }}" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> My Rentals</a>
+                <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <a href="{{ route('rentals.index') }}" class="back-link">← Back to Catalog</a>
 
         <div class="header">
             <h1>🛠️ Create Rental Request</h1>
