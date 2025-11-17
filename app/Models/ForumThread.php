@@ -10,7 +10,7 @@ class ForumThread extends Model implements Auditable
 {
     use HasFactory, \OwenIt\Auditing\Auditable;
 
-    protected $fillable = ['category_id', 'user_id', 'title', 'body', 'upvotes', 'downvotes'];
+    protected $fillable = ['category_id', 'user_id', 'title', 'body'];
 
     // Add this for automatic eager loading
     protected $with = ['user', 'replies.user'];
@@ -48,7 +48,19 @@ class ForumThread extends Model implements Auditable
 
     public function getNetVotesAttribute()
     {
-        return $this->upvotes - $this->downvotes;
+        $upvotes = $this->votes()->where('vote_type', 'upvote')->count();
+        $downvotes = $this->votes()->where('vote_type', 'downvote')->count();
+        return $upvotes - $downvotes;
+    }
+
+    public function getUpvotesAttribute()
+    {
+        return $this->votes()->where('vote_type', 'upvote')->count();
+    }
+
+    public function getDownvotesAttribute()
+    {
+        return $this->votes()->where('vote_type', 'downvote')->count();
     }
 
     public function getUserVoteAttribute()

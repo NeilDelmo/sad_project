@@ -10,7 +10,7 @@ class ForumReply extends Model implements Auditable
 {
     use HasFactory, \OwenIt\Auditing\Auditable;
 
-    protected $fillable = ['thread_id', 'user_id', 'body', 'upvotes', 'downvotes'];
+    protected $fillable = ['thread_id', 'user_id', 'body'];
 
     protected $appends = ['all_images', 'body_without_marker', 'net_votes', 'user_vote'];
 
@@ -33,7 +33,19 @@ class ForumReply extends Model implements Auditable
 
     public function getNetVotesAttribute()
     {
-        return $this->upvotes - $this->downvotes;
+        $upvotes = $this->votes()->where('vote_type', 'upvote')->count();
+        $downvotes = $this->votes()->where('vote_type', 'downvote')->count();
+        return $upvotes - $downvotes;
+    }
+
+    public function getUpvotesAttribute()
+    {
+        return $this->votes()->where('vote_type', 'upvote')->count();
+    }
+
+    public function getDownvotesAttribute()
+    {
+        return $this->votes()->where('vote_type', 'downvote')->count();
     }
 
     public function getUserVoteAttribute()

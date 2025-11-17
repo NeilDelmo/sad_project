@@ -165,6 +165,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/forums/thread/{id}', [ForumController::class, 'showThread'])->name('forums.thread');
     Route::post('/forums/category/{category_id}/thread', [ForumController::class, 'storeThread'])->name('forums.thread.store');
     Route::post('/forums/thread/{thread_id}/reply', [ForumController::class, 'storeReply'])->name('forums.reply.store');
+    Route::post('/forums/thread/{thread_id}/vote', [ForumController::class, 'voteThread'])->name('forums.thread.vote');
+    Route::post('/forums/reply/{reply_id}/vote', [ForumController::class, 'voteReply'])->name('forums.reply.vote');
     Route::post('/forums/upload-image', [ForumController::class, 'uploadImage'])->name('forums.upload-image');
 });
 

@@ -48,7 +48,14 @@ class ForumController extends Controller
             if ($sort === 'oldest') {
                 $threadsQuery->orderBy('created_at', 'asc');
             } elseif ($sort === 'best') {
-                $threadsQuery->orderByRaw('(upvotes - downvotes) DESC');
+                $threadsQuery->withCount([
+                    'votes as upvotes_count' => function ($query) {
+                        $query->where('vote_type', 'upvote');
+                    },
+                    'votes as downvotes_count' => function ($query) {
+                        $query->where('vote_type', 'downvote');
+                    }
+                ])->orderByRaw('(upvotes_count - downvotes_count) DESC');
             } else {
                 $threadsQuery->orderBy('created_at', 'desc');
             }
@@ -91,7 +98,14 @@ class ForumController extends Controller
         if ($sort === 'oldest') {
             $threadsQuery->orderBy('created_at', 'asc');
         } elseif ($sort === 'best') {
-            $threadsQuery->orderByRaw('(upvotes - downvotes) DESC');
+            $threadsQuery->withCount([
+                'votes as upvotes_count' => function ($query) {
+                    $query->where('vote_type', 'upvote');
+                },
+                'votes as downvotes_count' => function ($query) {
+                    $query->where('vote_type', 'downvote');
+                }
+            ])->orderByRaw('(upvotes_count - downvotes_count) DESC');
         } else {
             $threadsQuery->orderBy('created_at', 'desc');
         }
@@ -194,21 +208,9 @@ class ForumController extends Controller
                 if ($existingVote->vote_type === $voteType) {
                     // Remove vote
                     $existingVote->delete();
-                    if ($voteType === 'upvote') {
-                        $thread->decrement('upvotes');
-                    } else {
-                        $thread->decrement('downvotes');
-                    }
                 } else {
                     // Change vote
                     $existingVote->update(['vote_type' => $voteType]);
-                    if ($voteType === 'upvote') {
-                        $thread->increment('upvotes');
-                        $thread->decrement('downvotes');
-                    } else {
-                        $thread->decrement('upvotes');
-                        $thread->increment('downvotes');
-                    }
                 }
             } else {
                 // New vote
@@ -217,11 +219,6 @@ class ForumController extends Controller
                     'thread_id' => $thread->id,
                     'vote_type' => $voteType,
                 ]);
-                if ($voteType === 'upvote') {
-                    $thread->increment('upvotes');
-                } else {
-                    $thread->increment('downvotes');
-                }
             }
         });
 
@@ -255,21 +252,9 @@ class ForumController extends Controller
                 if ($existingVote->vote_type === $voteType) {
                     // Remove vote
                     $existingVote->delete();
-                    if ($voteType === 'upvote') {
-                        $reply->decrement('upvotes');
-                    } else {
-                        $reply->decrement('downvotes');
-                    }
                 } else {
                     // Change vote
                     $existingVote->update(['vote_type' => $voteType]);
-                    if ($voteType === 'upvote') {
-                        $reply->increment('upvotes');
-                        $reply->decrement('downvotes');
-                    } else {
-                        $reply->decrement('upvotes');
-                        $reply->increment('downvotes');
-                    }
                 }
             } else {
                 // New vote
@@ -278,11 +263,6 @@ class ForumController extends Controller
                     'reply_id' => $reply->id,
                     'vote_type' => $voteType,
                 ]);
-                if ($voteType === 'upvote') {
-                    $reply->increment('upvotes');
-                } else {
-                    $reply->increment('downvotes');
-                }
             }
         });
 
