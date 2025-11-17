@@ -51,4 +51,31 @@ class CustomerOrder extends Model implements Auditable
     public function buyer(): BelongsTo { return $this->belongsTo(User::class, 'buyer_id'); }
     public function vendor(): BelongsTo { return $this->belongsTo(User::class, 'vendor_id'); }
     public function listing(): BelongsTo { return $this->belongsTo(MarketplaceListing::class, 'listing_id'); }
+    
+    /**
+     * Check if refund request window is still open (3 hours from delivery)
+     */
+    public function isRefundWindowOpen(): bool
+    {
+        if (!$this->delivered_at) {
+            return false;
+        }
+        
+        $hoursSinceDelivery = now()->diffInHours($this->delivered_at);
+        return $hoursSinceDelivery < 3;
+    }
+    
+    /**
+     * Get minutes remaining in refund window
+     */
+    public function refundWindowMinutesRemaining(): ?int
+    {
+        if (!$this->delivered_at || !$this->isRefundWindowOpen()) {
+            return null;
+        }
+        
+        $minutesSinceDelivery = now()->diffInMinutes($this->delivered_at);
+        $remaining = (3 * 60) - $minutesSinceDelivery;
+        return max(0, $remaining);
+    }
 }

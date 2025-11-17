@@ -192,6 +192,15 @@
             <div class="value">{{ $order->delivered_at?->diffForHumans() }}</div>
           </div>
           @endif
+          @if($order->delivered_at && $order->isRefundWindowOpen() && in_array($order->status, ['delivered','received']))
+          <div>
+            <div class="label">Refund Window</div>
+            <div class="value" style="color: #dc3545; font-weight: 600;">
+              <i class="fa-solid fa-clock"></i>
+              <span class="refund-countdown" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
+            </div>
+          </div>
+          @endif
           @if($order->received_at)
           <div>
             <div class="label">Received</div>
@@ -234,7 +243,16 @@
             </form>
           @endif
           @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
-            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
+            @if($order->isRefundWindowOpen())
+              <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
+            @else
+              <button class="btn btn-outline-secondary" disabled title="Refund window closed (3 hours after delivery)"><i class="fa-solid fa-ban"></i> Refund Window Closed</button>
+            @endif
+          @endif
+          @if($user && $user->id === $order->buyer_id && $order->status === 'refund_declined')
+            <span class="badge bg-danger" style="padding: 8px 16px; font-size: 13px;">
+              <i class="fa-solid fa-circle-xmark"></i> Refund Declined by Vendor
+            </span>
           @endif
           @if($user && $user->id === $order->vendor_id && $order->status==='refund_requested')
             <form method="post" action="{{ route('marketplace.orders.refund.approve', $order) }}">
@@ -304,5 +322,52 @@
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Refund countdown timer (3-hour window from delivery)
+function updateRefundCountdowns() {
+  const countdowns = document.querySelectorAll('.refund-countdown');
+  
+  countdowns.forEach(countdown => {
+    const deliveredAt = new Date(countdown.dataset.delivered);
+    const now = new Date();
+    const hoursSinceDelivery = (now - deliveredAt) / (1000 * 60 * 60);
+    
+    if (hoursSinceDelivery >= 3) {
+      countdown.textContent = 'Window Closed';
+      countdown.style.color = '#6c757d';
+      return;
+    }
+    
+    const totalMinutes = 3 * 60;
+    const elapsedMinutes = Math.floor((now - deliveredAt) / (1000 * 60));
+    const remainingMinutes = totalMinutes - elapsedMinutes;
+    
+    if (remainingMinutes <= 0) {
+      countdown.textContent = 'Window Closed';
+      countdown.style.color = '#6c757d';
+      return;
+    }
+    
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+    
+    if (hours > 0) {
+      countdown.textContent = `${hours}h ${minutes}m remaining`;
+    } else {
+      countdown.textContent = `${minutes}m remaining`;
+    }
+    
+    // Red alert if less than 30 minutes
+    if (remainingMinutes < 30) {
+      countdown.style.color = '#dc3545';
+      countdown.style.fontWeight = '700';
+    }
+  });
+}
+
+// Update every minute
+updateRefundCountdowns();
+setInterval(updateRefundCountdowns, 60000);
+</script>
 </body>
 </html>

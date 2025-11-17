@@ -143,6 +143,16 @@ class CustomerOrderController extends Controller
         if (!in_array($order->status, ['delivered', 'received'])) {
             throw ValidationException::withMessages(['status' => 'Refunds can only be requested after delivery.']);
         }
+        
+        // Check if refund was already declined
+        if ($order->status === CustomerOrder::STATUS_REFUND_DECLINED) {
+            throw ValidationException::withMessages(['refund' => 'Your refund request was already declined by the vendor.']);
+        }
+        
+        // Check 3-hour refund window
+        if (!$order->isRefundWindowOpen()) {
+            throw ValidationException::withMessages(['refund' => 'Refund window has closed. Refunds must be requested within 3 hours of delivery.']);
+        }
         $data = $request->validate([
             'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
             'notes' => ['nullable','string','max:500'],
