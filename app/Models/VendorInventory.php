@@ -21,6 +21,7 @@ class VendorInventory extends Model implements Auditable
         'quantity',
         'purchased_at',
         'status',
+        'order_id',
     ];
 
     protected function casts(): array
@@ -45,6 +46,11 @@ class VendorInventory extends Model implements Auditable
     public function marketplaceListings(): HasMany
     {
         return $this->hasMany(MarketplaceListing::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 
     public function scopeInStock($query)

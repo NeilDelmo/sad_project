@@ -27,8 +27,9 @@ class VendorInventoryController extends Controller
      */
     public function index()
     {
-        $inventory = VendorInventory::with(['product', 'product.category'])
+        $inventory = VendorInventory::with(['product', 'product.category', 'order'])
             ->where('vendor_id', auth()->id())
+            ->orderByRaw("FIELD(status, 'pending_delivery', 'in_stock', 'listed')")
             ->orderBy('purchased_at', 'desc')
             ->paginate(20);
 
@@ -96,6 +97,10 @@ class VendorInventoryController extends Controller
     public function createListing(VendorInventory $inventory)
     {
         $this->authorize('view', $inventory);
+
+        if ($inventory->status === 'pending_delivery') {
+            return back()->withErrors(['error' => 'Cannot list this product yet. The fisherman must deliver the order first.']);
+        }
 
         if ($inventory->status !== 'in_stock') {
             return back()->withErrors(['error' => 'This inventory item is not available for listing.']);

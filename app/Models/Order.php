@@ -54,4 +54,5 @@ class Order extends Model implements Auditable
     public function fisherman(): BelongsTo { return $this->belongsTo(User::class, 'fisherman_id'); }
     public function product(): BelongsTo { return $this->belongsTo(Product::class); }
     public function offer(): BelongsTo { return $this->belongsTo(VendorOffer::class, 'offer_id'); }
+    public function vendorInventory(): BelongsTo { return $this->belongsTo(VendorInventory::class, 'id', 'order_id'); }
 }

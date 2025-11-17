@@ -168,6 +168,11 @@
             color: #0c5460;
         }
 
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
         .badge-secondary {
             background: #e2e3e5;
             color: #383d41;
@@ -296,16 +301,28 @@
                             <span class="badge 
                                 @if($item->status === 'in_stock') badge-success
                                 @elseif($item->status === 'listed') badge-info
+                                @elseif($item->status === 'pending_delivery') badge-warning
                                 @else badge-secondary
                                 @endif">
                                 {{ ucfirst(str_replace('_', ' ', $item->status)) }}
                             </span>
+                            @if($item->status === 'pending_delivery' && $item->order)
+                                <div style="font-size: 11px; color: #856404; margin-top: 4px;">
+                                    <i class="fa-solid fa-truck"></i> Order #{{ $item->order->id }} - {{ ucfirst($item->order->status) }}
+                                </div>
+                            @endif
                         </td>
                         <td style="color: #6c757d; font-size: 14px;">{{ $item->purchased_at->diffForHumans() }}</td>
                         <td>
+                            @if($item->order)
+                            <a href="{{ route('orders.index') }}?order_id={{ $item->order->id }}" class="action-link">View Order</a>
+                            @else
                             <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link">View</a>
+                            @endif
                             @if($item->status === 'in_stock')
                             <a href="{{ route('vendor.inventory.create-listing', $item) }}" class="action-link success">List on Marketplace</a>
+                            @elseif($item->status === 'pending_delivery')
+                            <span style="color: #856404; font-size: 13px;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Delivery</span>
                             @endif
                         </td>
                     </tr>

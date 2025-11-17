@@ -74,6 +74,11 @@ class OrdersController extends Controller
             'delivered_at' => now(),
         ]);
 
+        // Update vendor inventory status to in_stock now that it's delivered
+        \App\Models\VendorInventory::where('order_id', $order->id)
+            ->where('status', 'pending_delivery')
+            ->update(['status' => 'in_stock']);
+
         $this->notifyAndMessage($order, "Order #{$order->id} has been delivered. Please confirm receipt.");
 
         return back()->with('success', 'Order marked as delivered.');
