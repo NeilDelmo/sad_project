@@ -632,4 +632,80 @@ class RentalController extends Controller
 
         return back()->with('success', 'Equipment retired permanently.');
     }
+
+    /**
+     * Admin: View all issue reports
+     */
+    public function viewReports()
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $reports = \App\Models\RentalIssueReport::with(['rental.user', 'rental.rentalItems.product', 'user'])
+            ->orderByRaw("FIELD(status, 'open', 'under_review', 'resolved')")
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $stats = [
+            'open' => \App\Models\RentalIssueReport::where('status', 'open')->count(),
+            'under_review' => \App\Models\RentalIssueReport::where('status', 'under_review')->count(),
+            'resolved' => \App\Models\RentalIssueReport::where('status', 'resolved')->count(),
+        ];
+
+        return view('rentals.admin.reports', compact('reports', 'stats'));
+    }
+
+    /**
+     * Admin: Mark equipment from report as needing maintenance
+     */
+    public function markForMaintenance(Request $request, \App\Models\RentalIssueReport $report)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'units' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $product = Product::findOrFail($validated['product_id']);
+
+        // Move units to maintenance
+        $product->increment('maintenance_count', $validated['units']);
+        $product->decrement('rental_stock', min($validated['units'], $product->rental_stock ?? 0));
+        $product->update(['equipment_status' => 'maintenance']);
+
+        // Update report status
+        $report->update(['status' => 'under_review']);
+
+        // Log note
+        $timestamp = now()->format('Y-m-d H:i');
+        $adminNote = "[{$timestamp}] Marked {$validated['units']} unit(s) for maintenance by " . auth()->user()->username . " - From Report #{$report->id}";
+        if (!empty($validated['notes'])) {
+            $adminNote .= "\n" . $validated['notes'];
+        }
+        $existingNotes = $product->maintenance_notes ?? '';
+        $product->update([
+            'maintenance_notes' => $existingNotes ? $existingNotes . "\n\n---\n\n" . $adminNote : $adminNote,
+        ]);
+
+        return back()->with('success', "{$validated['units']} unit(s) of {$product->name} moved to maintenance.");
+    }
+
+    /**
+     * Admin: Resolve a report
+     */
+    public function resolveReport(\App\Models\RentalIssueReport $report)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $report->update(['status' => 'resolved']);
+
+        return back()->with('success', 'Report marked as resolved.');
+    }
 }

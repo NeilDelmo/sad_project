@@ -192,6 +192,9 @@ Route::middleware('auth')->group(function () {
     
     // Equipment maintenance
     Route::get('/admin/maintenance', [RentalController::class, 'maintenanceDashboard'])->name('rentals.admin.maintenance');
+    Route::get('/admin/reports', [RentalController::class, 'viewReports'])->name('rentals.admin.reports');
+    Route::post('/admin/reports/{report}/mark-maintenance', [RentalController::class, 'markForMaintenance'])->name('reports.mark.maintenance');
+    Route::post('/admin/reports/{report}/resolve', [RentalController::class, 'resolveReport'])->name('reports.resolve');
     Route::post('/admin/equipment/{product}/repair', [RentalController::class, 'markRepaired'])->name('equipment.repair');
     Route::post('/admin/equipment/{product}/retire', [RentalController::class, 'retireEquipment'])->name('equipment.retire');
 });

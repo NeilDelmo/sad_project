@@ -314,6 +314,15 @@
         <div class="navbar-container">
             <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
             <div>
+                <a href="{{ route('rentals.admin.index') }}" class="nav-link">
+                    <i class="fa-solid fa-toolbox"></i> Rentals
+                </a>
+                <a href="{{ route('rentals.admin.maintenance') }}" class="nav-link">
+                    <i class="fa-solid fa-wrench"></i> Maintenance
+                </a>
+                <a href="{{ route('rentals.admin.reports') }}" class="nav-link">
+                    <i class="fa-solid fa-flag"></i> Reports
+                </a>
                 <a href="{{ route('dashboard') }}" class="nav-link">
                     <i class="fa-solid fa-gauge-high"></i> Dashboard
                 </a>

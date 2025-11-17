@@ -40,6 +40,10 @@
                                 <span>🛠️</span>
                                 <span>Maintenance</span>
                             </a>
+                            <a href="{{ route('rentals.admin.reports') }}" class="inline-flex items-center gap-2 bg-rose-600 text-white px-4 py-2 rounded-md hover:bg-rose-700 transition">
+                                <span>🚩</span>
+                                <span>Issue Reports</span>
+                            </a>
                         </div>
                     </div>
                 </div>
