@@ -42,7 +42,7 @@
         }
 
         // Poll every 5 seconds and on focus
-        setInterval(checkNewMessages, 3000);
+        setInterval(checkNewMessages, 2000);
         window.addEventListener('focus', checkNewMessages);
     })();
 </script>
