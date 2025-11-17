@@ -49,5 +49,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Refresh conversation list when returning from conversation page
+    window.addEventListener('focus', function() {
+        const lastPath = document.referrer;
+        if (lastPath && lastPath.includes('/marketplace/message/')) {
+            window.location.reload();
+        }
+    });
+</script>
+
 </body>
 </html>

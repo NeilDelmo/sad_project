@@ -11,6 +11,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('offers:expire')->hourly();
         $schedule->command('rentals:cancel-expired')->everyFiveMinutes();
+        // Example: run fancy-gear retirement nightly (commented by default)
+        // $schedule->command('rentals:retire-fancy-gear --dry')->dailyAt('02:00');
     }
 
     protected function commands(): void

@@ -335,7 +335,7 @@
                 <div class="stat-icon">
                     <i class="fa-solid fa-message"></i>
                 </div>
-                <div class="stat-number">{{ $unreadCount ?? 0 }}</div>
+                <div class="stat-number" id="unread-message-count">{{ $unreadCount ?? 0 }}</div>
                 <div class="stat-label">Unread Messages</div>
             </div>
             <div class="stat-card">
@@ -438,6 +438,59 @@
         </div>
         @endif
     </div>
+
+    <script>
+        // Refresh unread message count when window gains focus
+        let lastUnreadCount = {{ $unreadCount ?? 0 }};
+        let hasNotified = false; // Track if we already played sound for current unread count
+        let isFirstPoll = true; // Track if this is the first poll after page load
+        
+        // Sound notification for new messages
+        const notifAudio = new Audio('/audio/notify.mp3');
+        
+        function refreshUnreadCount() {
+            fetch('/api/messages/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Unread count check:', data.unread_count, 'Last:', lastUnreadCount, 'HasNotified:', hasNotified, 'FirstPoll:', isFirstPoll);
+                    const unreadBadge = document.getElementById('unread-message-count');
+                    if (unreadBadge) {
+                        // On first poll: play sound if there are any unread messages
+                        // On subsequent polls: play sound only if count increased
+                        const shouldPlaySound = (isFirstPoll && data.unread_count > 0 && !hasNotified) || 
+                                                (!isFirstPoll && data.unread_count > lastUnreadCount && !hasNotified);
+                        
+                        if (shouldPlaySound) {
+                            console.log('Playing notification sound!');
+                            notifAudio.currentTime = 0;
+                            notifAudio.play().catch(err => console.error('Sound play failed:', err));
+                            hasNotified = true;
+                        }
+                        
+                        // Reset notification flag when count goes back to 0 (user read messages)
+                        if (data.unread_count === 0) {
+                            hasNotified = false;
+                        }
+                        
+                        if (data.unread_count !== lastUnreadCount) {
+                            unreadBadge.textContent = data.unread_count;
+                            lastUnreadCount = data.unread_count;
+                        }
+                        
+                        if (isFirstPoll) {
+                            isFirstPoll = false;
+                        }
+                    }
+                })
+                .catch(err => console.error('Failed to refresh unread count:', err));
+        }
+
+        // Refresh on window focus (when returning from conversation page)
+        window.addEventListener('focus', refreshUnreadCount);
+        
+        // Poll every 5 seconds to detect new messages and play sound
+        setInterval(refreshUnreadCount, 5000);
+    </script>
 
 </body>
 </html>

@@ -199,4 +199,19 @@ class MessageController extends Controller
                 'read_at' => now(),
             ]);
     }
+
+    /**
+     * Get unread message count for current user
+     */
+    public function getUnreadCount()
+    {
+        $user = Auth::user();
+        $unreadCount = Conversation::where(function($q) use ($user) {
+            $q->where('buyer_id', $user->id)->orWhere('seller_id', $user->id);
+        })->whereHas('messages', function($q) use ($user) {
+            $q->where('is_read', false)->where('sender_id', '!=', $user->id);
+        })->count();
+
+        return response()->json(['unread_count' => $unreadCount]);
+    }
 }

@@ -322,5 +322,17 @@
         </div>
     </div>
 
+    <script>
+        // Refresh conversation list when returning from conversation page
+        window.addEventListener('focus', function() {
+            // Reload to get fresh unread counts (simple solution)
+            // Only reload if we came from a conversation (check referrer or use session flag)
+            const lastPath = document.referrer;
+            if (lastPath && lastPath.includes('/marketplace/message/')) {
+                window.location.reload();
+            }
+        });
+    </script>
+
 </body>
 </html>

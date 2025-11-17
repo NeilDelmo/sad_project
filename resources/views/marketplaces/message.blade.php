@@ -623,6 +623,7 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     const notifAudio = document.getElementById('notifSound');
     let lastMessageId = 0;
+    let isInitialLoad = true;
     let notificationPermission = 'default';
 
     // Request desktop notification permission
@@ -660,6 +661,7 @@
           } else if ((data.messages || []).length) {
             lastMessageId = data.messages[data.messages.length - 1].id;
           }
+          if (isInitialLoad) { isInitialLoad = false; }
         })
         .catch(error => {
           console.error('Error loading messages:', error);
@@ -677,7 +679,8 @@
         messagesContainer.innerHTML = '';
       }
 
-      let shouldPlay = false;
+      // NEVER play sound when user is actively viewing this conversation
+      // Sound only plays when new messages arrive during polling (handled by background polling on other pages)
       let shouldNotify = false;
       let latestSenderName = '';
       let latestMessage = '';
@@ -688,20 +691,15 @@
         messageDiv.textContent = msg.message;
         messagesContainer.appendChild(messageDiv);
         
-        if (!msg.is_own) {
-          shouldPlay = true;
+        // Desktop notification only (no sound on conversation page)
+        if (!isInitialLoad && lastMessageId > 0 && document.hidden && !msg.is_own) {
           shouldNotify = true;
           latestSenderName = msg.sender_name;
           latestMessage = msg.message;
         }
       });
 
-      if (shouldPlay && notifAudio) {
-        notifAudio.currentTime = 0;
-        notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
-      }
-
-      // Show desktop notification
+      // Show desktop notification only (no sound on this page)
       if (shouldNotify && notificationPermission === 'granted' && document.hidden) {
         const notification = new Notification(latestSenderName, {
           body: latestMessage.length > 60 ? latestMessage.substring(0, 60) + '...' : latestMessage,
