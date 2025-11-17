@@ -489,7 +489,7 @@
         window.addEventListener('focus', refreshUnreadCount);
         
         // Poll every 5 seconds to detect new messages and play sound
-        setInterval(refreshUnreadCount, 5000);
+        setInterval(refreshUnreadCount, 3000);
     </script>
 
 </body>
