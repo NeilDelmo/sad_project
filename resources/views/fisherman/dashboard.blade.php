@@ -600,7 +600,7 @@
                     <i class="fa-solid fa-peso-sign"></i>
                 </div>
                 <div class="stat-number" style="color: #16a34a;">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
-                <div class="stat-label">Total Income (Delivered Orders)</div>
+                <div class="stat-label">Total Income (Received Orders)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">

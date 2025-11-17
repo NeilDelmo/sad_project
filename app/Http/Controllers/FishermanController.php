@@ -45,9 +45,9 @@ class FishermanController extends Controller
             ->limit(5)
             ->get();
 
-        // Calculate total income from delivered orders (selling to vendors)
+        // Calculate total income from received orders (vendor confirmed receipt - COD)
         $totalIncome = Order::where('fisherman_id', $fisherman->id)
-            ->where('status', Order::STATUS_DELIVERED)
+            ->where('status', Order::STATUS_RECEIVED)
             ->sum('total');
 
         // Calculate total spending from rentals (equipment/gear rentals)

@@ -90,7 +90,8 @@ class OrdersController extends Controller
         if ($order->vendor_id !== $user->id) {
             abort(403);
         }
-        if ($order->status !== Order::STATUS_DELIVERED) {
+        // Allow confirmation if delivered or refund was declined
+        if (!in_array($order->status, [Order::STATUS_DELIVERED, Order::STATUS_REFUND_DECLINED])) {
             throw ValidationException::withMessages(['status' => 'Order cannot be confirmed received from current status.']);
         }
         $order->update([

@@ -575,7 +575,7 @@
                     <i class="fa-solid fa-money-bill-trend-up"></i>
                 </div>
                 <div class="stat-number" style="color: #dc2626;">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
-                <div class="stat-label">Total Spending (Purchases)</div>
+                <div class="stat-label">Total Spending (Received Orders)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">

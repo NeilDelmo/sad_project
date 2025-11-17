@@ -301,7 +301,7 @@
             </form>
           @endif
         @elseif($user && $user->id === $order->vendor_id)
-          @if($order->status === 'delivered')
+          @if(in_array($order->status, ['delivered','refund_declined']))
             <form class="d-inline" method="post" action="{{ route('orders.received', $order) }}">
               @csrf
               <button class="btn btn-sm btn-success">
