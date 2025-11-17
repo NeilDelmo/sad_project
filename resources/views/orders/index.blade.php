@@ -5,15 +5,171 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Koulen&display=swap">
   <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+    }
+
     /* Fisherman navbar styling to match dashboard */
-    .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .nav-brand { color: #fff; font-size: 28px; font-weight: bold; font-family: "Koulen", sans-serif; text-decoration: none; }
-    .nav-links { display: flex; gap: 10px; }
-    .nav-link { color: rgba(255,255,255,0.9); text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: 500; transition: all .3s ease; position: relative; }
-    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); }
-    .nav-link.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .navbar {
+      background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+      padding: 15px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .nav-brand {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      font-family: "Koulen", sans-serif;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: white;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-link:hover::before {
+      transform: translateX(0);
+    }
+
+    .nav-link.active {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Fix navbar layout - brand left, links right */
+    .navbar .container-fluid {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+    }
+
+    .navbar .nav-brand {
+      flex-shrink: 0;
+    }
+
+    .navbar .nav-links {
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    /* Order card styling */
+    .order-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border-left: 4px solid #0075B5;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .order-id {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1B5E88;
+    }
+
+    .order-body {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .order-detail {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .order-value {
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 15px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending_payment { background: #e2e3e5; color: #383d41; }
+    .status-in_transit { background: #d1ecf1; color: #0c5460; }
+    .status-delivered { background: #fff3cd; color: #856404; }
+    .status-received { background: #d4edda; color: #155724; }
+    .status-refund_requested { background: #f8d7da; color: #721c24; }
+    .status-refunded { background: #e2e3e5; color: #383d41; }
+    .status-refund_declined { background: #f8d7da; color: #721c24; }
   </style>
 </head>
 <body>
@@ -44,98 +200,121 @@
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Total</th>
-        <th>Status</th>
-        <th>Refund</th>
-        <th>Proof</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      @foreach($orders as $order)
-        <tr>
-          <td>#{{ $order->id }}</td>
-          <td>{{ optional($order->product)->name ?? 'Product #'.$order->product_id }}</td>
-          <td>{{ $order->quantity }}</td>
-          <td>₱{{ number_format($order->total, 2) }}</td>
-          <td>
-            @php
-              $badge = match($order->status) {
-                'pending_payment' => 'secondary',
-                'in_transit' => 'info',
-                'delivered' => 'warning',
-                'received' => 'success',
-                'refund_requested' => 'danger',
-                'refunded' => 'secondary',
-                'refund_declined' => 'secondary',
-                default => 'secondary'
-              };
-            @endphp
-            <span class="badge bg-{{ $badge }} text-uppercase">{{ str_replace('_',' ', $order->status) }}</span>
-          </td>
-          <td>
+  @foreach($orders as $order)
+    @php 
+      $user = auth()->user();
+      $statusIcon = match($order->status) {
+        'pending_payment' => 'fa-clock',
+        'in_transit' => 'fa-truck',
+        'delivered' => 'fa-box-open',
+        'received' => 'fa-check-circle',
+        'refund_requested' => 'fa-exclamation-triangle',
+        'refunded' => 'fa-undo',
+        'refund_declined' => 'fa-times-circle',
+        default => 'fa-question-circle'
+      };
+    @endphp
+
+    <div class="order-card">
+      <div class="order-header">
+        <div>
+          <span class="order-id"><i class="fa-solid fa-receipt"></i> Order #{{ $order->id }}</span>
+          <div style="font-size: 14px; color: #666; margin-top: 5px;">
+            {{ optional($order->product)->name ?? 'Product #'.$order->product_id }}
+          </div>
+        </div>
+        <span class="status-badge status-{{ $order->status }}">
+          <i class="fa-solid {{ $statusIcon }}"></i> {{ str_replace('_',' ', ucfirst($order->status)) }}
+        </span>
+      </div>
+
+      <div class="order-body">
+        <div class="order-detail">
+          <span class="order-label">Quantity</span>
+          <span class="order-value">{{ $order->quantity }} kg</span>
+        </div>
+        <div class="order-detail">
+          <span class="order-label">Total Amount</span>
+          <span class="order-value" style="color: #16a34a; font-weight: 700;">₱{{ number_format($order->total, 2) }}</span>
+        </div>
+        @if($order->proof_photo_path)
+        <div class="order-detail">
+          <span class="order-label">Delivery Proof</span>
+          <a href="{{ asset('storage/'.$order->proof_photo_path) }}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+            <i class="fa-solid fa-image"></i> View Photo
+          </a>
+        </div>
+        @endif
+        @if($order->refund_proof_path)
+        <div class="order-detail">
+          <span class="order-label">Refund Proof</span>
+          <a href="{{ asset('storage/'.$order->refund_proof_path) }}" target="_blank" class="btn btn-sm btn-outline-danger mt-1">
+            <i class="fa-solid fa-image"></i> View Proof
+          </a>
+        </div>
+        @endif
+        @if(in_array($order->status, ['refund_requested', 'refunded', 'refund_declined']))
+        <div class="order-detail">
+          <span class="order-label">Refund Status</span>
+          <span class="order-value">
             @if($order->status === 'refund_requested')
-              <span class="text-danger">Requested</span>
+              <span style="color: #dc2626;"><i class="fa-solid fa-hourglass-half"></i> Requested</span>
             @elseif($order->status === 'refunded')
-              <span class="text-muted">Refunded</span>
-            @elseif($order->status === 'refund_declined')
-              <span class="text-muted">Declined</span>
+              <span style="color: #666;"><i class="fa-solid fa-check"></i> Refunded</span>
             @else
-              <span class="text-muted">—</span>
+              <span style="color: #666;"><i class="fa-solid fa-times"></i> Declined</span>
             @endif
-          </td>
-          <td>
-            @if($order->proof_photo_path)
-              <a href="{{ asset('storage/'.$order->proof_photo_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
-            @else
-              <span class="text-muted">—</span>
-            @endif
-            @if($order->refund_proof_path)
-              <a href="{{ asset('storage/'.$order->refund_proof_path) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1">Refund Proof</a>
-            @endif
-          </td>
-          <td>
-            @php $user = auth()->user(); @endphp
-            @if($user && $user->id === $order->fisherman_id)
-              @if($order->status === 'pending_payment')
-                <form class="d-inline" method="post" action="{{ route('orders.in-transit', $order) }}">
-                  @csrf
-                  <button class="btn btn-sm btn-outline-secondary">Mark In Transit</button>
-                </form>
-              @endif
-              @if(in_array($order->status, ['pending_payment','in_transit']))
-                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#deliverModal{{ $order->id }}">Mark Delivered</button>
-              @endif
-              @if($order->status === 'refund_requested')
-                <form class="d-inline" method="post" action="{{ route('orders.refund.approve', $order) }}">
-                  @csrf
-                  <button class="btn btn-sm btn-outline-success">Approve Refund</button>
-                </form>
-                <form class="d-inline" method="post" action="{{ route('orders.refund.decline', $order) }}">
-                  @csrf
-                  <button class="btn btn-sm btn-outline-danger">Decline Refund</button>
-                </form>
-              @endif
-            @elseif($user && $user->id === $order->vendor_id)
-              @if($order->status === 'delivered')
-                <form class="d-inline" method="post" action="{{ route('orders.received', $order) }}">
-                  @csrf
-                  <button class="btn btn-sm btn-success">Confirm Received</button>
-                </form>
-              @endif
-              @if(in_array($order->status, ['delivered','received']))
-                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}">Request Refund</button>
-              @endif
-            @endif
-          </td>
-        </tr>
+          </span>
+        </div>
+        @endif
+      </div>
+
+      <div class="order-actions">
+        @if($user && $user->id === $order->fisherman_id)
+          @if($order->status === 'pending_payment')
+            <form class="d-inline" method="post" action="{{ route('orders.in-transit', $order) }}">
+              @csrf
+              <button class="btn btn-sm btn-outline-primary">
+                <i class="fa-solid fa-truck"></i> Mark In Transit
+              </button>
+            </form>
+          @endif
+          @if(in_array($order->status, ['pending_payment','in_transit']))
+            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#deliverModal{{ $order->id }}">
+              <i class="fa-solid fa-box-open"></i> Mark Delivered
+            </button>
+          @endif
+          @if($order->status === 'refund_requested')
+            <form class="d-inline" method="post" action="{{ route('orders.refund.approve', $order) }}">
+              @csrf
+              <button class="btn btn-sm btn-success">
+                <i class="fa-solid fa-check"></i> Approve Refund
+              </button>
+            </form>
+            <form class="d-inline" method="post" action="{{ route('orders.refund.decline', $order) }}">
+              @csrf
+              <button class="btn btn-sm btn-danger">
+                <i class="fa-solid fa-times"></i> Decline Refund
+              </button>
+            </form>
+          @endif
+        @elseif($user && $user->id === $order->vendor_id)
+          @if($order->status === 'delivered')
+            <form class="d-inline" method="post" action="{{ route('orders.received', $order) }}">
+              @csrf
+              <button class="btn btn-sm btn-success">
+                <i class="fa-solid fa-check-circle"></i> Confirm Received
+              </button>
+            </form>
+          @endif
+          @if(in_array($order->status, ['delivered','received']))
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}">
+              <i class="fa-solid fa-exclamation-triangle"></i> Request Refund
+            </button>
+          @endif
+        @endif
+      </div>
+    </div>
 
         <!-- Deliver Modal -->
         <div class="modal fade" id="deliverModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
@@ -204,12 +383,9 @@
             </div>
           </div>
         </div>
-      @endforeach
-      </tbody>
-    </table>
-  </div>
+  @endforeach
 
-  <div>
+  <div class="mt-4">
     {{ $orders->links() }}
   </div>
 </div>

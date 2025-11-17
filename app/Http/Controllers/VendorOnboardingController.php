@@ -6,6 +6,7 @@ use App\Models\VendorPreference;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\VendorOffer;
+use App\Models\CustomerOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -73,10 +74,17 @@ class VendorOnboardingController extends Controller
 
         $products = $query->limit(20)->get();
 
-        // Calculate total spending from accepted offers
+        // Calculate total spending from accepted offers (buying from fishermen)
         $totalSpending = VendorOffer::where('vendor_id', $user->id)
             ->where('status', 'accepted')
             ->sum(DB::raw('offered_price * quantity'));
+
+        // Calculate total income from marketplace sales to buyers
+        $totalIncome = CustomerOrder::whereHas('listing.vendorInventory', function($q) use ($user) {
+                $q->where('vendor_id', $user->id);
+            })
+            ->whereIn('status', ['received', 'delivered'])
+            ->sum('total');
 
         // Count accepted offers
         $acceptedOffersCount = VendorOffer::where('vendor_id', $user->id)
@@ -109,6 +117,7 @@ class VendorOnboardingController extends Controller
             'products' => $products,
             'prefs' => $prefs,
             'applyFilters' => $applyFilters,
+            'totalIncome' => $totalIncome,
             'totalSpending' => $totalSpending,
             'acceptedOffersCount' => $acceptedOffersCount,
             'recentAcceptedOffers' => $recentAcceptedOffers,

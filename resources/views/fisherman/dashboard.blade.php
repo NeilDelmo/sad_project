@@ -599,8 +599,15 @@
                 <div class="stat-icon">
                     <i class="fa-solid fa-peso-sign"></i>
                 </div>
-                <div class="stat-number">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
+                <div class="stat-number" style="color: #16a34a;">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
                 <div class="stat-label">Total Income (Delivered Orders)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                </div>
+                <div class="stat-number" style="color: #dc2626;">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
+                <div class="stat-label">Total Spending (Rentals)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
@@ -724,7 +731,6 @@
         let lastUnreadCount = {{ $unreadCount ?? 0 }};
         let hasNotified = false;
         let isFirstPoll = true;
-        let shownMessageIds = new Set();
         
         const notifAudio = new Audio('/audio/notify.mp3');
         
@@ -743,9 +749,6 @@
                             notifAudio.currentTime = 0;
                             notifAudio.play().catch(err => console.error('Sound play failed:', err));
                             hasNotified = true;
-                            
-                            // Fetch latest unread messages for toast
-                            fetchLatestUnread();
                         }
                         
                         if (data.unread_count === 0) {
@@ -773,59 +776,9 @@
                 .catch(err => console.error('Failed to refresh unread count:', err));
         }
 
-        function fetchLatestUnread() {
-            fetch('/api/messages/latest-unread')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            if (!shownMessageIds.has(msg.id)) {
-                                showToast(msg.sender_name, msg.message, msg.created_at, msg.conversation_id);
-                                shownMessageIds.add(msg.id);
-                            }
-                        });
-                    }
-                })
-                .catch(err => console.error('Failed to fetch latest unread:', err));
-        }
-
-        function showToast(senderName, message, time, conversationId) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.onclick = () => window.location.href = '/marketplace/message/' + conversationId;
-            
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fa-solid fa-envelope"></i>
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">New message from ${senderName}</div>
-                    <div class="toast-message">${message}</div>
-                    <div class="toast-time">${time}</div>
-                </div>
-                <button class="toast-close" onclick="event.stopPropagation(); removeToast(this.parentElement)">
-                    <i class="fa-solid fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => removeToast(toast), 5000);
-        }
-
-        function removeToast(toast) {
-            toast.classList.add('fade-out');
-            setTimeout(() => toast.remove(), 300);
-        }
-
         window.addEventListener('focus', refreshUnreadCount);
         setInterval(refreshUnreadCount, 2000);
     </script>
-
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
 
     <!-- Receipt Modal -->
     <div id="receiptModal" class="receipt-modal" onclick="if(event.target.id === 'receiptModal') closeReceipt()">

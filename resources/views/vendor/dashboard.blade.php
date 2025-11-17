@@ -565,10 +565,17 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="fa-solid fa-peso-sign"></i>
+                    <i class="fa-solid fa-sack-dollar"></i>
                 </div>
-                <div class="stat-number">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
-                <div class="stat-label">Total Spending (Accepted Offers)</div>
+                <div class="stat-number" style="color: #16a34a;">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
+                <div class="stat-label">Total Income (Marketplace Sales)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                </div>
+                <div class="stat-number" style="color: #dc2626;">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
+                <div class="stat-label">Total Spending (Purchases)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
@@ -614,16 +621,25 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div class="offer-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
-                    <button class="btn-view-details" onclick="showReceipt({{ json_encode([
-                        'id' => $offer->id,
-                        'product' => $offer->product->name ?? 'Product',
-                        'fisherman' => $offer->fisherman->username ?? $offer->fisherman->email,
-                        'quantity' => $offer->quantity,
-                        'unit_price' => $offer->offered_price,
-                        'total' => $offer->offered_price * $offer->quantity,
-                        'date' => $offer->updated_at->format('F d, Y h:i A'),
-                        'status' => $offer->status,
-                    ]) }})">
+                    <button class="btn-view-details" 
+                        data-id="{{ $offer->id }}"
+                        data-product="{{ $offer->product->name ?? 'Product' }}"
+                        data-fisherman="{{ $offer->fisherman->username ?? $offer->fisherman->email }}"
+                        data-quantity="{{ $offer->quantity }}"
+                        data-unit-price="{{ $offer->offered_price }}"
+                        data-total="{{ $offer->offered_price * $offer->quantity }}"
+                        data-date="{{ $offer->updated_at->format('F d, Y h:i A') }}"
+                        data-status="{{ $offer->status }}"
+                        onclick="showReceipt({
+                            id: this.dataset.id,
+                            product: this.dataset.product,
+                            fisherman: this.dataset.fisherman,
+                            quantity: parseFloat(this.dataset.quantity),
+                            unit_price: parseFloat(this.dataset.unitPrice),
+                            total: parseFloat(this.dataset.total),
+                            date: this.dataset.date,
+                            status: this.dataset.status
+                        })">
                         <i class="fa-solid fa-receipt"></i> View Details
                     </button>
                 </div>

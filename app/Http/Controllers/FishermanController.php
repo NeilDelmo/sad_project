@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\Rental;
 use App\Models\VendorOffer;
+use App\Models\CustomerOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,10 +45,15 @@ class FishermanController extends Controller
             ->limit(5)
             ->get();
 
-        // Calculate total income from delivered orders only
+        // Calculate total income from delivered orders (selling to vendors)
         $totalIncome = Order::where('fisherman_id', $fisherman->id)
             ->where('status', Order::STATUS_DELIVERED)
             ->sum('total');
+
+        // Calculate total spending from rentals (equipment/gear rentals)
+        $totalSpending = Rental::where('user_id', $fisherman->id)
+            ->whereIn('status', ['completed', 'active', 'returned'])
+            ->sum('total_charges');
 
         // Count accepted offers
         $acceptedOffersCount = VendorOffer::where('fisherman_id', $fisherman->id)
@@ -76,6 +82,7 @@ class FishermanController extends Controller
             'unreadCount',
             'recentProducts',
             'totalIncome',
+            'totalSpending',
             'acceptedOffersCount',
             'recentAcceptedOffers',
             'activeRentalsCount',
