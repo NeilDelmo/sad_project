@@ -258,6 +258,52 @@
             border-color: #0075B5;
             background: #E7FAFE;
         }
+
+        /* Styled file input */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #E7FAFE 0%, #B3E5FC 100%);
+            border: 2px dashed #0075B5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #0075B5;
+        }
+
+        .file-input-label:hover {
+            background: linear-gradient(135deg, #B3E5FC 0%, #81D4FA 100%);
+            border-color: #1B5E88;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,117,181,0.2);
+        }
+
+        .file-input-label i {
+            font-size: 20px;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -312,34 +358,25 @@
                     @enderror
                 </div>
 
-                <!-- Category -->
-                <div class="form-group">
-                    <label for="category_id" class="form-label required">Category</label>
-                    <select id="category_id" 
-                            name="category_id" 
-                            class="form-control @error('category_id') is-invalid @enderror"
-                            required>
-                        <option value="">Select a category</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('category_id')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
+                <!-- Category (Hidden - defaults to Fresh Fish) -->
+                <input type="hidden" name="category_id" value="{{ $categories->firstWhere('name', 'Fresh Fish')->id ?? $categories->first()->id }}">
 
                 <!-- Product Image -->
                 <div class="form-group">
                     <label for="image" class="form-label">Product Image</label>
-                    <input type="file" 
-                           id="image" 
-                           name="image" 
-                           class="form-control @error('image') is-invalid @enderror" 
-                           accept="image/jpeg,image/jpg,image/png,image/gif"
-                           onchange="previewImage(this)">
+                    <div class="file-input-wrapper">
+                        <input type="file" 
+                               id="image" 
+                               name="image" 
+                               class="@error('image') is-invalid @enderror" 
+                               accept="image/jpeg,image/jpg,image/png,image/gif"
+                               onchange="previewImage(this)">
+                        <label for="image" class="file-input-label">
+                            <i class="fa-solid fa-cloud-upload-alt"></i>
+                            <span id="file-label-text">Choose Image or Drag & Drop</span>
+                        </label>
+                    </div>
+                    <div id="file-name" class="file-name"></div>
                     @error('image')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -478,9 +515,15 @@
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const previewContainer = document.getElementById('imagePreview');
+            const fileNameDisplay = document.getElementById('file-name');
+            const labelText = document.getElementById('file-label-text');
             
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
+                const fileName = input.files[0].name;
+                
+                fileNameDisplay.textContent = 'Selected: ' + fileName;
+                labelText.textContent = 'Change Image';
                 
                 reader.onload = function(e) {
                     preview.src = e.target.result;
@@ -490,6 +533,8 @@
                 reader.readAsDataURL(input.files[0]);
             } else {
                 previewContainer.style.display = 'none';
+                fileNameDisplay.textContent = '';
+                labelText.textContent = 'Choose Image or Drag & Drop';
             }
         }
     </script>

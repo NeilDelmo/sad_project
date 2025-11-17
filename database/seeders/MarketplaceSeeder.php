@@ -46,6 +46,11 @@ class MarketplaceSeeder extends Seeder
             ['description' => 'Fresh live fish caught from local waters']
         );
 
+        $shellfishCategory = ProductCategory::firstOrCreate(
+            ['name' => 'Shellfish'],
+            ['description' => 'Fresh shellfish, crabs, shrimps, and other seafood']
+        );
+
         $gearCategory = ProductCategory::firstOrCreate(
             ['name' => 'Fishing Gear'],
             ['description' => 'Fishing equipment and tools']
