@@ -228,6 +228,160 @@
             margin-right: 20px;
         }
 
+        .btn-view-details {
+            background: #0075B5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-view-details:hover {
+            background: #1B5E88;
+            transform: translateY(-1px);
+        }
+
+        /* Receipt Modal Styles */
+        .receipt-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .receipt-modal.active {
+            display: flex;
+        }
+
+        .receipt-content {
+            background: white;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .receipt-header {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+        }
+
+        .receipt-header h2 {
+            margin: 0;
+            font-family: "Koulen", sans-serif;
+            font-size: 28px;
+        }
+
+        .receipt-header .receipt-date {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .receipt-body {
+            padding: 30px;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .receipt-value {
+            color: #1B5E88;
+            font-weight: 600;
+        }
+
+        .receipt-total {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .receipt-total-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1B5E88;
+        }
+
+        .receipt-total-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #16a34a;
+        }
+
+        .receipt-footer {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-radius: 0 0 12px 12px;
+            text-align: center;
+        }
+
+        .close-receipt {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .close-receipt:hover {
+            background: #5a6268;
+        }
+
+        .receipt-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .receipt-status.accepted {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
         .alert-success {
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -316,7 +470,21 @@
                         <span style="color: #999; margin-left: 10px;">Accepted {{ $offer->updated_at->diffForHumans() }}</span>
                     </div>
                 </div>
-                <div class="offer-price">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="offer-price">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+                    <button class="btn-view-details" onclick="showReceipt({{ json_encode([
+                        'id' => $offer->id,
+                        'product' => $offer->product->name ?? 'Product',
+                        'fisherman' => $offer->fisherman->username ?? $offer->fisherman->email,
+                        'quantity' => $offer->quantity,
+                        'unit_price' => $offer->offered_price,
+                        'total' => $offer->offered_price * $offer->quantity,
+                        'date' => $offer->updated_at->format('F d, Y h:i A'),
+                        'status' => $offer->status,
+                    ]) }})">
+                        <i class="fa-solid fa-receipt"></i> View Details
+                    </button>
+                </div>
             </div>
             @endforeach
         </div>
@@ -408,6 +576,74 @@
         
         // Poll every 5 seconds to detect new messages and play sound
         setInterval(refreshUnreadCount, 2000);
+    </script>
+
+    <!-- Receipt Modal -->
+    <div id="receiptModal" class="receipt-modal">
+        <div class="receipt-content">
+            <div class="receipt-header">
+                <h2><i class="fa-solid fa-receipt"></i> Transaction Receipt</h2>
+                <div class="receipt-date" id="receiptDate"></div>
+            </div>
+            <div class="receipt-body">
+                <div class="receipt-row">
+                    <span class="receipt-label">Transaction ID</span>
+                    <span class="receipt-value" id="receiptId"></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Product</span>
+                    <span class="receipt-value" id="receiptProduct"></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Fisherman</span>
+                    <span class="receipt-value" id="receiptFisherman"></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Quantity</span>
+                    <span class="receipt-value" id="receiptQuantity"></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Unit Price</span>
+                    <span class="receipt-value" id="receiptUnitPrice"></span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Status</span>
+                    <span id="receiptStatus"></span>
+                </div>
+                <div class="receipt-total">
+                    <span class="receipt-total-label">Total Amount</span>
+                    <span class="receipt-total-value" id="receiptTotal"></span>
+                </div>
+            </div>
+            <div class="receipt-footer">
+                <button class="close-receipt" onclick="closeReceipt()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showReceipt(data) {
+            document.getElementById('receiptId').textContent = '#' + data.id;
+            document.getElementById('receiptDate').textContent = data.date;
+            document.getElementById('receiptProduct').textContent = data.product;
+            document.getElementById('receiptFisherman').textContent = data.fisherman;
+            document.getElementById('receiptQuantity').textContent = data.quantity + ' kg';
+            document.getElementById('receiptUnitPrice').textContent = '₱' + data.unit_price.toFixed(2) + '/kg';
+            document.getElementById('receiptTotal').textContent = '₱' + data.total.toFixed(2);
+            document.getElementById('receiptStatus').innerHTML = '<span class="receipt-status accepted">' + data.status + '</span>';
+            document.getElementById('receiptModal').classList.add('active');
+        }
+
+        function closeReceipt() {
+            document.getElementById('receiptModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('receiptModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReceipt();
+            }
+        });
     </script>
 
 </body>

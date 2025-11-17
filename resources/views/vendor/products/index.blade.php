@@ -185,6 +185,29 @@
             border-bottom: 2px solid #f0f0f0;
         }
 
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background: #f8f9fa;
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 48px;
+        }
+
         .product-name {
             font-size: 22px;
             font-weight: 700;
@@ -424,20 +447,21 @@
         <!-- Filter Section -->
         <form method="get" class="filter-card">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label class="form-label">Search Products</label>
                     <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Product name or description">
                 </div>
-                <div class="col-md-2">
-                    <div class="form-check">
-                        <input type="checkbox" name="only_fish" value="1" class="form-check-input" id="onlyFish" @if($onlyFish) checked @endif>
-                        <label class="form-check-label" for="onlyFish">Only Fish</label>
-                    </div>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="form-check">
                         <input type="checkbox" name="apply_filters" value="1" class="form-check-input" id="applyFilters" @if($applyFilters) checked @endif>
-                        <label class="form-check-label" for="applyFilters">My Preferences</label>
+                        <label class="form-check-label" for="applyFilters">
+                            <i class="fa-solid fa-sliders"></i> Apply My Preferences
+                            @if($prefs)
+                                <small class="text-muted d-block">Filters by your saved category, price & quantity preferences</small>
+                            @else
+                                <small class="text-muted d-block">Set preferences in onboarding to use this filter</small>
+                            @endif
+                        </label>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -451,6 +475,14 @@
             @forelse($products as $product)
             <!-- Product Card -->
             <div class="product-card">
+                @if($product->image_path)
+                    <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" class="product-image">
+                @else
+                    <div class="product-image-placeholder">
+                        <i class="fa-solid fa-fish"></i>
+                    </div>
+                @endif
+                
                 <div class="product-header">
                     <div class="product-name">
                         <i class="fa-solid fa-fish"></i>

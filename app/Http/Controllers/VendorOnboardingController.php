@@ -16,7 +16,10 @@ class VendorOnboardingController extends Controller
     {
         $user = Auth::user();
         $prefs = $user->vendorPreference;
-        $categories = ProductCategory::orderBy('name')->get(['id','name']);
+        // Only show Fresh Fish and Shellfish - vendors don't buy equipment/gear
+        $categories = ProductCategory::whereIn('name', ['Fresh Fish', 'Shellfish'])
+            ->orderBy('name')
+            ->get(['id','name']);
         return view('vendor.onboarding', compact('prefs', 'categories'));
     }
 
@@ -155,12 +158,9 @@ class VendorOnboardingController extends Controller
         $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])
             ->orderByDesc('created_at');
 
-        if ($onlyFish) {
-            $aliases = config('fish.category_aliases', ['Fish', 'Fresh Fish']);
-            $query->whereHas('category', function ($cat) use ($aliases) {
-                $cat->whereIn('name', $aliases);
-            });
-        }
+        // Filter out equipment and gear - vendors only buy fish and shellfish
+        $fishCategories = ProductCategory::whereIn('name', ['Fresh Fish', 'Shellfish'])->pluck('id');
+        $query->whereIn('category_id', $fishCategories);
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {

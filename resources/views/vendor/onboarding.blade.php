@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-@include('vendor.partials.nav')
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <title>SeaLedger - Vendor Preferences</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
@@ -17,6 +17,30 @@
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: white;
+            color: #1B5E88;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-button:hover {
+            background: #1B5E88;
+            color: white;
+            transform: translateX(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         
         .container-custom {
@@ -173,6 +197,10 @@
     </style>
 </head>
 <body>
+    <a href="{{ route('vendor.dashboard') }}" class="back-button">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+    
     <div class="container-custom">
         <div class="page-title">Vendor Preferences</div>
         <p class="page-subtitle">Set your preferences so we can notify you when fishermen list matching catches.</p>
