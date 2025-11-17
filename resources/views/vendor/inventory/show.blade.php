@@ -1,12 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.plain')
 
 @section('content')
-@include('vendor.partials.nav')
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="mb-6">
-            <a href="{{ route('vendor.inventory.index') }}" class="text-blue-600 hover:text-blue-800">
-                ← Back to Inventory
+<div class="min-h-screen flex items-start justify-center py-10 px-4">
+    <div class="w-full max-w-4xl">
+        <div class="mb-6 flex items-center justify-between">
+            <a href="{{ route('vendor.dashboard') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
             </a>
         </div>
 
