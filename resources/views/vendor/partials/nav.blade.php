@@ -17,8 +17,11 @@
           <span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;">{{ $vendorUnread }}</span>
         @endif
       </a>
-      <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.*') ? 'active' : '' }}">
+      <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.index') || request()->routeIs('marketplace.shop') ? 'active' : '' }}">
         <i class="fa-solid fa-store"></i> Marketplace
+      </a>
+      <a href="{{ route('marketplace.orders.index') }}" class="nav-link {{ request()->routeIs('marketplace.orders.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-shopping-cart"></i> My Orders
       </a>
       <form method="POST" action="{{ route('logout') }}" style="display:inline;">
         @csrf

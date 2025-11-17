@@ -4,232 +4,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="bootstrap5/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <title>SeaLedger Marketplace</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
-        /* Modern Navbar */
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 18px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .nav-brand {
             color: white;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
             font-family: "Koulen", sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: 1px;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            white-space: nowrap;
+            background: transparent;
         }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+        .nav-link.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 600; }
 
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: white;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
+        .container-custom { max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
+        .page-header { margin-bottom: 35px; }
+        .page-title { font-family: "Koulen", sans-serif; font-size: 42px; color: #1B5E88; margin-bottom: 8px; letter-spacing: .5px; }
+        .page-subtitle { color: #6c757d; font-size: 16px; }
 
-        .nav-link:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.15);
-        }
+        .filter-card { background:#fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .filter-card .form-label { font-weight:600; color:#2c3e50; margin-bottom:8px; font-size:14px; }
+        .filter-card .form-control { padding:12px 16px; border:2px solid #e9ecef; border-radius:8px; }
+        .filter-card .form-control:focus { border-color:#0075B5; box-shadow: 0 0 0 3px rgba(0,117,181,0.1); }
 
-        .nav-link:hover::before {
-            transform: translateX(0);
-        }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 28px; margin-bottom: 40px; }
+        .product-card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); transition: all .3s ease; border: 2px solid transparent; height: fit-content; }
+        .product-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); border-color: #0075B5; }
 
-        .nav-link.active {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+        .product-image { width: 100%; height: 220px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background: #f8f9fa; }
+        .product-image-placeholder { width: 100%; height: 220px; background: linear-gradient(135deg,#e9ecef 0%,#f8f9fa 100%); border-radius: 12px; margin-bottom: 20px; display:flex; align-items:center; justify-content:center; color:#adb5bd; font-size:48px; }
 
-        .products-grid {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            overflow-x: auto;
-        }
+        .product-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f0f0f0; display:flex; justify-content: space-between; align-items:center; }
+        .product-name { font-size: 22px; font-weight: 700; color:#1B5E88; margin-bottom: 10px; line-height:1.3; display:flex; align-items:center; gap:10px; }
+        .product-category { display:inline-block; background: linear-gradient(135deg, #E7FAFE 0%, #d4f4fa 100%); color:#0075B5; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; letter-spacing:.3px; }
 
-        .product-card {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 250px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ddd;
-        }
+        .product-details { background:#f8f9fa; padding:18px; border-radius:12px; margin-bottom:20px; }
+        .product-detail-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e9ecef; }
+        .product-detail-row:last-child { border-bottom:none; }
+        .detail-label { color:#6c757d; font-weight:500; font-size:14px; }
+        .detail-value { color:#2c3e50; font-weight:700; font-size:14px; }
 
-        .product-image {
-            width: 100%;
-            height: 160px;
-            background: #E7FAFE;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
+        .product-price { font-size:32px; font-weight:800; color:#1B5E88; margin:24px 0; padding:20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius:12px; text-align:center; border:2px dashed #dee2e6; }
+        .price-label { font-size:12px; color:#6c757d; font-weight:600; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
 
-        .product-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #1B5E88;
-        }
+        .product-details { background:#f8f9fa; padding:14px; border-radius:12px; margin-bottom:16px; }
+        .product-detail-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e9ecef; }
+        .product-detail-row:last-child { border-bottom:none; }
+        .detail-label { color:#6c757d; font-weight:500; font-size:13px; }
+        .detail-value { color:#2c3e50; font-weight:700; font-size:13px; }
 
-        .product-price {
-            font-size: 18px;
-            font-weight: bold;
-            color: #B12704;
-            margin-bottom: 8px;
-        }
-
-        .product-info {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .contact-info {
-            font-size: 13px;
-            color: #0075B5;
-            background: #E7FAFE;
-            padding: 6px 10px;
-            border-radius: 4px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border: 1px solid #0075B5;
-            transition: all 0.3s;
-        }
-
-        .contact-info:hover {
-            background: #0075B5;
-            color: white;
-        }
-
-        .contact-info.copied {
-            background: #28a745;
-            color: white;
-            border-color: #28a745;
-        }
-
-        .section-title {
-            font-size: 22px;
-            color: #1B5E88;
-            margin: 20px 0 10px 20px;
-            font-weight: bold;
-            border-bottom: 2px solid #1B5E88;
-            padding-bottom: 5px;
-        }
-
-        .time-posted {
-            font-size: 12px;
-            color: #999;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        .freshness-badge {
-            background: #28a745;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            display: inline-block;
-            margin-top: 5px;
-        }
-
-        .stock-info {
-            color: #28a745;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .empty-state {
-            padding: 60px 20px;
-            text-align: center;
-            width: 100%;
-            color: #666;
-            background: white;
-            border-radius: 8px;
-            margin: 20px;
-        }
-
-        .empty-state i {
-            color: #ddd;
-            margin-bottom: 15px;
-        }
-
-        .empty-state h3 {
-            font-size: 18px;
-            margin: 10px 0 5px 0;
-            color: #1B5E88;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            color: #999;
-            margin: 0;
-        }
-
-        /* Improved action buttons */
-        .contact-btn {
-            background: #0075B5;
-            color: #fff;
-            border: 1px solid #0075B5;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .contact-btn { background:#0075B5; color:#fff; border:1px solid #0075B5; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer; transition: all .2s ease; }
         .contact-btn:hover { background:#1B5E88; border-color:#1B5E88; }
-        .buy-btn {
-            background:#16a34a;
-            color:#fff;
-            border:1px solid #16a34a;
-            padding:10px 16px;
-            border-radius:8px;
-            font-weight:700;
-            transition: all 0.2s ease;
-        }
+        .buy-btn { background:#16a34a; color:#fff; border:1px solid #16a34a; padding:10px 16px; border-radius:8px; font-weight:700; transition: all .2s ease; }
         .buy-btn:hover { background:#15803d; border-color:#15803d; }
         .qty-input { text-align:center; max-width:100px; }
+        .qty-group { max-width: 220px; }
+
+        .card-actions { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+
+        .contact-row { display:flex; gap:8px; align-items:center; margin: 6px 0 10px 0; }
+        .contact-phone { font-size: 14px; color:#0075B5; background:#E7FAFE; padding:6px 10px; border-radius:6px; border:1px solid #0075B5; }
+        .copy-btn { background:#ffffff; color:#0075B5; border:1px solid #0075B5; padding:6px 10px; border-radius:6px; font-weight:600; cursor:pointer; transition: all .2s ease; display:flex; align-items:center; gap:6px; }
+        .copy-btn:hover { background:#0075B5; color:#fff; }
+        .copy-btn.copied { background:#16a34a; color:#fff; border-color:#16a34a; }
+
+        .empty-state { text-align:center; padding: 100px 40px; background:#fff; border-radius:16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .empty-state i { font-size:80px; color:#dee2e6; margin-bottom:24px; display:block; }
+        .empty-state h3 { color:#1B5E88; margin-bottom:12px; font-size:28px; font-weight:700; }
+        .empty-state p { color:#6c757d; font-size:16px; }
+
+        @media (max-width: 768px) {
+            .nav-links { flex-direction: column; gap: 4px; }
+            .product-grid { grid-template-columns: 1fr; gap: 20px; }
+            .container-custom { padding: 30px 20px; }
+            .page-title { font-size: 32px; }
+        }
     </style>
 </head>
 
@@ -243,16 +127,14 @@
                 <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
                     <i class="fa-solid fa-fire"></i> Latest
                 </a>
-                <a href="{{ route('marketplace.shop', ['filter' => 'fish']) }}" class="nav-link {{ (isset($filter) && $filter == 'fish') ? 'active' : '' }}">
-                    <i class="fa-solid fa-fish"></i> Fish
-                </a>
-                <a href="#" class="nav-link" onclick="document.getElementById('searchInput').focus(); return false;">
-                    <i class="fa-solid fa-magnifying-glass"></i> Search
-                </a>
+                @auth
+                    @if(auth()->user()->user_type === 'buyer')
+                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                            <i class="fa-solid fa-receipt"></i> My Orders
+                        </a>
+                    @endif
+                @endauth
                 @if(Auth::check())
-                    <a href="{{ route('dashboard') }}" class="nav-link">
-                        <i class="fa-solid fa-gauge-high"></i> Dashboard
-                    </a>
                     <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                         @csrf
                         <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
@@ -286,17 +168,31 @@
     </script>
     @endif
 
-    <!-- Search Bar -->
-    <div class="container-fluid mt-3">
-        <div class="d-flex justify-content-center">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search for fish, sellers..." style="max-width: 600px; border-radius: 25px; padding: 10px 20px;">
+    <div class="container-custom">
+        <div class="page-header">
+            <div class="page-title">Browse Marketplace</div>
+            <div class="page-subtitle">Discover fresh catches and shop directly</div>
         </div>
-    </div>
 
-    <!-- Fresh Fish Section -->
-    @if(!isset($filter) || $filter == 'all' || $filter == 'fish')
-    <div class="section-title" id="fish-section">Fresh Fish</div>
-    <div class="products-grid">
+        <!-- Search Bar -->
+        <form class="filter-card" method="get" action="{{ route('marketplace.shop') }}">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <label class="form-label">Search Products</label>
+                    <input type="text" name="q" id="searchInput" class="form-control" placeholder="Product name or seller" value="{{ $q ?? '' }}">
+                </div>
+                <div class="col-12 col-md-4 col-lg-3">
+                    <button class="btn btn-primary w-100" style="background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%); border:none; padding:12px 16px; border-radius:8px; font-weight:700;">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Fresh Fish Section -->
+        @if(!isset($filter) || $filter == 'all' || $filter == 'fish')
+        <div class="page-subtitle" id="fish-section" style="font-weight:600; margin-bottom: 12px;">Fresh Fish</div>
+        <div class="product-grid">
         @forelse($fishProducts as $listing)
         @php $product = $listing->product ?? $listing @endphp
         <div class="product-card">
@@ -307,51 +203,64 @@
                     <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
                 @endif
             </div>
-            <div class="product-title">{{ $product->name }}</div>
+            @php
+                $uom = $product->unit_of_measure ?? 'kg';
+                $stock = isset($stocks) ? ($stocks[$listing->id] ?? null) : null;
+            @endphp
+            <div class="product-name">{{ $product->name }}</div>
             <div class="product-price">
-                ₱{{ number_format($listing->final_price ?? $product->unit_price, 2) }}/kg
-                @if(isset($listing->ml_multiplier) && $listing->ml_multiplier > 1)
-                    <span style="font-size: 11px; color: #0075B5; margin-left: 5px;">🤖 AI Priced</span>
-                @endif
+                <span class="price-label">Seller's Price</span>
+                ₱{{ number_format($listing->final_price ?? $product->unit_price, 2) }}/{{ $uom }}
             </div>
-            <div class="product-info">
-                {{ $product->description ?? 'Fresh catch' }}
-            </div>
-            @if($product->freshness_metric)
-            <div class="product-info" style="color: #28a745; font-weight: bold;">
-                🌟 {{ $product->freshness_metric }}
-            </div>
-            @endif
-            @if(isset($listing->freshness_score))
-            <div class="product-info" style="color: #28a745; font-size: 12px;">
-                Freshness: {{ round($listing->freshness_score) }}/100
-            </div>
-            @endif
-            <div class="product-info" style="font-size: 12px; color: #999;">
-                Posted {{ ($listing->listing_date ?? $product->created_at)->diffForHumans() }}
+            <div class="product-details">
+                <div class="product-detail-row">
+                    <span class="detail-label">Available</span>
+                    <span class="detail-value">
+                        @if($stock === null)
+                            N/A
+                        @elseif($stock === 0)
+                            Out of stock
+                        @else
+                            {{ $stock }} {{ $uom }}
+                        @endif
+                    </span>
+                </div>
+                <div class="product-detail-row">
+                    <span class="detail-label">Listed</span>
+                    <span class="detail-value">{{ ($listing->listing_date ?? $product->created_at)->diffForHumans() }}</span>
+                </div>
             </div>
             @php $seller = $listing->seller ?? $product->supplier @endphp
             @if($seller && $seller->phone)
-            <div class="contact-info" onclick="copyContact(this)" data-contact="{{ $seller->phone }}">
-                📞 {{ $seller->phone }} (Click to copy)
+            <div class="contact-row">
+                <span class="contact-phone">📞 {{ $seller->phone }}</span>
+                <button type="button" class="copy-btn" data-contact="{{ $seller->phone }}" onclick="copyContact(this)">
+                    <i class="fa-regular fa-clipboard"></i> Copy
+                </button>
             </div>
             @endif
             @auth
-                @if(($listing->seller_id ?? $product->supplier_id) === auth()->id())
+                @php $isOwner = ($listing->seller_id ?? $product->supplier_id) === auth()->id(); $userType = auth()->user()->user_type ?? null; @endphp
+                @if($isOwner)
                     <button class="contact-btn" type="button" disabled style="opacity: 0.6; cursor: not-allowed;">This is your listing</button>
                 @else
-                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <div class="card-actions">
                         <form action="{{ route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
                             <button type="submit" class="contact-btn"><i class="fa-solid fa-message"></i> Message Seller</button>
                         </form>
                         <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">
                             @csrf
-                            <div class="input-group" style="max-width: 180px;">
+                            <div class="input-group qty-group">
                                 <button class="btn btn-outline-secondary" type="button" onclick="decQty(this)">-</button>
-                                <input type="number" name="quantity" min="1" value="1" class="form-control qty-input">
+                                <input type="number" name="quantity" min="1" @if(isset($stock) && $stock !== null) max="{{ $stock }}" @endif value="1" class="form-control qty-input" @if(isset($stock) && $stock === 0) disabled @endif>
+                                <span class="input-group-text">{{ $uom }}</span>
                                 <button class="btn btn-outline-secondary" type="button" onclick="incQty(this)">+</button>
                             </div>
-                            <button type="submit" class="buy-btn"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
+                            @if($userType === 'buyer')
+                                <button type="submit" class="buy-btn" @if(isset($stock) && $stock === 0) disabled style="opacity:.6; cursor:not-allowed;" @endif><i class="fa-solid fa-cart-shopping"></i> Buy</button>
+                            @else
+                                <button type="button" class="buy-btn" disabled title="Only buyers can purchase" style="opacity:.6; cursor:not-allowed;"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
+                            @endif
                         </form>
                     </div>
                 @endif
@@ -369,8 +278,9 @@
             <p style="font-size: 14px; color: #999; margin-top: 5px;">Check back soon for fresh catches!</p>
         </div>
         @endforelse
+        </div>
+        @endif
     </div>
-    @endif
 
     <!-- Login Prompt Modal -->
     <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
@@ -395,7 +305,10 @@
         function incQty(btn){
             const input = btn.parentElement.querySelector('input[name="quantity"]');
             const val = parseInt(input.value || '1', 10);
-            input.value = isNaN(val) ? 1 : val + 1;
+            const max = parseInt(input.getAttribute('max') || '0', 10);
+            let next = isNaN(val) ? 1 : val + 1;
+            if (!isNaN(max) && max > 0) next = Math.min(next, max);
+            input.value = next;
         }
         function decQty(btn){
             const input = btn.parentElement.querySelector('input[name="quantity"]');
@@ -410,17 +323,14 @@
             }
         }
 
-        function copyContact(element) {
-            const contact = element.textContent.match(/\d{4}-\d{3}-\d{4}/)[0];
+        function copyContact(btn) {
+            const contact = btn.getAttribute('data-contact');
+            if (!contact) return;
             navigator.clipboard.writeText(contact).then(() => {
-                const originalText = element.innerHTML;
-                element.innerHTML = '✅ Copied!';
-                element.classList.add('copied');
-
-                setTimeout(() => {
-                    element.innerHTML = originalText;
-                    element.classList.remove('copied');
-                }, 1500);
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1500);
             });
         }
 
@@ -456,6 +366,7 @@
         });
     </script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

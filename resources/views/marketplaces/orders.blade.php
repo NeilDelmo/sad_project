@@ -5,112 +5,249 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Marketplace Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
+    body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+    .container-custom { max-width: 1200px; margin: 0 auto; padding: 32px 20px; }
+    .page-title { font-family: "Koulen", sans-serif; font-size: 36px; color: #1B5E88; letter-spacing: .5px; }
+    .filter-card { background:#fff; padding: 16px 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border:1px solid rgba(0,0,0,0.05); }
+    .status-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom: 20px; }
+    .status-tab { background:#fff; color:#64748b; border:2px solid #e2e8f0; padding:10px 20px; border-radius:12px; font-weight:600; transition:.2s; cursor:pointer; text-decoration:none; }
+    .status-tab:hover { background:#f8fafc; color:#334155; }
+    .status-tab.active { background:#0075B5; color:#fff; border-color:#0075B5; }
+    .orders-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 20px; }
+    .order-card { background:#fff; border-radius:16px; padding:16px; box-shadow: 0 6px 18px rgba(0,0,0,.08); border: 2px solid transparent; transition: .2s; }
+    .order-card:hover { transform: translateY(-3px); border-color:#0075B5; box-shadow: 0 12px 28px rgba(0,0,0,.12); }
+    .order-header { display:flex; align-items:center; gap:12px; border-bottom:1px solid #eef2f7; padding-bottom:12px; margin-bottom:12px; }
+    .order-image { width:72px; height:72px; border-radius:12px; object-fit:cover; background:#f1f5f9; }
+    .order-title { font-weight:800; color:#1B5E88; margin:0; font-size: 18px; }
+    .order-meta { color:#64748b; font-size: 13px; }
+    .order-badges { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .order-body { display:grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 12px; }
+    .label { color:#6c757d; font-weight:500; font-size:12px; }
+    .value { color:#2c3e50; font-weight:700; font-size:14px; }
+    .order-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .order-actions .btn { border-radius: 10px; }
+    .empty-state { text-align:center; padding: 80px 20px; background:#fff; border-radius:16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .navbar {
+      background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+      padding: 18px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      margin-bottom: 0;
+    }
+    .nav-brand {
+      color: white;
+      font-size: 32px;
+      font-weight: bold;
+      font-family: "Koulen", sans-serif;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+    .nav-link.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 600; }
+  </style>
+  <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
+  
 </head>
 <body>
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">Marketplace Orders</h1>
-    <form class="d-flex" method="get">
-      <select name="status" class="form-select" style="max-width:220px" onchange="this.form.submit()">
-        <option value="">All statuses</option>
-        <option value="pending_payment" {{ request('status')==='pending_payment' ? 'selected' : '' }}>Pending Payment</option>
-        <option value="in_transit" {{ request('status')==='in_transit' ? 'selected' : '' }}>In Transit</option>
-        <option value="delivered" {{ request('status')==='delivered' ? 'selected' : '' }}>Delivered</option>
-        <option value="received" {{ request('status')==='received' ? 'selected' : '' }}>Received</option>
-        <option value="refund_requested" {{ request('status')==='refund_requested' ? 'selected' : '' }}>Refund Requested</option>
-        <option value="refunded" {{ request('status')==='refunded' ? 'selected' : '' }}>Refunded</option>
-        <option value="refund_declined" {{ request('status')==='refund_declined' ? 'selected' : '' }}>Refund Declined</option>
-      </select>
-    </form>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <a class="nav-brand" href="{{ route('marketplace.index') }}">🐟 SeaLedger</a>
+    <div class="nav-links">
+      <a href="{{ route('marketplace.shop') }}" class="nav-link">
+        <i class="fa-solid fa-fire"></i> Latest
+      </a>
+      @auth
+        @if(auth()->user()->user_type === 'buyer')
+          <a href="{{ route('marketplace.orders.index') }}" class="nav-link active">
+            <i class="fa-solid fa-receipt"></i> My Orders
+          </a>
+        @endif
+      @endauth
+      @if(Auth::check())
+        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+          @csrf
+          <button type="submit" class="nav-link">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </form>
+      @else
+        <a href="{{ route('login') }}" class="nav-link">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </a>
+      @endif
+    </div>
+  </div>
+</nav>
+
+<div class="container-custom">
+  <div class="mb-3">
+    <h1 class="page-title mb-0">Marketplace Orders</h1>
   </div>
 
   @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Product</th>
-        <th>Qty</th>
-        <th>Total</th>
-        <th>Status</th>
-        <th>Proof</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      @foreach($orders as $order)
-        <tr>
-          <td>{{ $order->id }}</td>
-          <td>{{ optional($order->listing->product ?? null)->name ?? 'Product #'.$order->listing_id }}</td>
-          <td>{{ $order->quantity }}</td>
-          <td>₱{{ number_format($order->total, 2) }}</td>
-          <td>
-            @php 
-              $badge = match($order->status) {
-                'pending_payment' => 'secondary',
-                'in_transit' => 'info',
-                'delivered' => 'warning',
-                'received' => 'success',
-                'refund_requested' => 'danger',
-                'refunded' => 'secondary',
-                'refund_declined' => 'secondary',
-                default => 'secondary'
-              };
-            @endphp
-            <span class="badge bg-{{ $badge }} text-uppercase">{{ str_replace('_',' ', $order->status) }}</span>
-          </td>
-          <td>
-            @if($order->proof_photo_path)
-              <a href="{{ asset('storage/'.$order->proof_photo_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
-            @else
-              <span class="text-muted">—</span>
-            @endif
-            @if($order->refund_proof_path)
-              <a href="{{ asset('storage/'.$order->refund_proof_path) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1">Refund Proof</a>
-            @endif
-          </td>
-          <td>
-            @php $user = auth()->user(); @endphp
-            @if($user && $user->id === $order->vendor_id && $order->status==='pending_payment')
-              <form class="d-inline" method="post" action="{{ route('marketplace.orders.intransit', $order) }}">
-                @csrf
-                <button class="btn btn-sm btn-info">Mark In Transit</button>
-              </form>
-            @endif
-            @if($user && $user->id === $order->vendor_id && in_array($order->status, ['pending_payment','in_transit']))
-              <form class="d-inline" method="post" action="{{ route('marketplace.orders.delivered', $order) }}" enctype="multipart/form-data">
-                @csrf
-                <input type="file" name="proof" accept="image/*" class="form-control form-control-sm d-inline-block" style="width: 210px;" required>
-                <button class="btn btn-sm btn-warning">Mark Delivered</button>
-              </form>
-            @endif
-            @if($user && $user->id === $order->buyer_id && $order->status==='delivered')
-              <form class="d-inline" method="post" action="{{ route('marketplace.orders.received', $order) }}">
-                @csrf
-                <button class="btn btn-sm btn-success">Confirm Received</button>
-              </form>
-            @endif
-            @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
-              <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}">Request Refund</button>
-            @endif
-            @if($user && $user->id === $order->vendor_id && $order->status==='refund_requested')
-              <form class="d-inline" method="post" action="{{ route('marketplace.orders.refund.approve', $order) }}">
-                @csrf
-                <button class="btn btn-sm btn-outline-success">Approve Refund</button>
-              </form>
-              <form class="d-inline" method="post" action="{{ route('marketplace.orders.refund.decline', $order) }}">
-                @csrf
-                <button class="btn btn-sm btn-outline-danger">Decline Refund</button>
-              </form>
-            @endif
-          </td>
-        </tr>
+  @php
+    $currentStatus = request('status');
+    $statuses = [
+      ['value' => '', 'label' => 'All', 'icon' => 'list'],
+      ['value' => 'pending_payment', 'label' => 'Pending', 'icon' => 'clock'],
+      ['value' => 'in_transit', 'label' => 'In Transit', 'icon' => 'truck-fast'],
+      ['value' => 'delivered', 'label' => 'Delivered', 'icon' => 'box'],
+      ['value' => 'received', 'label' => 'Received', 'icon' => 'circle-check'],
+      ['value' => 'refund_requested', 'label' => 'Refund Req.', 'icon' => 'rotate-left'],
+      ['value' => 'refunded', 'label' => 'Refunded', 'icon' => 'money-bill-transfer'],
+    ];
+  @endphp
 
-        <!-- Refund Modal -->
+  <div class="status-tabs">
+    @foreach($statuses as $status)
+      <a href="{{ route('marketplace.orders.index', ['status' => $status['value']]) }}" 
+         class="status-tab {{ ($currentStatus === $status['value'] || ($currentStatus === null && $status['value'] === '')) ? 'active' : '' }}">
+        <i class="fa-solid fa-{{ $status['icon'] }}"></i> {{ $status['label'] }}
+      </a>
+    @endforeach
+  </div>
+
+  <div class="orders-grid">
+    @forelse($orders as $order)
+      @php 
+        $product = optional($order->listing->product ?? null);
+        $image = $product?->image_path;
+        $badge = match($order->status) {
+          'pending_payment' => 'secondary',
+          'in_transit' => 'info',
+          'delivered' => 'warning',
+          'received' => 'success',
+          'refund_requested' => 'danger',
+          'refunded' => 'secondary',
+          'refund_declined' => 'secondary',
+          default => 'secondary'
+        };
+        $user = auth()->user();
+        $uom = $product?->unit_of_measure ?? 'kg';
+      @endphp
+      <div class="order-card">
+        <div class="order-header">
+          @if($image)
+            <img src="{{ asset($image) }}" class="order-image" alt="{{ $product?->name }}">
+          @else
+            <div class="order-image d-flex align-items-center justify-content-center"><i class="fa-solid fa-fish" style="color:#0075B5;"></i></div>
+          @endif
+          <div class="flex-grow-1">
+            <h5 class="order-title">{{ $product?->name ?? ('Product #'.$order->listing_id) }}</h5>
+            <div class="order-meta">Order #{{ $order->id }}</div>
+          </div>
+          <div class="order-badges">
+            <span class="badge bg-{{ $badge }} text-uppercase">{{ str_replace('_',' ', $order->status) }}</span>
+          </div>
+        </div>
+
+        <div class="order-body">
+          <div>
+            <div class="label">Quantity</div>
+            <div class="value">{{ $order->quantity }} {{ $uom }}</div>
+          </div>
+          <div>
+            <div class="label">Total</div>
+            <div class="value">₱{{ number_format($order->total, 2) }}</div>
+          </div>
+          <div>
+            <div class="label">Buyer</div>
+            <div class="value">{{ optional($order->buyer)->name ?? ('Buyer #'.$order->buyer_id) }}</div>
+          </div>
+          <div>
+            <div class="label">Vendor</div>
+            <div class="value">{{ optional($order->vendor)->name ?? ('Vendor #'.$order->vendor_id) }}</div>
+          </div>
+          <div>
+            <div class="label">Placed</div>
+            <div class="value">{{ $order->created_at?->diffForHumans() }}</div>
+          </div>
+          @if($order->delivered_at)
+          <div>
+            <div class="label">Delivered</div>
+            <div class="value">{{ $order->delivered_at?->diffForHumans() }}</div>
+          </div>
+          @endif
+          @if($order->received_at)
+          <div>
+            <div class="label">Received</div>
+            <div class="value">{{ $order->received_at?->diffForHumans() }}</div>
+          </div>
+          @endif
+          <div>
+            <div class="label">Proof</div>
+            <div>
+              @if($order->proof_photo_path)
+                <a href="{{ asset('storage/'.$order->proof_photo_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
+              @else
+                <span class="text-muted">—</span>
+              @endif
+              @if($order->refund_proof_path)
+                <a href="{{ asset('storage/'.$order->refund_proof_path) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1">Refund Proof</a>
+              @endif
+            </div>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          @if($user && $user->id === $order->vendor_id && $order->status==='pending_payment')
+            <form method="post" action="{{ route('marketplace.orders.intransit', $order) }}">
+              @csrf
+              <button class="btn btn-info"><i class="fa-solid fa-truck-fast"></i> In Transit</button>
+            </form>
+          @endif
+          @if($user && $user->id === $order->vendor_id && in_array($order->status, ['pending_payment','in_transit']))
+            <form method="post" action="{{ route('marketplace.orders.delivered', $order) }}" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+              @csrf
+              <input type="file" name="proof" accept="image/*" class="form-control form-control-sm" style="max-width: 230px;" required>
+              <button class="btn btn-warning"><i class="fa-solid fa-box"></i> Mark Delivered</button>
+            </form>
+          @endif
+          @if($user && $user->id === $order->buyer_id && $order->status==='delivered')
+            <form method="post" action="{{ route('marketplace.orders.received', $order) }}">
+              @csrf
+              <button class="btn btn-success"><i class="fa-solid fa-circle-check"></i> Confirm Received</button>
+            </form>
+          @endif
+          @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
+            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
+          @endif
+          @if($user && $user->id === $order->vendor_id && $order->status==='refund_requested')
+            <form method="post" action="{{ route('marketplace.orders.refund.approve', $order) }}">
+              @csrf
+              <button class="btn btn-outline-success"><i class="fa-solid fa-thumbs-up"></i> Approve</button>
+            </form>
+            <form method="post" action="{{ route('marketplace.orders.refund.decline', $order) }}">
+              @csrf
+              <button class="btn btn-outline-danger"><i class="fa-solid fa-thumbs-down"></i> Decline</button>
+            </form>
+          @endif
+        </div>
+
         @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
         <div class="modal fade" id="refundModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
@@ -150,12 +287,20 @@
           </div>
         </div>
         @endif
-      @endforeach
-      </tbody>
-    </table>
+
+      </div>
+    @empty
+      <div class="empty-state">
+        <i class="fa-solid fa-box-open fa-3x" style="color:#d1d5db;"></i>
+        <h3 class="mt-3" style="font-weight:800; color:#1B5E88;">No Orders Yet</h3>
+        <p class="mb-0" style="color:#6b7280;">When you place or receive orders, they’ll appear here.</p>
+      </div>
+    @endforelse
   </div>
 
-  {{ $orders->links() }}
+  <div class="mt-3">
+    {{ $orders->links() }}
+  </div>
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
