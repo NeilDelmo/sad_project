@@ -83,12 +83,11 @@ class VendorOnboardingController extends Controller
             ->where('status', 'accepted')
             ->count();
 
-        // Get recent accepted offers
+        // Get recent offers (all statuses)
         $recentAcceptedOffers = VendorOffer::where('vendor_id', $user->id)
-            ->where('status', 'accepted')
             ->with(['fisherman', 'product'])
             ->orderBy('updated_at', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         // Get recent countered offers awaiting vendor response

@@ -53,12 +53,11 @@ class FishermanController extends Controller
             ->where('status', 'accepted')
             ->count();
 
-        // Get recent accepted offers
+        // Get recent offers (all statuses)
         $recentAcceptedOffers = VendorOffer::where('fisherman_id', $fisherman->id)
-            ->where('status', 'accepted')
             ->with(['vendor', 'product'])
             ->orderBy('updated_at', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         // Get rental statistics

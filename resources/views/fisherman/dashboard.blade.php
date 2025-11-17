@@ -383,6 +383,35 @@
             color: #065f46;
         }
 
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-accepted {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-countered {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -570,25 +599,34 @@
             @endif
         </div>
 
-        <!-- Recent Accepted Offers -->
+        <!-- Recent Transaction History -->
         @if(isset($recentAcceptedOffers) && $recentAcceptedOffers->count() > 0)
-        <div class="section-title" style="margin-top: 30px;">Recent Accepted Offers</div>
+        <div class="section-title" style="margin-top: 30px;">Recent Transaction History</div>
         <div class="product-list">
             @foreach($recentAcceptedOffers as $offer)
             <div class="product-item">
                 <div class="product-info">
                     <div class="product-name">
-                        <i class="fa-solid fa-handshake" style="color: #16a34a; margin-right: 8px;"></i>
+                        @if($offer->status === 'accepted')
+                            <i class="fa-solid fa-circle-check" style="color: #16a34a; margin-right: 8px;"></i>
+                        @elseif($offer->status === 'pending')
+                            <i class="fa-solid fa-clock" style="color: #f59e0b; margin-right: 8px;"></i>
+                        @elseif($offer->status === 'rejected')
+                            <i class="fa-solid fa-circle-xmark" style="color: #dc2626; margin-right: 8px;"></i>
+                        @else
+                            <i class="fa-solid fa-handshake" style="color: #0075B5; margin-right: 8px;"></i>
+                        @endif
                         {{ $offer->product->name ?? 'Product' }}
                     </div>
                     <div class="product-details">
                         Vendor: {{ $offer->vendor->username ?? $offer->vendor->email }}
                         • {{ $offer->quantity }} kg
-                        <span style="color: #999; margin-left: 10px;">Accepted {{ $offer->updated_at->diffForHumans() }}</span>
+                        • <span class="status-badge status-{{ $offer->status }}">{{ ucfirst($offer->status) }}</span>
+                        <span style="color: #999; margin-left: 10px;">{{ $offer->updated_at->diffForHumans() }}</span>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center;">
-                    <div class="product-price" style="color: #16a34a;">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+                    <div class="product-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
                     <button class="btn-view-details" onclick="showReceipt({{ json_encode([
                         'id' => $offer->id,
                         'product' => $offer->product->name ?? 'Product',
