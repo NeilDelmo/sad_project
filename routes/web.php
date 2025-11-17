@@ -179,6 +179,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/rentals/create', [RentalController::class, 'create'])->name('rentals.create');
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'myRentals'])->name('rentals.myrentals');
+    Route::get('/rentals/{rental}/report', [RentalController::class, 'reportForm'])->name('rentals.report.form');
+    Route::post('/rentals/{rental}/report', [RentalController::class, 'submitReport'])->name('rentals.report.submit');
     Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel');
     
     // Admin rental management

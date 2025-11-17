@@ -368,6 +368,14 @@
                         </div>
                     @endif
 
+                    @if(in_array($rental->status, ['approved','active','completed']))
+                        <div class="mt-2">
+                            <a href="{{ route('rentals.report.form', $rental) }}" class="browse-btn" style="background:#0ea5e9;">
+                                <i class="fa-solid fa-flag"></i> Report a Problem
+                            </a>
+                        </div>
+                    @endif
+
                     @if($rental->status === 'pending')
                         <!-- Circular progress indicator for pending rentals -->
                         <div class="progress-container">

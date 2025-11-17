@@ -134,6 +134,63 @@ class RentalController extends Controller
         return view('rentals.myrentals', compact('rentals'));
     }
 
+    public function reportForm(Rental $rental)
+    {
+        if ($rental->user_id !== auth()->id()) {
+            abort(403);
+        }
+        return view('rentals.report', compact('rental'));
+    }
+
+    public function submitReport(Request $request, Rental $rental)
+    {
+        if ($rental->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'issue_type' => 'required|string|in:pre_existing,accidental,lost,other',
+            'severity' => 'nullable|string|in:low,medium,high',
+            'title' => 'nullable|string|max:120',
+            'description' => 'required|string|max:2000',
+            'photos.*' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+        ]);
+
+        $photos = [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $idx => $photo) {
+                $name = 'issue_' . $rental->id . '_' . time() . '_' . $idx . '.' . $photo->getClientOriginalExtension();
+                $stored = $photo->storeAs('rental_issues', $name, 'public');
+                if ($stored) { $photos[] = $stored; }
+            }
+        }
+
+        $report = \App\Models\RentalIssueReport::create([
+            'rental_id' => $rental->id,
+            'user_id' => auth()->id(),
+            'issue_type' => $validated['issue_type'],
+            'severity' => $validated['severity'] ?? null,
+            'title' => $validated['title'] ?? null,
+            'description' => $validated['description'],
+            'photos' => $photos ?: null,
+            'status' => 'open',
+        ]);
+
+        // Notify admins
+        try {
+            $admins = \Spatie\Permission\Models\Role::findByName('admin')->users ?? collect();
+        } catch (\Throwable $e) {
+            $admins = \App\Models\User::where('user_type', 'admin')->get();
+        }
+        try {
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\RentalIssueReported($report));
+            }
+        } catch (\Throwable $e) {}
+
+        return redirect()->route('rentals.myrentals')->with('success', 'Issue reported. An admin will review and contact you.');
+    }
+
     public function cancel(Rental $rental)
     {
         if ($rental->user_id !== auth()->id()) {

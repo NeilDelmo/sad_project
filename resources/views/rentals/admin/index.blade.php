@@ -395,6 +395,11 @@
                         <span class="status-badge status-{{ $rental->status }}">
                             {{ ucfirst($rental->status) }}
                         </span>
+                        @if($rental->issueReports()->where('status','open')->exists())
+                            <span style="margin-left:8px; background:#fff3cd; color:#856404; padding:6px 10px; border-radius:14px; font-size:12px; font-weight:700;">
+                                <i class="fa-solid fa-flag"></i> Issue Reported
+                            </span>
+                        @endif
                     </div>
 
                     <div class="rental-details">

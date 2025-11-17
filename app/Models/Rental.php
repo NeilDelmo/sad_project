@@ -105,4 +105,9 @@ class Rental extends Model implements Auditable
     {
         return $this->rental_date->diffInDays($this->return_date) + 1;
     }
+
+    public function issueReports(): HasMany
+    {
+        return $this->hasMany(\App\Models\RentalIssueReport::class);
+    }
 }
