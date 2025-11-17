@@ -637,6 +637,12 @@
             </div>
         </div>
 
+        <!-- Income Chart -->
+        <div class="section-title">Income Trend (Last 14 Days)</div>
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+            <canvas id="incomeChart" style="max-height: 300px;"></canvas>
+        </div>
+
         <!-- Recent Products -->
         <div class="section-title">Recent Products</div>
         <div class="product-list">
@@ -843,7 +849,70 @@
         function closeReceipt() {
             document.getElementById('receiptModal').classList.remove('active');
         }
+
+        // Income Line Chart
+        const ctx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @json($chartLabels ?? []),
+                datasets: [{
+                    label: 'Daily Income (₱)',
+                    data: @json($chartValues ?? []),
+                    borderColor: '#0075B5',
+                    backgroundColor: 'rgba(0, 117, 181, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#0075B5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Income: ₱' + context.parsed.y.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString('en-PH');
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 </body>
 </html>

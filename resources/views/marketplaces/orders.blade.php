@@ -69,36 +69,50 @@
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar">
-  <div class="container-fluid d-flex justify-content-between align-items-center">
-    <a class="nav-brand" href="{{ route('marketplace.index') }}">🐟 SeaLedger</a>
-    <div class="nav-links">
-      <a href="{{ route('marketplace.shop') }}" class="nav-link">
-        <i class="fa-solid fa-fire"></i> Latest
-      </a>
-      @auth
-        @if(auth()->user()->user_type === 'buyer')
+<!-- Navbar - show vendor/fisherman navbar if logged in as vendor/fisherman -->
+@auth
+  @if(auth()->user()->user_type === 'vendor')
+    @include('vendor.partials.nav')
+  @elseif(auth()->user()->user_type === 'fisherman')
+    @include('fisherman.partials.nav')
+  @else
+    <!-- Buyer navbar -->
+    <nav class="navbar">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <a class="nav-brand" href="{{ route('marketplace.index') }}">🐟 SeaLedger</a>
+        <div class="nav-links">
+          <a href="{{ route('marketplace.shop') }}" class="nav-link">
+            <i class="fa-solid fa-fire"></i> Latest
+          </a>
           <a href="{{ route('marketplace.orders.index') }}" class="nav-link active">
             <i class="fa-solid fa-receipt"></i> My Orders
           </a>
-        @endif
-      @endauth
-      @if(Auth::check())
-        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-          @csrf
-          <button type="submit" class="nav-link">
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
-          </button>
-        </form>
-      @else
+          <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+            @csrf
+            <button type="submit" class="nav-link">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  @endif
+@else
+  <!-- Guest navbar -->
+  <nav class="navbar">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <a class="nav-brand" href="{{ route('marketplace.index') }}">🐟 SeaLedger</a>
+      <div class="nav-links">
+        <a href="{{ route('marketplace.shop') }}" class="nav-link">
+          <i class="fa-solid fa-fire"></i> Latest
+        </a>
         <a href="{{ route('login') }}" class="nav-link">
           <i class="fa-solid fa-right-to-bracket"></i> Login
         </a>
-      @endif
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+@endauth
 
 <div class="container-custom">
   <div class="mb-3">

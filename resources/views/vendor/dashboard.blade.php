@@ -491,6 +491,53 @@
             </div>
         </div>
 
+        <!-- Income Chart -->
+        <div class="section-title">Income Trend (Last 14 Days)</div>
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+            <canvas id="incomeChart" style="max-height: 300px;"></canvas>
+        </div>
+
+        <!-- Recent Marketplace Customer Orders -->
+        @if(isset($recentCustomerOrders) && $recentCustomerOrders->count() > 0)
+        <div class="section-title">Recent Marketplace Orders</div>
+        <div class="offer-list" style="margin-bottom: 30px;">
+            @foreach($recentCustomerOrders as $order)
+            <div class="offer-item">
+                <div class="offer-info">
+                    <div class="offer-name">
+                        @php
+                            $statusIcon = match($order->status) {
+                                'pending_payment' => ['icon' => 'fa-clock', 'color' => '#f59e0b'],
+                                'in_transit' => ['icon' => 'fa-truck', 'color' => '#0075B5'],
+                                'delivered' => ['icon' => 'fa-box-open', 'color' => '#8b5cf6'],
+                                'received' => ['icon' => 'fa-circle-check', 'color' => '#16a34a'],
+                                'refund_requested' => ['icon' => 'fa-exclamation-triangle', 'color' => '#dc2626'],
+                                'refunded' => ['icon' => 'fa-rotate-left', 'color' => '#6c757d'],
+                                'refund_declined' => ['icon' => 'fa-times-circle', 'color' => '#991b1b'],
+                                default => ['icon' => 'fa-question-circle', 'color' => '#666']
+                            };
+                        @endphp
+                        <i class="fa-solid {{ $statusIcon['icon'] }}" style="color: {{ $statusIcon['color'] }}; margin-right: 8px;"></i>
+                        {{ $order->listing->product->name ?? 'Product' }}
+                    </div>
+                    <div class="offer-details">
+                        Buyer: {{ $order->buyer->username ?? $order->buyer->email }}
+                        • {{ $order->quantity }} kg @ ₱{{ number_format($order->unit_price, 2) }}/kg
+                        • <span class="status-badge status-{{ str_replace('_', '-', $order->status) }}">{{ str_replace('_',' ', ucfirst($order->status)) }}</span>
+                        <span style="color: #999; margin-left: 10px;">{{ $order->created_at->diffForHumans() }}</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="offer-price" style="color: {{ in_array($order->status, ['received', 'delivered']) ? '#16a34a' : '#666' }};">₱{{ number_format($order->total, 2) }}</div>
+                    <a href="{{ route('marketplace.orders.index') }}" class="btn-view-details">
+                        <i class="fa-solid fa-eye"></i> View
+                    </a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
         <!-- Recent Transaction History -->
         @if(isset($recentAcceptedOffers) && $recentAcceptedOffers->count() > 0)
         <div class="section-title">Recent Transaction History</div>
@@ -649,7 +696,70 @@
                 closeReceipt();
             }
         });
+
+        // Income Line Chart
+        const ctx = document.getElementById('incomeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @json($chartLabels ?? []),
+                datasets: [{
+                    label: 'Daily Income (₱)',
+                    data: @json($chartValues ?? []),
+                    borderColor: '#0075B5',
+                    backgroundColor: 'rgba(0, 117, 181, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#0075B5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Income: ₱' + context.parsed.y.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString('en-PH');
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 </body>
 </html>

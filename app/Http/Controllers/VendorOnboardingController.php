@@ -114,6 +114,35 @@ class VendorOnboardingController extends Controller
             $q->where('is_read', false)->where('sender_id', '!=', $user->id);
         })->count();
 
+        // Get recent marketplace customer orders
+        $recentCustomerOrders = CustomerOrder::where('vendor_id', $user->id)
+            ->with(['buyer', 'listing.product'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get daily income data for last 14 days (line chart)
+        $chartData = CustomerOrder::where('vendor_id', $user->id)
+            ->whereIn('status', ['received', 'delivered'])
+            ->where('created_at', '>=', now()->subDays(13))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as income')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Fill in missing days with 0
+        $chartLabels = [];
+        $chartValues = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $chartLabels[] = now()->subDays($i)->format('M d');
+            $dayData = $chartData->firstWhere('date', $date);
+            $chartValues[] = $dayData ? (float)$dayData->income : 0;
+        }
+
         return view('vendor.dashboard', [
             'products' => $products,
             'prefs' => $prefs,
@@ -124,6 +153,9 @@ class VendorOnboardingController extends Controller
             'recentAcceptedOffers' => $recentAcceptedOffers,
             'recentCounterOffers' => $recentCounterOffers,
             'unreadCount' => $unreadCount,
+            'recentCustomerOrders' => $recentCustomerOrders,
+            'chartLabels' => $chartLabels,
+            'chartValues' => $chartValues,
         ]);
     }
 

@@ -76,6 +76,28 @@ class FishermanController extends Controller
             ->where('status', 'pending')
             ->count();
 
+        // Get daily income data for last 14 days (line chart)
+        $chartData = Order::where('fisherman_id', $fisherman->id)
+            ->where('status', Order::STATUS_RECEIVED)
+            ->where('created_at', '>=', now()->subDays(13))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as income')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Fill in missing days with 0
+        $chartLabels = [];
+        $chartValues = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $chartLabels[] = now()->subDays($i)->format('M d');
+            $dayData = $chartData->firstWhere('date', $date);
+            $chartValues[] = $dayData ? (float)$dayData->income : 0;
+        }
+
         return view('fisherman.dashboard', compact(
             'productsCount',
             'recentConversations',
@@ -86,7 +108,9 @@ class FishermanController extends Controller
             'acceptedOffersCount',
             'recentAcceptedOffers',
             'activeRentalsCount',
-            'pendingRentalsCount'
+            'pendingRentalsCount',
+            'chartLabels',
+            'chartValues'
         ));
     }
 

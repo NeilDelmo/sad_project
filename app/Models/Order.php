@@ -55,4 +55,31 @@ class Order extends Model implements Auditable
     public function product(): BelongsTo { return $this->belongsTo(Product::class); }
     public function offer(): BelongsTo { return $this->belongsTo(VendorOffer::class, 'offer_id'); }
     public function vendorInventory(): BelongsTo { return $this->belongsTo(VendorInventory::class, 'id', 'order_id'); }
+    
+    /**
+     * Check if refund request window is still open (3 hours from delivery)
+     */
+    public function isRefundWindowOpen(): bool
+    {
+        if (!$this->delivered_at) {
+            return false;
+        }
+        
+        $hoursSinceDelivery = now()->diffInHours($this->delivered_at);
+        return $hoursSinceDelivery < 3;
+    }
+    
+    /**
+     * Get minutes remaining in refund window
+     */
+    public function refundWindowMinutesRemaining(): ?int
+    {
+        if (!$this->delivered_at || !$this->isRefundWindowOpen()) {
+            return null;
+        }
+        
+        $minutesSinceDelivery = now()->diffInMinutes($this->delivered_at);
+        $remaining = (3 * 60) - $minutesSinceDelivery;
+        return max(0, $remaining);
+    }
 }
