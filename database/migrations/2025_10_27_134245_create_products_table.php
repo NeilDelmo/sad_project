@@ -22,7 +22,6 @@ return new class extends Migration
             $table->decimal('unit_price', 10, 2);
             $table->decimal('available_quantity', 10, 2);
             $table->decimal('seasonality_factor', 5, 2)->nullable();
-            $table->decimal('quality_rating',3,2)->nullable();
             
             // Rental fields for gear
             $table->boolean('is_rentable')->default(false);

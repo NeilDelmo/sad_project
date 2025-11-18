@@ -29,8 +29,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Only Fresh Fish category for fishermen (no seafood, just live fish)
-        $categories = ProductCategory::where('name', 'Fresh Fish')->get();
+        // Get all marketplace categories (Fresh Fish, Shellfish, Gear, Equipment)
+        $categories = ProductCategory::all();
         
         return view('fisherman.products.create', compact('categories'));
     }
@@ -47,7 +47,6 @@ class ProductController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',
             'freshness_metric' => 'required|in:Very Fresh,Fresh,Good',
-            'quality_rating' => 'nullable|numeric|min:0|max:5',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 
@@ -107,8 +106,8 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
-        // Only Fresh Fish category for fishermen (no seafood, just live fish)
-        $categories = ProductCategory::where('name', 'Fresh Fish')->get();
+        // Get all marketplace categories (Fresh Fish, Shellfish, Gear, Equipment)
+        $categories = ProductCategory::all();
 
         return view('fisherman.products.edit', compact('product', 'categories'));
     }
@@ -128,7 +127,6 @@ class ProductController extends Controller
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',
             'freshness_metric' => 'required|in:Very Fresh,Fresh,Good',
-            'quality_rating' => 'nullable|numeric|min:0|max:5',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 

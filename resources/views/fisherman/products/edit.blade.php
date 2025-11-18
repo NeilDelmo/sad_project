@@ -458,24 +458,6 @@
                     <small class="form-help">Tell buyers more about your product</small>
                 </div>
 
-                <!-- Quality Rating (Optional) -->
-                <div class="form-group">
-                    <label for="quality_rating" class="form-label">Quality Rating (0-5)</label>
-                    <input type="number" 
-                           id="quality_rating" 
-                           name="quality_rating" 
-                           class="form-control @error('quality_rating') is-invalid @enderror" 
-                           placeholder="Optional"
-                           step="0.1"
-                           min="0"
-                           max="5"
-                           value="{{ old('quality_rating', $product->quality_rating) }}">
-                    @error('quality_rating')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                    <small class="form-help">Optional: Rate the quality of your product (0-5 stars)</small>
-                </div>
-
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">
