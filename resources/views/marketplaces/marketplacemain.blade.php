@@ -248,9 +248,6 @@
                 @else
                     <div class="card-actions">
                         @php $hasListingSeller = isset($listing->seller_id) && $listing->seller_id; @endphp
-                        <form action="{{ $hasListingSeller ? route('marketplace.message.listing', ['listingId' => $listing->id]) : route('marketplace.message.product', ['productId' => $product->id]) }}" method="GET" style="margin: 0;">
-                            <button type="submit" class="contact-btn"><i class="fa-solid fa-message"></i> Message Seller</button>
-                        </form>
                         <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">
                             @csrf
                             <div class="input-group qty-group">
@@ -269,7 +266,6 @@
                 @endif
             @else
                 <div style="display:flex; gap:10px;">
-                    <button class="contact-btn" onclick="showLoginPrompt()"><i class="fa-solid fa-message"></i> Message Seller</button>
                     <button class="buy-btn" onclick="showLoginPrompt()"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
                 </div>
             @endauth
@@ -289,7 +285,7 @@
     <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
             <h2 style="color: #1B5E88; margin-bottom: 15px; font-size: 24px;">Login Required</h2>
-            <p style="color: #666; margin-bottom: 25px;">Please login or create an account to message sellers.</p>
+            <p style="color: #666; margin-bottom: 25px;">Please login or create an account to continue.</p>
             <div style="display: flex; gap: 15px; justify-content: center;">
                 <button onclick="window.location.href='{{ route('login') }}'" style="background: #0075B5; color: white; padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;">
                     Login
@@ -319,12 +315,7 @@
             const next = (isNaN(val) ? 1 : Math.max(1, val - 1));
             input.value = next;
         }
-        function messageSellerClick(button) {
-            const url = button.getAttribute('data-url');
-            if (url) {
-                window.location.href = url;
-            }
-        }
+        // messaging removed from marketplace
 
         function copyContact(btn) {
             const contact = btn.getAttribute('data-contact');
