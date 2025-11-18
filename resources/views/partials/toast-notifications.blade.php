@@ -1,13 +1,10 @@
 @auth
 @php
-    // Don't show toasts on message/conversation pages
-    $isMessagePage = request()->routeIs('marketplace.message') || 
-                     request()->is('marketplace/message/*') ||
-                     request()->is('*/messages/*') ||
-                     str_contains(request()->path(), '/message');
+    // Show toasts on all pages for offer notifications
+    $showToasts = true;
 @endphp
 
-@if(!$isMessagePage)
+@if($showToasts)
 <style>
     /* Toast Notification Styles */
     .toast-container {
@@ -121,75 +118,92 @@
     (function() {
         if (window.__toastNotifierInitialized) return; // prevent double init
         window.__toastNotifierInitialized = true;
-        let shownMessageIds = new Set();
         
-        function refreshUnreadCount() {
-            fetch('/api/messages/unread-count')
-                .then(r => r.json())
-                .then(data => {
-                    const count = data.unread_count ?? 0;
-                    const badges = document.querySelectorAll('#unread-message-count, #btn-unread-message-count');
-                    if (!badges || badges.length === 0) return;
-                    badges.forEach(b => {
-                        if (!b) return;
-                        b.textContent = count;
-                        if (b.id === 'btn-unread-message-count' || b.tagName.toLowerCase() === 'span') {
-                            b.style.display = count > 0 ? 'inline-block' : 'none';
-                        }
-                    });
-                })
-                .catch(() => {});
+        let shownOfferIds = new Set();
+        const notifAudio = new Audio('/audio/notify.mp3');
+        
+        // Load shown IDs from localStorage to persist across page loads
+        const storedIds = localStorage.getItem('shownOfferIds');
+        if (storedIds) {
+            try {
+                shownOfferIds = new Set(JSON.parse(storedIds));
+            } catch (e) {
+                shownOfferIds = new Set();
+            }
         }
 
-        function fetchLatestUnread() {
-            fetch('/api/messages/latest-unread')
+        function saveShownIds() {
+            localStorage.setItem('shownOfferIds', JSON.stringify([...shownOfferIds]));
+        }
+        
+        function fetchLatestOffers() {
+            fetch('/api/offers/latest')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.messages && data.messages.length > 0) {
-                        data.messages.forEach(msg => {
-                            if (!shownMessageIds.has(msg.id)) {
-                                showToast(msg.sender_name, msg.message, msg.created_at, msg.conversation_id);
-                                shownMessageIds.add(msg.id);
+                    if (data.offers && data.offers.length > 0) {
+                        data.offers.forEach(offer => {
+                            if (!shownOfferIds.has(offer.id)) {
+                                showToast(offer.title, offer.message, offer.created_at, offer.link, offer.id);
+                                shownOfferIds.add(offer.id);
+                                saveShownIds();
+                                
+                                // Play notification sound once for new offers
+                                notifAudio.currentTime = 0;
+                                notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
                             }
                         });
                     }
                 })
-                .catch(err => console.error('Failed to fetch latest unread:', err));
+                .catch(err => console.error('Failed to fetch latest offers:', err));
         }
 
-        function showToast(senderName, message, time, conversationId) {
+        function showToast(title, message, time, link, notificationId) {
             const container = document.getElementById('toast-container');
             if (!container) return;
             
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.onclick = () => window.location.href = '/marketplace/message/' + conversationId;
+            toast.onclick = () => {
+                // Mark as read when clicked
+                fetch(`/api/offers/notifications/${notificationId}/read`, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } })
+                    .catch(() => {});
+                window.location.href = link;
+            };
             
             toast.innerHTML = `
                 <div class="toast-icon">
-                    <i class="fa-solid fa-envelope"></i>
+                    <i class="fa-solid fa-handshake"></i>
                 </div>
                 <div class="toast-content">
-                    <div class="toast-title">New message from ${escapeHtml(senderName)}</div>
+                    <div class="toast-title">${escapeHtml(title)}</div>
                     <div class="toast-message">${escapeHtml(message)}</div>
                     <div class="toast-time">${escapeHtml(time)}</div>
                 </div>
-                <button class="toast-close" onclick="event.stopPropagation(); removeToast(this.parentElement)">
+                <button class="toast-close" onclick="event.stopPropagation(); removeToast(this.parentElement, '${notificationId}')">
                     <i class="fa-solid fa-times"></i>
                 </button>
             `;
             
             container.appendChild(toast);
             
-            // Auto-remove after 5 seconds
-            setTimeout(() => removeToast(toast), 5000);
+            // Auto-remove after 8 seconds
+            setTimeout(() => removeToast(toast, notificationId), 8000);
         }
 
-        function removeToast(toast) {
+        function removeToast(toast, notificationId) {
             if (!toast) return;
             toast.classList.add('fade-out');
             setTimeout(() => toast.remove(), 300);
+            
+            // Mark notification as read
+            if (notificationId) {
+                fetch(`/api/offers/notifications/${notificationId}/read`, { 
+                    method: 'POST', 
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } 
+                }).catch(() => {});
+            }
         }
+        window.removeToast = removeToast; // Make it global for onclick
 
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -197,11 +211,11 @@
             return div.innerHTML;
         }
 
-        // Check for new messages and update badge every 3 seconds
-        setInterval(() => { fetchLatestUnread(); refreshUnreadCount(); }, 3000);
+        // Check for new offers once on page load after 2 seconds, then stop
+        setTimeout(() => { fetchLatestOffers(); }, 2000);
         
-        // Initial checks after 2 seconds
-        setTimeout(() => { fetchLatestUnread(); refreshUnreadCount(); }, 2000);
+        // Check again every 30 seconds (less frequent to avoid annoyance)
+        setInterval(() => { fetchLatestOffers(); }, 30000);
     })();
 </script>
 @endif

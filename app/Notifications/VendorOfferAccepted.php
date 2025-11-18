@@ -31,6 +31,7 @@ class VendorOfferAccepted extends Notification implements ShouldQueue
             'quantity' => (int) $this->offer->quantity,
             'final_price' => (float) ($this->offer->fisherman_counter_price ?? $this->offer->offered_price),
             'status' => $this->offer->status,
+            'link' => '/vendor/offers?status=accepted',
         ];
     }
 }

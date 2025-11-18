@@ -16,42 +16,54 @@
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem 0;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .navbar-brand {
-            font-family: 'Koulen', cursive;
+        .nav-brand {
+            color: white;
             font-size: 28px;
-            color: white !important;
-            letter-spacing: 1px;
+            font-weight: bold;
+            font-family: "Koulen", sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
         .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
             font-weight: 500;
-            margin: 0 10px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
         .nav-link:hover {
-            color: white !important;
-            transform: translateY(-2px);
-        }
-
-        .btn-logout {
-            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 20px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.15);
         }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .nav-link:hover::before {
+            transform: translateX(0);
+        }
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
             color: white;
-            border-color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .page-header {

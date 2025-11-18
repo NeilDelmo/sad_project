@@ -115,6 +115,13 @@ Route::middleware('auth')->group(function () {
 //     Route::get('/api/messages/latest-unread', [MessageController::class, 'getLatestUnread']);
 // });
 
+// Offer Notification API (requires authentication)
+Route::middleware('auth')->group(function () {
+    Route::get('/api/offers/pending-count', [\App\Http\Controllers\OfferNotificationController::class, 'getPendingCount']);
+    Route::get('/api/offers/latest', [\App\Http\Controllers\OfferNotificationController::class, 'getLatestOffers']);
+    Route::post('/api/offers/notifications/{id}/read', [\App\Http\Controllers\OfferNotificationController::class, 'markAsRead']);
+});
+
 // Fisherman routes (requires authentication + fisherman role)
 
 Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(function () {

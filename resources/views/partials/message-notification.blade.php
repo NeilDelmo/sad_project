@@ -1,45 +1,52 @@
 @auth
 <script>
-    // Background notification system for new messages (site-wide)
+    // Background notification system for pending offers (site-wide)
     (function() {
-        if (window.__messageNotifierInitialized) return; // prevent double init
-        window.__messageNotifierInitialized = true;
+        if (window.__offerNotifierInitialized) return; // prevent double init
+        window.__offerNotifierInitialized = true;
 
-        let lastUnreadCount = 0;
+        let lastPendingCount = 0;
         let hasNotified = false;
         let isFirstPoll = true;
 
         const notifAudio = new Audio('/audio/notify.mp3');
 
-        function checkNewMessages() {
-            fetch('/api/messages/unread-count', { headers: { 'Accept': 'application/json' } })
+        function checkPendingOffers() {
+            fetch('/api/offers/pending-count', { headers: { 'Accept': 'application/json' } })
                 .then(response => response.json())
                 .then(data => {
-                    const count = Number(data.unread_count || 0);
+                    const count = Number(data.pending_count || 0);
 
-                    // First poll: play if there are any unread. Later: play only if count increased
-                    const shouldPlaySound = (isFirstPoll && count > 0 && !hasNotified) ||
-                                            (!isFirstPoll && count > lastUnreadCount && !hasNotified);
+                    // Only play sound if count increased (not on first poll to avoid spam)
+                    const shouldPlaySound = !isFirstPoll && count > lastPendingCount && !hasNotified;
 
                     if (shouldPlaySound) {
                         notifAudio.currentTime = 0;
                         notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
                         hasNotified = true;
+                        
+                        // Reset notification flag after 5 seconds
+                        setTimeout(() => { hasNotified = false; }, 5000);
                     }
 
                     if (count === 0) {
-                        hasNotified = false; // reset when user has read everything
+                        hasNotified = false; // reset when user has no pending offers
                     }
 
-                    lastUnreadCount = count;
+                    lastPendingCount = count;
                     if (isFirstPoll) isFirstPoll = false;
                 })
                 .catch(() => { /* ignore errors */ });
         }
 
-        // Poll periodically and on focus
-        setInterval(checkNewMessages, 3000);
-        window.addEventListener('focus', checkNewMessages);
+        // Poll every 30 seconds (less frequent to avoid annoyance)
+        setInterval(checkPendingOffers, 30000);
+        
+        // Check on window focus
+        window.addEventListener('focus', checkPendingOffers);
+        
+        // Initial check after 3 seconds
+        setTimeout(checkPendingOffers, 3000);
     })();
 </script>
 @endauth

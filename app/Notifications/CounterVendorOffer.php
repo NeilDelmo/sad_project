@@ -32,6 +32,7 @@ class CounterVendorOffer extends Notification implements ShouldQueue
             'quantity' => $this->offer->quantity,
             'fisherman_message' => $this->offer->fisherman_message,
             'status' => $this->offer->status,
+            'link' => '/vendor/offers?status=countered',
         ];
     }
 
