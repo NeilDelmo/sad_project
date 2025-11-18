@@ -455,8 +455,8 @@
         @endif
 
         <div class="page-header">
-            <div class="page-title">Browse Fisherman Products</div>
-            <div class="page-subtitle">Discover fresh catches and make your offers</div>
+            <div class="page-title">Bid on Fresh Catches</div>
+            <div class="page-subtitle">See current bids, bidder counts, and place your bid</div>
         </div>
 
         <!-- Filter Section -->
@@ -524,6 +524,45 @@
                 <div class="product-price">
                     <span class="price-label">Fisherman's Asking Price</span>
                     ₱{{ number_format($product->unit_price, 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
+                </div>
+
+                <!-- Bidding Stats -->
+                @php $stats = $biddingStats[$product->id] ?? null; @endphp
+                <div class="product-details" style="margin-top:10px;">
+                    <div class="product-detail-row">
+                        <span class="detail-label">Highest Bid</span>
+                        <span class="detail-value">
+                            @if($stats && $stats['highest'] > 0)
+                                ₱{{ number_format($stats['highest'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
+                            @else
+                                —
+                            @endif
+                        </span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Bidders</span>
+                        <span class="detail-value">{{ $stats['bidders'] ?? 0 }}</span>
+                    </div>
+                    @if($stats && $stats['your_offer'])
+                    <div class="product-detail-row">
+                        <span class="detail-label">Your Bid</span>
+                        <span class="detail-value">₱{{ number_format($stats['your_offer'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}</span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Your Rank</span>
+                        <span class="detail-value">#{{ $stats['your_rank'] ?? '—' }}</span>
+                    </div>
+                    @endif
+                    @if($stats && !empty($stats['top_bids']))
+                    <div class="product-detail-row">
+                        <span class="detail-label">Top Bids</span>
+                        <span class="detail-value">
+                            @foreach($stats['top_bids'] as $i => $amt)
+                                <span style="display:inline-block; margin-right:8px;">#{{ $i+1 }}: ₱{{ number_format($amt, 2) }}</span>
+                            @endforeach
+                        </span>
+                    </div>
+                    @endif
                 </div>
 
                 <div class="offer-section">

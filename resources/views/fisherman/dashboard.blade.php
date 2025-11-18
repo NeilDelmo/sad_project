@@ -589,10 +589,10 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="fa-solid fa-message"></i>
+                    <i class="fa-solid fa-handshake"></i>
                 </div>
-                <div class="stat-number" id="unread-message-count">{{ $unreadCount ?? 0 }}</div>
-                <div class="stat-label">Unread Messages</div>
+                <div class="stat-number">{{ $pendingOffersCount ?? 0 }}</div>
+                <div class="stat-label">Pending Offers</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
@@ -615,13 +615,7 @@
                 <div class="stat-number">{{ $acceptedOffersCount ?? 0 }}</div>
                 <div class="stat-label">Accepted Offers</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-                <div class="stat-number">{{ isset($recentConversations) ? $recentConversations->count() : 0 }}</div>
-                <div class="stat-label">Active Conversations</div>
-            </div>
+            
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fa-solid fa-toolbox"></i>
@@ -733,57 +727,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        // Refresh unread message count when window gains focus
-        let lastUnreadCount = {{ $unreadCount ?? 0 }};
-        let hasNotified = false;
-        let isFirstPoll = true;
-        
-        const notifAudio = new Audio('/audio/notify.mp3');
-        
-        function refreshUnreadCount() {
-            fetch('/api/messages/unread-count')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Unread count check:', data.unread_count, 'Last:', lastUnreadCount, 'HasNotified:', hasNotified, 'FirstPoll:', isFirstPoll);
-                    const unreadBadges = document.querySelectorAll('#unread-message-count, #btn-unread-message-count');
-                    if (unreadBadges && unreadBadges.length > 0) {
-                        const shouldPlaySound = (isFirstPoll && data.unread_count > 0 && !hasNotified) || 
-                                                (!isFirstPoll && data.unread_count > lastUnreadCount && !hasNotified);
-                        
-                        if (shouldPlaySound) {
-                            console.log('Playing notification sound!');
-                            notifAudio.currentTime = 0;
-                            notifAudio.play().catch(err => console.error('Sound play failed:', err));
-                            hasNotified = true;
-                        }
-                        
-                        if (data.unread_count === 0) {
-                            hasNotified = false;
-                        }
-                        // Update all badge instances (nav, stats, button)
-                        unreadBadges.forEach(badge => {
-                            if (!badge) return;
-                            if (typeof data.unread_count === 'number') {
-                                badge.textContent = data.unread_count;
-                                // Show/hide if badge is designed as a pill
-                                if (badge.id === 'btn-unread-message-count' || badge.tagName.toLowerCase() === 'span') {
-                                    badge.style.display = data.unread_count > 0 ? 'inline-block' : 'none';
-                                }
-                            }
-                        });
-
-                        lastUnreadCount = data.unread_count;
-                        
-                        if (isFirstPoll) {
-                            isFirstPoll = false;
-                        }
-                    }
-                })
-                .catch(err => console.error('Failed to refresh unread count:', err));
-        }
-
-        window.addEventListener('focus', refreshUnreadCount);
-        setInterval(refreshUnreadCount, 2000);
+        // No message polling; messaging removed. Dashboard scripts kept minimal.
     </script>
 
     <!-- Receipt Modal -->

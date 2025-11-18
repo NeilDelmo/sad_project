@@ -24,19 +24,9 @@ class FishermanController extends Controller
         // Get fisherman's products count
         $productsCount = Product::where('supplier_id', $fisherman->id)->count();
 
-        // Get recent conversations (messages from buyers)
-        $recentConversations = Conversation::where('seller_id', $fisherman->id)
-            ->with(['buyer', 'product', 'latestMessage'])
-            ->orderBy('last_message_at', 'desc')
-            ->limit(5)
-            ->get();
-
-        // Count unread messages
-        $unreadCount = Conversation::where('seller_id', $fisherman->id)
-            ->whereHas('messages', function($query) use ($fisherman) {
-                $query->where('is_read', false)
-                      ->where('sender_id', '!=', $fisherman->id);
-            })
+        // Count pending offers for fisherman (replaces unread messages)
+        $pendingOffersCount = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->where('status', 'pending')
             ->count();
 
         // Get recent products
@@ -100,8 +90,7 @@ class FishermanController extends Controller
 
         return view('fisherman.dashboard', compact(
             'productsCount',
-            'recentConversations',
-            'unreadCount',
+            'pendingOffersCount',
             'recentProducts',
             'totalIncome',
             'totalSpending',
@@ -143,11 +132,22 @@ class FishermanController extends Controller
     {
         $fisherman = Auth::user();
 
-        $offers = VendorOffer::where('fisherman_id', $fisherman->id)
+        $status = request()->get('status');
+
+        $query = VendorOffer::where('fisherman_id', $fisherman->id)
             ->with(['vendor', 'product', 'product.category'])
-            ->whereIn('status', ['pending', 'countered'])
-            ->orderByDesc('created_at')
-            ->paginate(20)->withQueryString();
+            ->orderByDesc('created_at');
+
+        if (in_array($status, ['pending', 'countered', 'accepted', 'rejected'])) {
+            $query->where('status', $status);
+        } elseif ($status === 'all') {
+            // no additional filter
+        } else {
+            // Default to actionable filters (pending + countered)
+            $query->whereIn('status', ['pending', 'countered']);
+        }
+
+        $offers = $query->paginate(20)->withQueryString();
 
         return view('fisherman.offers.index', compact('offers'));
     }

@@ -31,6 +31,13 @@
     <div class="d-flex align-items-center justify-content-between mb-3">
       <div class="page-title">My Offers</div>
     </div>
+    <div class="mb-3 d-flex gap-2">
+      <a class="btn btn-sm {{ request('status') === 'pending' || !request('status') ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'pending']) }}">Pending</a>
+      <a class="btn btn-sm {{ request('status') === 'countered' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'countered']) }}">Countered</a>
+      <a class="btn btn-sm {{ request('status') === 'accepted' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'accepted']) }}">Accepted</a>
+      <a class="btn btn-sm {{ request('status') === 'rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'rejected']) }}">Rejected</a>
+      <a class="btn btn-sm {{ request('status') === 'all' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'all']) }}">All</a>
+    </div>
     <div class="offers-table">
       @if($offers->count() > 0)
       <table class="table">
@@ -79,6 +86,9 @@
           @endforeach
         </tbody>
       </table>
+      <div class="d-flex justify-content-center p-3">
+        {{ $offers->links() }}
+      </div>
       @else
         <div class="p-5 text-center text-muted">No offers yet.</div>
       @endif

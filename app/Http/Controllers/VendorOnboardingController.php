@@ -107,12 +107,10 @@ class VendorOnboardingController extends Controller
             ->limit(5)
             ->get();
 
-        // Count unread messages
-        $unreadCount = \App\Models\Conversation::where(function($q) use ($user) {
-            $q->where('buyer_id', $user->id)->orWhere('seller_id', $user->id);
-        })->whereHas('messages', function($q) use ($user) {
-            $q->where('is_read', false)->where('sender_id', '!=', $user->id);
-        })->count();
+        // Count pending offers for vendor (replaces unread messages)
+        $pendingOffersCount = VendorOffer::where('vendor_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
 
         // Get recent marketplace customer orders
         $recentCustomerOrders = CustomerOrder::where('vendor_id', $user->id)
@@ -152,7 +150,7 @@ class VendorOnboardingController extends Controller
             'acceptedOffersCount' => $acceptedOffersCount,
             'recentAcceptedOffers' => $recentAcceptedOffers,
             'recentCounterOffers' => $recentCounterOffers,
-            'unreadCount' => $unreadCount,
+            'pendingOffersCount' => $pendingOffersCount,
             'recentCustomerOrders' => $recentCustomerOrders,
             'chartLabels' => $chartLabels,
             'chartValues' => $chartValues,
@@ -192,11 +190,20 @@ class VendorOnboardingController extends Controller
     {
         $vendor = Auth::user();
 
-        $offers = VendorOffer::where('vendor_id', $vendor->id)
+        $status = request()->get('status');
+
+        $query = VendorOffer::where('vendor_id', $vendor->id)
             ->with(['fisherman', 'product', 'product.category'])
-            ->whereIn('status', ['pending', 'countered', 'accepted'])
-            ->orderByDesc('created_at')
-            ->paginate(20)->withQueryString();
+            ->orderByDesc('created_at');
+
+        if (in_array($status, ['pending', 'countered', 'accepted', 'rejected'])) {
+            $query->where('status', $status);
+        } else {
+            // Default view includes key statuses
+            $query->whereIn('status', ['pending', 'countered', 'accepted']);
+        }
+
+        $offers = $query->paginate(20)->withQueryString();
 
         return view('vendor.offers.index', compact('offers'));
     }
@@ -241,6 +248,41 @@ class VendorOnboardingController extends Controller
 
         $products = $query->paginate(24)->withQueryString();
 
+        // Build bidding stats for visible products
+        $productIds = $products->pluck('id')->all();
+        $offers = \App\Models\VendorOffer::whereIn('product_id', $productIds)
+            ->whereIn('status', ['pending', 'countered'])
+            ->orderByDesc('offered_price')
+            ->get()
+            ->groupBy('product_id');
+
+        $biddingStats = [];
+        foreach ($offers as $pid => $rows) {
+            $uniqueVendors = $rows->pluck('vendor_id')->unique();
+            $topBids = $rows->pluck('offered_price')->take(3)->values()->all();
+
+            $yourOffer = $rows->firstWhere('vendor_id', $user->id);
+            $yourRank = null;
+            if ($yourOffer) {
+                // Determine rank among offers by offered_price desc
+                $sorted = $rows->sortByDesc('offered_price')->values();
+                foreach ($sorted as $idx => $row) {
+                    if ((int)$row->vendor_id === (int)$user->id) {
+                        $yourRank = $idx + 1; // 1-based
+                        break;
+                    }
+                }
+            }
+
+            $biddingStats[$pid] = [
+                'bidders' => $uniqueVendors->count(),
+                'highest' => (float) ($rows->max('offered_price') ?? 0),
+                'your_offer' => $yourOffer?->offered_price,
+                'your_rank' => $yourRank,
+                'top_bids' => $topBids,
+            ];
+        }
+
         // Get vendor's pending/countered offers to disable buttons
         $pendingOffers = \App\Models\VendorOffer::where('vendor_id', $user->id)
             ->whereIn('status', ['pending', 'countered'])
@@ -254,6 +296,7 @@ class VendorOnboardingController extends Controller
             'pendingOffers' => $pendingOffers,
             'onlyFish' => $onlyFish,
             'q' => $q,
+            'biddingStats' => $biddingStats,
         ]);
     }
 }

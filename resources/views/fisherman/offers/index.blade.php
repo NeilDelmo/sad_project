@@ -365,6 +365,10 @@
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'rejected']) }}'">
                 Rejected Offers
             </button>
+            <button class="tab {{ request('status') == 'all' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'all']) }}'">
+                All
+            </button>
         </div>
 
         @if($offers->isEmpty())
