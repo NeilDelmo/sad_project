@@ -259,5 +259,6 @@
             </div>
         </form>
     </div>
+@include('partials.message-notification')
 </body>
 </html>

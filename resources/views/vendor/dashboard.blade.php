@@ -762,6 +762,54 @@
             }
         });
         }
+
+        // Notification sound and unread message polling
+        let lastUnreadCount = parseInt(document.getElementById('unread-message-count')?.textContent || '0');
+        let hasNotified = false;
+        let isFirstPoll = true;
+        
+        const notifAudio = new Audio('/audio/notify.mp3');
+        
+        function refreshUnreadCount() {
+            fetch('/api/messages/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Unread count check:', data.unread_count, 'Last:', lastUnreadCount, 'HasNotified:', hasNotified, 'FirstPoll:', isFirstPoll);
+                    const unreadBadge = document.getElementById('unread-message-count');
+                    if (unreadBadge) {
+                        const shouldPlaySound = (isFirstPoll && data.unread_count > 0 && !hasNotified) || 
+                                                (!isFirstPoll && data.unread_count > lastUnreadCount && !hasNotified);
+                        
+                        if (shouldPlaySound) {
+                            console.log('Playing notification sound!');
+                            notifAudio.currentTime = 0;
+                            notifAudio.play().catch(err => console.error('Sound play failed:', err));
+                            hasNotified = true;
+                        }
+                        
+                        if (data.unread_count === 0) {
+                            hasNotified = false;
+                        }
+                        
+                        // Update badge
+                        if (typeof data.unread_count === 'number') {
+                            unreadBadge.textContent = data.unread_count;
+                        }
+                        
+                        lastUnreadCount = data.unread_count;
+                    }
+                    isFirstPoll = false;
+                })
+                .catch(err => console.error('Failed to refresh unread count:', err));
+        }
+        
+        // Poll every 5 seconds
+        setInterval(refreshUnreadCount, 5000);
+        
+        // Initial poll after 2 seconds
+        setTimeout(() => {
+            refreshUnreadCount();
+        }, 2000);
     </script>
     
 

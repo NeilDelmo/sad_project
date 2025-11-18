@@ -100,4 +100,5 @@
         @endif
     </div>
 </div>
+@include('partials.message-notification')
 @endsection
