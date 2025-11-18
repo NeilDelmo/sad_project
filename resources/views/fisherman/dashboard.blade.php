@@ -567,10 +567,9 @@
                     <span style="background: #ffc107; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px;">{{ $pendingRentalsCount }} pending</span>
                     @endif
                 </a>
-                <a href="{{ route('fisherman.messages') }}" class="btn-secondary-custom">
-                    <i class="fa-solid fa-envelope"></i>
-                    Messages
-                    <span id="btn-unread-message-count" style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 12px; font-size: 14px; display: {{ isset($unreadCount) && $unreadCount > 0 ? 'inline-block' : 'none' }};">{{ $unreadCount ?? 0 }}</span>
+                <a href="{{ route('fisherman.offers.index') }}" class="btn-secondary-custom">
+                    <i class="fa-solid fa-handshake"></i>
+                    Offers
                 </a>
                 <a href="{{ route('fishing-safety.public') }}" class="btn-secondary-custom">
                     <i class="fa-solid fa-life-ring"></i>

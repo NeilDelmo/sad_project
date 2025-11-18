@@ -185,6 +185,23 @@ class VendorOnboardingController extends Controller
     }
 
     /**
+     * Display simple offers table (bidding) for vendors.
+     * Shows offers made by the vendor and any countered offers awaiting action.
+     */
+    public function offers()
+    {
+        $vendor = Auth::user();
+
+        $offers = VendorOffer::where('vendor_id', $vendor->id)
+            ->with(['fisherman', 'product', 'product.category'])
+            ->whereIn('status', ['pending', 'countered', 'accepted'])
+            ->orderByDesc('created_at')
+            ->paginate(20)->withQueryString();
+
+        return view('vendor.offers.index', compact('offers'));
+    }
+
+    /**
      * Vendor browse page: show all fisherman products with optional filters/search.
      */
     public function browseProducts(Request $request)

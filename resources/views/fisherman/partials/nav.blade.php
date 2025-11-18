@@ -11,9 +11,8 @@
       <a href="{{ route('orders.index') }}" class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">
         <i class="fa-solid fa-receipt"></i> Orders
       </a>
-      <a href="{{ route('fisherman.messages') }}" class="nav-link {{ request()->routeIs('fisherman.messages') ? 'active' : '' }}">
-        <i class="fa-solid fa-envelope"></i> Messages
-        <span id="unread-message-count" style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;display: {{ isset($unreadCount) && $unreadCount > 0 ? 'inline-block' : 'none' }};">{{ $unreadCount ?? 0 }}</span>
+      <a href="{{ route('fisherman.offers.index') }}" class="nav-link {{ request()->routeIs('fisherman.offers.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-handshake"></i> Offers
       </a>
       <a href="{{ route('fishing-safety.public') }}" class="nav-link {{ request()->routeIs('fishing-safety.*') ? 'active' : '' }}">
         <i class="fa-solid fa-life-ring"></i> Safety Map

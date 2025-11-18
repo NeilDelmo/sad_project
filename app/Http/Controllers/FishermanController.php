@@ -134,4 +134,21 @@ class FishermanController extends Controller
 
         return view('fisherman.messages.inbox', compact('conversations'));
     }
+
+    /**
+     * Display simple offers table (bidding) for fishermen.
+     * Shows pending and countered offers with Accept and Counter actions.
+     */
+    public function offers()
+    {
+        $fisherman = Auth::user();
+
+        $offers = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->with(['vendor', 'product', 'product.category'])
+            ->whereIn('status', ['pending', 'countered'])
+            ->orderByDesc('created_at')
+            ->paginate(20)->withQueryString();
+
+        return view('fisherman.offers.index', compact('offers'));
+    }
 }

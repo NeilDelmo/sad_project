@@ -104,16 +104,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/marketplace/orders/{order}/refund-decline', [CustomerOrderController::class, 'declineRefund'])->name('marketplace.orders.refund.decline');
 });
 
-// Messaging routes (requires authentication)
-Route::middleware('auth')->group(function () {
-    Route::get('/marketplace/message/{conversationId}', [MessageController::class, 'show'])->name('marketplace.message');
-    Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'startConversation'])->name('marketplace.message.product');
-    Route::get('/marketplace/listing/{listingId}/message', [MessageController::class, 'startConversationForListing'])->name('marketplace.message.listing');
-    Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
-    Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
-    Route::get('/api/messages/unread-count', [MessageController::class, 'getUnreadCount']);
-    Route::get('/api/messages/latest-unread', [MessageController::class, 'getLatestUnread']);
-});
+// Messaging routes (requires authentication) - DISABLED
+// Route::middleware('auth')->group(function () {
+//     Route::get('/marketplace/message/{conversationId}', [MessageController::class, 'show'])->name('marketplace.message');
+//     Route::get('/marketplace/product/{productId}/message', [MessageController::class, 'startConversation'])->name('marketplace.message.product');
+//     Route::get('/marketplace/listing/{listingId}/message', [MessageController::class, 'startConversationForListing'])->name('marketplace.message.listing');
+//     Route::get('/api/conversations/{conversationId}/messages', [MessageController::class, 'getMessages']);
+//     Route::post('/api/conversations/{conversationId}/messages', [MessageController::class, 'sendMessage']);
+//     Route::get('/api/messages/unread-count', [MessageController::class, 'getUnreadCount']);
+//     Route::get('/api/messages/latest-unread', [MessageController::class, 'getLatestUnread']);
+// });
 
 // Fisherman routes (requires authentication + fisherman role)
 
@@ -124,8 +124,8 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     // Product Management (CRUD)
     Route::resource('products', ProductController::class)->except(['show']);
     
-    // Message Inbox
-    Route::get('/messages', [FishermanController::class, 'inbox'])->name('messages');
+    // Offers Management
+    Route::get('/offers', [FishermanController::class, 'offers'])->name('offers.index');
 
     // Fisherman Offers actions (keep actions for integrations; index removed)
     Route::post('/offers/{offer}/accept', [\App\Http\Controllers\VendorOfferController::class, 'accept'])->name('offers.accept');
@@ -139,8 +139,10 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
     Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
 
     Route::get('/dashboard', [VendorOnboardingController::class, 'dashboard'])->name('dashboard');
-    // Vendor Messages (inbox)
-    Route::get('/messages', [VendorOnboardingController::class, 'messages'])->name('messages');
+    
+    // Offers Management
+    Route::get('/offers', [VendorOnboardingController::class, 'offers'])->name('offers.index');
+    
     // Vendor Browse Products (see all products; optional filters)
     Route::get('/products', [VendorOnboardingController::class, 'browseProducts'])->name('products.index');
     

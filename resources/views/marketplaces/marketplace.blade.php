@@ -196,30 +196,67 @@
     </script>
     @endif
 
-    <!-- NAVBAR FROM FISHERMAN DASHBOARD (slightly adjusted for marketplace context) -->
+    <!-- Role-Based Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
             <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
             <div class="nav-links">
                 @if(Auth::check())
-                <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
-                        <i class="fa-solid fa-gauge-high"></i> Dashboard
-                    </a>
-                <a href="{{ route('marketplace.shop') }}" class="nav-link">
-                    <i class="fa-solid fa-fire"></i> Latest
-                </a>
-                <a href="{{ route('marketplace.shop') }}" class="nav-link">
-                    <i class="fa-solid fa-fish"></i> Fish
-                </a>
-                <a href="{{ route('marketplace.shop') }}" class="nav-link">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Gears
-                </a>
-                <a href="{{ route('fishing-safety.public') }}" class="nav-link">
-                    <i class="fa-solid fa-life-ring"></i> Safety Map
-                </a>
-                <a href="{{ route('marketplace.index') }}" class="nav-link active">
-                    <i class="fa-solid fa-store"></i> Marketplace
-                </a>
+                    @if(Auth::user()->user_type === 'vendor')
+                        <!-- Vendor Navigation -->
+                        <a href="{{ route('vendor.dashboard') }}" class="nav-link">
+                            <i class="fa-solid fa-gauge-high"></i> Dashboard
+                        </a>
+                        <a href="{{ route('vendor.products.index') }}" class="nav-link">
+                            <i class="fa-solid fa-fish"></i> Browse
+                        </a>
+                        <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
+                            <i class="fa-solid fa-box"></i> Inventory
+                        </a>
+                        <a href="{{ route('vendor.offers.index') }}" class="nav-link">
+                            <i class="fa-solid fa-handshake"></i> Offers
+                        </a>
+                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                            <i class="fa-solid fa-store"></i> Marketplace
+                        </a>
+                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                            <i class="fa-solid fa-shopping-cart"></i> My Orders
+                        </a>
+                    @elseif(Auth::user()->user_type === 'buyer')
+                        <!-- Buyer Navigation -->
+                        <a href="{{ route('marketplace.shop') }}" class="nav-link">
+                            <i class="fa-solid fa-fire"></i> Latest
+                        </a>
+                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                            <i class="fa-solid fa-store"></i> Marketplace
+                        </a>
+                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                            <i class="fa-solid fa-receipt"></i> My Orders
+                        </a>
+                        <a href="{{ route('forums.index') }}" class="nav-link">
+                            <i class="fa-solid fa-comments"></i> Forum
+                        </a>
+                    @else
+                        <!-- Fisherman Navigation -->
+                        <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
+                            <i class="fa-solid fa-gauge-high"></i> Dashboard
+                        </a>
+                        <a href="{{ route('fisherman.products.index') }}" class="nav-link">
+                            <i class="fa-solid fa-box"></i> My Products
+                        </a>
+                        <a href="{{ route('orders.index') }}" class="nav-link">
+                            <i class="fa-solid fa-receipt"></i> Orders
+                        </a>
+                        <a href="{{ route('fisherman.offers.index') }}" class="nav-link">
+                            <i class="fa-solid fa-handshake"></i> Offers
+                        </a>
+                        <a href="{{ route('fishing-safety.public') }}" class="nav-link">
+                            <i class="fa-solid fa-life-ring"></i> Safety Map
+                        </a>
+                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                            <i class="fa-solid fa-store"></i> Marketplace
+                        </a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                         @csrf
                         <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">

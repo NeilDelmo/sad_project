@@ -11,11 +11,8 @@
       <a href="{{ route('vendor.inventory.index') }}" class="nav-link {{ request()->routeIs('vendor.inventory.*') ? 'active' : '' }}">
         <i class="fa-solid fa-box"></i> Inventory
       </a>
-      <a href="{{ route('vendor.messages') }}" class="nav-link {{ request()->routeIs('vendor.messages') ? 'active' : '' }}">
-        <i class="fa-solid fa-envelope"></i> Messages
-        @if(isset($vendorUnread) && $vendorUnread > 0)
-          <span style="background:#dc3545;color:#fff;padding:2px 8px;border-radius:12px;font-size:12px;">{{ $vendorUnread }}</span>
-        @endif
+      <a href="{{ route('vendor.offers.index') }}" class="nav-link {{ request()->routeIs('vendor.offers.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-handshake"></i> Offers
       </a>
       <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.index') || request()->routeIs('marketplace.shop') ? 'active' : '' }}">
         <i class="fa-solid fa-store"></i> Marketplace
