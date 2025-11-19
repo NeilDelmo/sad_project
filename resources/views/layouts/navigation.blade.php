@@ -42,7 +42,7 @@
             <!-- Right side: Notifications + User -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 @auth
-                <div class="relative me-4" x-data="{open:false}" x-init="window.__notifInit && window.__notifInit()">
+                <div class="relative me-4" x-data="{open:false}" x-init="window.__notifInit && window.__notifInit()" data-user-id="{{ Auth::id() }}">
                     <button @click="open=!open; window.__refreshNotifications && window.__refreshNotifications();" class="relative inline-flex items-center rounded-full px-3 py-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm transition" title="Notifications">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         @php($unread = Auth::user()->unreadNotifications()->count())
@@ -112,6 +112,14 @@
                                 if (timer) clearInterval(timer);
                                 timer = setInterval(refresh, 10000);
                                 refresh();
+                                // Realtime: subscribe to private user channel and refresh on new notifications
+                                try {
+                                    const holder = document.currentScript?.closest('div[data-user-id]') || document.querySelector('div[data-user-id]');
+                                    const userId = Number(holder?.dataset?.userId || 0);
+                                    if (window.Echo && userId) {
+                                        window.Echo.private(`App.Models.User.${userId}`).notification(() => refresh());
+                                    }
+                                } catch (e) { /* ignore */ }
                             };
 
                             window.__markAllRead = async function(){

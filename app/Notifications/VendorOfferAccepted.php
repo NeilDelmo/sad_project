@@ -6,6 +6,7 @@ use App\Models\VendorOffer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class VendorOfferAccepted extends Notification implements ShouldQueue
 {
@@ -17,7 +18,7 @@ class VendorOfferAccepted extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -33,5 +34,10 @@ class VendorOfferAccepted extends Notification implements ShouldQueue
             'status' => $this->offer->status,
             'link' => '/vendor/offers?status=accepted',
         ];
+    }
+
+    public function toBroadcast(object $notifiable)
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 }

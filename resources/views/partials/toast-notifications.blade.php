@@ -112,7 +112,7 @@
 </style>
 
 <!-- Toast Notification Container -->
-<div id="toast-container" class="toast-container"></div>
+<div id="toast-container" class="toast-container" data-user-id="{{ Auth::id() }}"></div>
 
 <script>
     (function() {
@@ -216,6 +216,43 @@
         
         // Check again every 30 seconds (less frequent to avoid annoyance)
         setInterval(() => { fetchLatestOffers(); }, 30000);
+
+        // Realtime: subscribe to private user channel if Echo is available
+        try {
+            const containerEl = document.getElementById('toast-container');
+            const userId = Number(containerEl?.dataset?.userId || 0);
+            if (window.Echo && userId) {
+                window.Echo.private(`App.Models.User.${userId}`)
+                    .notification((notification) => {
+                        const payload = notification?.data ?? notification ?? {};
+                        // only toast offer-related notifications
+                        const kind = payload.type || '';
+                        if (!kind.includes('offer')) return;
+
+                        const titleMap = {
+                            new_vendor_offer: 'New Offer Received',
+                            counter_vendor_offer: 'Counter Offer Received',
+                            vendor_offer_accepted: 'Your Offer Was Accepted',
+                            vendor_accepted_counter: 'Counter Offer Accepted',
+                        };
+                        const title = titleMap[kind] || 'New Notification';
+                        const message = payload.message
+                            || payload.fisherman_message
+                            || `Update on ${payload.product_name || 'your offer'}`;
+                        const time = (new Date()).toLocaleString();
+                        const link = payload.link || '/notifications';
+                        const notificationId = notification?.id || payload.id || '';
+
+                        if (!shownOfferIds.has(notificationId) && notificationId) {
+                            showToast(title, message, time, link, notificationId);
+                            shownOfferIds.add(notificationId);
+                            saveShownIds();
+                            notifAudio.currentTime = 0;
+                            notifAudio.play().catch(() => {});
+                        }
+                    });
+            }
+        } catch (e) { /* ignore */ }
     })();
 </script>
 @endif
