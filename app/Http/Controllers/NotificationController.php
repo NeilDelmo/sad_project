@@ -28,4 +28,36 @@ class NotificationController extends Controller
         $user->unreadNotifications->markAsRead();
         return back();
     }
+
+    // JSON: get unread count
+    public function unreadCount(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['count' => 0]);
+        }
+        return response()->json(['count' => $user->unreadNotifications()->count()]);
+    }
+
+    // JSON: latest unread (top 5)
+    public function latest(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['unread_count' => 0, 'items' => []]);
+        }
+        $items = $user->unreadNotifications()->latest()->limit(5)->get()->map(function ($n) {
+            return [
+                'id' => $n->id,
+                'title' => data_get($n->data, 'title', 'Notification'),
+                'message' => data_get($n->data, 'message'),
+                'created_at' => optional($n->created_at)->toIso8601String(),
+            ];
+        });
+
+        return response()->json([
+            'unread_count' => $user->unreadNotifications()->count(),
+            'items' => $items,
+        ]);
+    }
 }

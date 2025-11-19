@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Auth-only map entrypoint (visible to fishermen only in controller)
     Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->name('fishing-safety.public');
+
+    // Notifications API for navbar polling
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
+    Route::get('/api/notifications/latest', [NotificationController::class, 'latest'])->name('api.notifications.latest');
 });
 
 Route::middleware('auth')->group(function () {
