@@ -61,24 +61,8 @@ class MessageController extends Controller
             return redirect()->route('marketplace.shop')->with('error', 'You cannot message yourself');
         }
         
-        // Check if conversation already exists
-        $conversation = Conversation::where('buyer_id', Auth::id())
-            ->where('seller_id', $product->supplier_id)
-            ->where('product_id', $productId)
-            ->with(['messages.sender'])
-            ->first();
-
-        // Create new conversation if doesn't exist
-        if (!$conversation) {
-            $conversation = Conversation::create([
-                'buyer_id' => Auth::id(),
-                'seller_id' => $product->supplier_id,
-                'product_id' => $productId,
-                'last_message_at' => now(),
-            ]);
-        }
-
-        return view('marketplaces.message', compact('conversation', 'product'));
+        // Messaging feature removed
+        return redirect()->route('marketplace.shop')->with('error', 'Messaging feature is currently unavailable');
     }
 
     /**
@@ -97,25 +81,8 @@ class MessageController extends Controller
             return redirect()->route('marketplace.shop')->with('error', 'You cannot message yourself');
         }
 
-        // Find existing conversation between buyer (auth user) and vendor (listing seller) for this product
-        $conversation = Conversation::where('buyer_id', Auth::id())
-            ->where('seller_id', $listing->seller_id)
-            ->where('product_id', $listing->product_id)
-            ->with(['messages.sender'])
-            ->first();
-
-        if (!$conversation) {
-            $conversation = Conversation::create([
-                'buyer_id' => Auth::id(),
-                'seller_id' => $listing->seller_id,
-                'product_id' => $listing->product_id, // keep product context for reference
-                'last_message_at' => now(),
-            ]);
-        }
-
-        $product = $listing->product; // for header context in the chat view
-
-        return view('marketplaces.message', compact('conversation', 'product'));
+        // Messaging feature removed
+        return redirect()->route('marketplace.shop')->with('error', 'Messaging feature is currently unavailable');
     }
 
     /**

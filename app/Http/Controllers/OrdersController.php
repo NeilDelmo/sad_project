@@ -203,26 +203,7 @@ class OrdersController extends Controller
 
     private function notifyAndMessage(Order $order, string $text): void
     {
-        // Post a message to conversation
-        $conversation = Conversation::firstOrCreate(
-            [
-                'buyer_id' => $order->vendor_id,
-                'seller_id' => $order->fisherman_id,
-                'product_id' => $order->product_id,
-            ],
-            [
-                'last_message_at' => now(),
-            ]
-        );
-
-        $conversation->messages()->create([
-            'sender_id' => Auth::id(),
-            'message' => $text,
-            'is_read' => false,
-        ]);
-        $conversation->update(['last_message_at' => now()]);
-
-        // Notify counterparty (database notification only)
+        // Send database notification only
         $counterpartyId = Auth::id() === $order->vendor_id ? $order->fisherman_id : $order->vendor_id;
         $counterparty = User::find($counterpartyId);
         if ($counterparty) {

@@ -71,19 +71,7 @@ class CustomerOrderController extends Controller
                 $listing->update(['status' => 'inactive', 'unlisted_at' => now()]);
             }
 
-            // Message + notify
-            $conversation = Conversation::firstOrCreate([
-                'buyer_id' => $user->id,
-                'seller_id' => $listing->seller_id,
-                'product_id' => $listing->product_id,
-            ], ['last_message_at' => now()]);
-            $conversation->messages()->create([
-                'sender_id' => $user->id,
-                'message' => "Placed order #{$order->id} for {$qty} kg.",
-                'is_read' => false,
-            ]);
-            $conversation->update(['last_message_at' => now()]);
-
+            // Notify vendor
             $vendor = User::find($listing->seller_id);
             if ($vendor) $vendor->notify(new \App\Notifications\CustomerOrderStatusUpdated($order, 'New order placed'));
 
@@ -211,18 +199,7 @@ class CustomerOrderController extends Controller
 
     private function notify(CustomerOrder $order, string $text): void
     {
-        $conversation = Conversation::firstOrCreate([
-            'buyer_id' => $order->buyer_id,
-            'seller_id' => $order->vendor_id,
-            'product_id' => optional($order->listing)->product_id,
-        ], ['last_message_at' => now()]);
-        $conversation->messages()->create([
-            'sender_id' => Auth::id(),
-            'message' => $text,
-            'is_read' => false,
-        ]);
-        $conversation->update(['last_message_at' => now()]);
-
+        // Send database notification only
         $counterpartyId = Auth::id() === $order->buyer_id ? $order->vendor_id : $order->buyer_id;
         $counterparty = User::find($counterpartyId);
         if ($counterparty) $counterparty->notify(new \App\Notifications\CustomerOrderStatusUpdated($order, $text));

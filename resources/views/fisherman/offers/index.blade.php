@@ -650,13 +650,6 @@
                                            required>
                                     <small class="text-muted">Original asking price: ₱{{ number_format($offer->product->unit_price, 2) }}</small>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Message to Vendor (Optional)</label>
-                                    <textarea name="message" 
-                                              class="form-control form-control-custom" 
-                                              rows="3" 
-                                              placeholder="Explain your counter offer..."></textarea>
-                                </div>
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-counter">
                                         <i class="fas fa-paper-plane"></i> Send Counter Offer

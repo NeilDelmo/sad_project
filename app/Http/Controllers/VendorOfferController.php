@@ -210,24 +210,6 @@ class VendorOfferController extends Controller
             'expires_at' => now()->addDays(2), // Reset expiration
         ]);
 
-        // Create or update a conversation message so vendor sees it in chat
-        $conversation = Conversation::firstOrCreate([
-            'buyer_id' => $offer->vendor_id,
-            'seller_id' => $offer->fisherman_id,
-            'product_id' => $offer->product_id,
-        ], [
-            'last_message_at' => now(),
-        ]);
-
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id' => $offer->fisherman_id,
-            'message' => 'Fisherman sent a counter offer: ₱' . number_format((float) $offer->fisherman_counter_price, 2) . ' per unit. ' . ($request->message ? 'Message: ' . $request->message : ''),
-            'is_read' => false,
-        ]);
-
-        $conversation->update(['last_message_at' => now()]);
-
         // Notify vendor (database notification)
         $vendor = \App\Models\User::find($offer->vendor_id);
         if ($vendor) {

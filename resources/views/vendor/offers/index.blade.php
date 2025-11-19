@@ -214,13 +214,15 @@
                 <div class="row g-3">
                   <div class="col-md-3">
                     <label class="form-label fw-bold">New Price (per {{ $offer->product->unit_of_measure }})</label>
-                    <input type="number" name="new_price" class="form-control" step="0.01" min="0.01" 
+                    <input type="number" name="offered_price" class="form-control" step="0.01" min="0.01" 
                            value="{{ $offer->offered_price }}" required>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label fw-bold">New Quantity</label>
-                    <input type="number" name="new_quantity" class="form-control" min="1" 
+                    <input type="number" name="quantity" class="form-control" min="1" 
+                           max="{{ $offer->product->available_quantity }}"
                            value="{{ $offer->quantity }}" required>
+                    <small class="text-muted">Max: {{ $offer->product->available_quantity }} kg</small>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label fw-bold">Reason (Optional)</label>

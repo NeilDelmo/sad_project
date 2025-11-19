@@ -59,6 +59,7 @@ class NotificationController extends Controller
         $items = $user->unreadNotifications()->latest()->limit(5)->get()->map(function ($n) {
             return [
                 'id' => $n->id,
+                'type' => data_get($n->data, 'type', 'notification'),
                 'title' => data_get($n->data, 'title', 'Notification'),
                 'message' => data_get($n->data, 'message'),
                 'link' => data_get($n->data, 'link', route('notifications.index')),

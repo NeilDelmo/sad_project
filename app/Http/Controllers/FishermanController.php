@@ -126,19 +126,8 @@ class FishermanController extends Controller
      */
     public function inbox()
     {
-        $conversations = Conversation::where('seller_id', Auth::id())
-            ->with(['buyer', 'product', 'latestMessage', 'messages'])
-            ->orderBy('last_message_at', 'desc')
-            ->get();
-
-        // Add unread count for each conversation
-        $conversations->each(function($conversation) {
-            $conversation->unread_count = $conversation->messages()
-                ->where('is_read', false)
-                ->where('sender_id', '!=', Auth::id())
-                ->count();
-        });
-
+        // Messaging feature removed
+        $conversations = collect([]);
         return view('fisherman.messages.inbox', compact('conversations'));
     }
 

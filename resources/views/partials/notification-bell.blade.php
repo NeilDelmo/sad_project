@@ -82,6 +82,8 @@
         case 'counter_vendor_offer': return 'fa-arrows-rotate';
         case 'vendor_offer_accepted': return 'fa-circle-check';
         case 'vendor_accepted_counter': return 'fa-circle-check';
+        case 'new_customer_order': return 'fa-shopping-cart';
+        case 'order_status_updated': return 'fa-box';
         default: return 'fa-bell';
       }
     }
@@ -92,8 +94,12 @@
           credentials: 'same-origin',
           headers: { 'Accept': 'application/json' }
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          console.error('Notification fetch failed:', res.status, res.statusText);
+          return;
+        }
         const data = await res.json();
+        console.log('Notification data received:', data); // Debug log
         const items = Array.isArray(data.items ?? data.offers) ? (data.items ?? data.offers) : [];
         latestCache = items;
         list.innerHTML = '';
