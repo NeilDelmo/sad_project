@@ -369,6 +369,29 @@
     @include('partials.toast-notifications')
 
     <div class="container">
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                <i class="fas fa-check-circle"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if(session('error') || $errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                <i class="fas fa-exclamation-circle"></i> 
+                @if(session('error'))
+                    {{ session('error') }}
+                @endif
+                @if($errors->any())
+                    @foreach($errors->all() as $error)
+                        {{ $error }}
+                    @endforeach
+                @endif
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <div class="page-header">
             <h1><i class="fas fa-handshake"></i> Vendor Offers</h1>
             <p class="text-muted mb-0">Review and negotiate offers from vendors for your products</p>
@@ -378,19 +401,15 @@
         <div class="tabs">
             <button class="tab {{ request('status') == 'pending' || !request('status') ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'pending']) }}'">
-                Pending Offers
+                Pending
             </button>
             <button class="tab {{ request('status') == 'countered' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'countered']) }}'">
-                Countered Offers
+                Countered
             </button>
             <button class="tab {{ request('status') == 'accepted' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'accepted']) }}'">
                 Accepted
-            </button>
-            <button class="tab {{ request('status') == 'rejected' ? 'active' : '' }}" 
-                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'rejected']) }}'">
-                Rejected
             </button>
             <button class="tab {{ request('status') == 'auto_rejected' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'auto_rejected']) }}'">
@@ -510,7 +529,7 @@
                         </div>
                     </div>
 
-                    {{-- Market Price Analysis --}}
+                    {{-- Pricing Analysis --}}
                     @if($offer->suggested_price_fisherman)
                         @php
                             $suggestedPrice = $offer->suggested_price_fisherman;
@@ -550,7 +569,7 @@
                             
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div>
-                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Market Price</div>
+                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Suggested Price</div>
                                     <div style="font-size: 1.1rem; font-weight: 700; color: #0075B5;">₱{{ number_format($suggestedPrice, 2) }}</div>
                                 </div>
                                 <div>

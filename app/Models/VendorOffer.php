@@ -93,13 +93,24 @@ class VendorOffer extends Model implements AuditableConract
 
     /**
      * Get the bid rank for this offer (1 = highest bidder)
+     * If offers are equal, earliest bid gets better rank (first-come-first-served)
      */
     public function getBidRank(): int
     {
-        return VendorOffer::where('product_id', $this->product_id)
+        // Count offers with higher price
+        $higherOffers = VendorOffer::where('product_id', $this->product_id)
             ->where('status', 'pending')
             ->where('offered_price', '>', $this->offered_price)
-            ->count() + 1;
+            ->count();
+        
+        // Count offers with same price but earlier timestamp
+        $equalEarlierOffers = VendorOffer::where('product_id', $this->product_id)
+            ->where('status', 'pending')
+            ->where('offered_price', '=', $this->offered_price)
+            ->where('created_at', '<', $this->created_at)
+            ->count();
+        
+        return $higherOffers + $equalEarlierOffers + 1;
     }
 
     /**

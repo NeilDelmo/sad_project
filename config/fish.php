@@ -40,25 +40,14 @@ return [
     */
     'category_decay_multipliers' => [
         // Fast spoilage (shellfish, crustaceans)
-        'Shellfish' => 0.5,      // 50% faster decay
-        'Crustaceans' => 0.5,
-        'Shrimp' => 0.5,
-        'Crabs' => 0.5,
+        'Shellfish' => 0.5,      // 50% faster decay - spoils twice as fast
         
         // Medium-fast spoilage (oily fish)
-        'Tuna' => 0.7,           // 30% faster decay
-        'Mackerel' => 0.7,
-        'Sardines' => 0.7,
+        'Oily Fish' => 0.7,      // 30% faster decay - spoils faster than white fish
         
-        // Normal spoilage (white fish)
-        'Tilapia' => 1.0,        // Standard decay
-        'Bangus' => 1.0,
-        'Fish' => 1.0,           // Default fish category
-        
-        // Slower spoilage (preserved/processed)
-        'Dried Fish' => 3.0,     // 3x slower decay
-        'Smoked Fish' => 2.5,
-        'Salted Fish' => 3.0,
+        // Normal spoilage (white fish, default)
+        'White Fish' => 1.0,     // Standard decay rate
+        'Fish' => 1.0,           // Default fallback
     ],
 
     /*

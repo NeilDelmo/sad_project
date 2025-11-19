@@ -110,14 +110,14 @@ class MarketplaceListing extends Model implements Auditable
         // Calculate hours since product creation
         $hoursOld = $product->created_at->diffInHours(now());
         
-        // Get category-specific decay multiplier
-        $categoryName = $product->category->name ?? 'Fish';
-        $decayMultiplier = config("fish.category_decay_multipliers.{$categoryName}", 1.0);
+        // Get decay multiplier based on fish_type or fall back to category
+        $typeName = $product->fish_type ?? $product->category->name ?? 'Fish';
+        $decayMultiplier = config("fish.category_decay_multipliers.{$typeName}", 1.0);
         
         // Get decay thresholds for this initial freshness
         $decayThresholds = config("fish.freshness_decay_hours.{$initialFreshness}", []);
         
-        // Find current freshness level based on decay (adjusted for category)
+        // Find current freshness level based on decay (adjusted for fish type)
         foreach ($decayThresholds as $level => $baseHours) {
             $adjustedHours = $baseHours * $decayMultiplier;
             if ($hoursOld >= $adjustedHours) {

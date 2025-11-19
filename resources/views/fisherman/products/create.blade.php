@@ -352,6 +352,22 @@
                     @enderror
                 </div>
 
+                <!-- Fish Type (for decay rate) -->
+                <div class="form-group">
+                    <label for="fish_type" class="form-label">Fish Type <small>(affects freshness duration)</small></label>
+                    <select id="fish_type" 
+                            name="fish_type" 
+                            class="form-control @error('fish_type') is-invalid @enderror">
+                        <option value="White Fish" {{ old('fish_type') == 'White Fish' ? 'selected' : '' }}>White Fish (normal)</option>
+                        <option value="Oily Fish" {{ old('fish_type') == 'Oily Fish' ? 'selected' : '' }}>Oily Fish (spoils medium-fast)</option>
+                        <option value="Shellfish" {{ old('fish_type') == 'Shellfish' ? 'selected' : '' }}>Shellfish (spoils faster)</option>
+                    </select>
+                    @error('fish_type')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                    <small class="form-help">Select fish type for accurate freshness tracking</small>
+                </div>
+
                 <!-- Product Image -->
                 <div class="form-group">
                     <label for="image" class="form-label">Product Image</label>

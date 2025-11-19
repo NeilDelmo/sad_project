@@ -44,6 +44,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => ['required', 'integer', Rule::in($allowedCategoryIds)],
+            'fish_type' => 'nullable|string|in:Shellfish,Oily Fish,White Fish',
             'description' => 'nullable|string',
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',
@@ -125,6 +126,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => ['required', 'integer', Rule::in($allowedCategoryIds)],
+            'fish_type' => 'nullable|string|in:Shellfish,Oily Fish,White Fish',
             'description' => 'nullable|string',
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',

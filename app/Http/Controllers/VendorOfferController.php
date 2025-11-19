@@ -95,7 +95,7 @@ class VendorOfferController extends Controller
             $query->where('status', $status);
         }
 
-        $offers = $query->orderByRaw("FIELD(status, 'pending', 'countered', 'accepted', 'rejected', 'expired')")
+        $offers = $query->orderByRaw("FIELD(status, 'pending', 'countered', 'accepted', 'auto_rejected', 'withdrawn', 'expired')")
             ->orderBy('created_at', 'desc')
             ->paginate(15)
             ->appends(['status' => $status]);
