@@ -14,6 +14,7 @@ use App\Http\Controllers\FishermanController;
 use App\Http\Controllers\FishingSafetyController;
 use App\Http\Controllers\VendorOnboardingController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MLAnalyticsController;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 
@@ -214,6 +215,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/reports/{report}/resolve', [RentalController::class, 'resolveReport'])->name('reports.resolve');
     Route::post('/admin/equipment/{product}/repair', [RentalController::class, 'markRepaired'])->name('equipment.repair');
     Route::post('/admin/equipment/{product}/retire', [RentalController::class, 'retireEquipment'])->name('equipment.retire');
+    
+    // ML Analytics Dashboard
+    Route::get('/admin/ml-analytics', [MLAnalyticsController::class, 'index'])->name('admin.ml.analytics');
 });
 
 // Fishing Safety API routes (proxies to Flask)

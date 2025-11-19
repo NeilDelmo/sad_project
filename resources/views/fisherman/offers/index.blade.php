@@ -424,6 +424,74 @@
                         </div>
                     </div>
 
+                    {{-- Market Price Analysis --}}
+                    @if($offer->suggested_price_fisherman)
+                        @php
+                            $suggestedPrice = $offer->suggested_price_fisherman;
+                            $vendorOffer = $offer->offered_price;
+                            $priceDiff = $vendorOffer - $suggestedPrice;
+                            $priceDiffPercent = ($priceDiff / $suggestedPrice) * 100;
+                            
+                            // Determine offer quality
+                            if ($priceDiffPercent < -10) {
+                                $qualityIcon = 'fa-triangle-exclamation';
+                                $qualityText = 'Below Market Price';
+                                $qualityColor = '#dc3545';
+                            } elseif ($priceDiffPercent < -5) {
+                                $qualityIcon = 'fa-info-circle';
+                                $qualityText = 'Slightly Below Market';
+                                $qualityColor = '#fd7e14';
+                            } elseif ($priceDiffPercent > 10) {
+                                $qualityIcon = 'fa-circle-check';
+                                $qualityText = 'Excellent Offer';
+                                $qualityColor = '#28a745';
+                            } elseif ($priceDiffPercent > 5) {
+                                $qualityIcon = 'fa-thumbs-up';
+                                $qualityText = 'Good Offer';
+                                $qualityColor = '#198754';
+                            } else {
+                                $qualityIcon = 'fa-balance-scale';
+                                $qualityText = 'Fair Market Price';
+                                $qualityColor = '#0075B5';
+                            }
+                        @endphp
+                        
+                        <div style="background: #f8f9fa; border-radius: 8px; padding: 1rem; margin: 1rem 0; border-left: 4px solid {{ $qualityColor }};">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.75rem;">
+                                <i class="fas {{ $qualityIcon }}" style="color: {{ $qualityColor }}; font-size: 1.2rem;"></i>
+                                <span style="font-weight: 700; color: {{ $qualityColor }}; font-size: 1rem;">{{ $qualityText }}</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Market Price</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: #0075B5;">₱{{ number_format($suggestedPrice, 2) }}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Difference</div>
+                                    <div style="font-size: 1.1rem; font-weight: 700; color: {{ $priceDiff >= 0 ? '#28a745' : '#dc3545' }};">
+                                        {{ $priceDiff >= 0 ? '+' : '' }}₱{{ number_format($priceDiff, 2) }}
+                                        <span style="font-size: 0.85rem;">({{ number_format($priceDiffPercent, 1) }}%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @if(abs($priceDiffPercent) > 5)
+                            <div style="margin-top: 0.75rem; padding: 0.75rem; background: white; border-radius: 6px; font-size: 0.85rem; color: #333; line-height: 1.5;">
+                                @if($priceDiffPercent < -10)
+                                    ⚠️ This offer is <strong>{{ abs(number_format($priceDiffPercent, 1)) }}% below market value</strong>. Consider negotiating for ₱{{ number_format($suggestedPrice, 2) }} or higher.
+                                @elseif($priceDiffPercent < -5)
+                                    💭 This offer is below market rate. You might want to counter with ₱{{ number_format($suggestedPrice, 2) }}.
+                                @elseif($priceDiffPercent > 10)
+                                    🎉 This offer is <strong>{{ number_format($priceDiffPercent, 1) }}% above market price</strong>. Excellent deal!
+                                @elseif($priceDiffPercent > 5)
+                                    ✅ This offer is <strong>{{ number_format($priceDiffPercent, 1) }}% above market value</strong>. Good deal!
+                                @endif
+                            </div>
+                            @endif
+                        </div>
+                    @endif
+
                     @if($offer->status === 'countered' && $offer->fisherman_counter_price)
                         <div class="offer-detail-row">
                             <span class="offer-detail-label">Your Counter Offer</span>

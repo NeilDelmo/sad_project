@@ -12,6 +12,7 @@ use App\Notifications\NewVendorOffer;
 use App\Notifications\VendorOfferAccepted;
 use App\Notifications\VendorOfferRejected;
 use App\Notifications\VendorAcceptedCounter;
+use App\Services\FishermanPricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,9 +22,12 @@ class VendorOfferController extends Controller
 {
     use AuthorizesRequests;
     
-    public function __construct()
+    protected FishermanPricingService $fishermanPricing;
+    
+    public function __construct(FishermanPricingService $fishermanPricing)
     {
         $this->middleware('auth');
+        $this->fishermanPricing = $fishermanPricing;
     }
 
     /**
@@ -47,6 +51,11 @@ class VendorOfferController extends Controller
             'message' => 'nullable|string|max:500',
         ]);
 
+        // Calculate fair market price for fisherman's reference
+        $fairPricing = $this->fishermanPricing->calculateFairPrice($product);
+        $suggestedPrice = $fairPricing['suggested_price'] ?? null;
+        $mlConfidence = $fairPricing['confidence'] ?? null;
+
         $offer = VendorOffer::create([
             'vendor_id' => Auth::id(),
             'fisherman_id' => $product->supplier_id,
@@ -56,6 +65,8 @@ class VendorOfferController extends Controller
             'vendor_message' => $request->message,
             'status' => 'pending',
             'expires_at' => now()->addDays(3),
+            'suggested_price_fisherman' => $suggestedPrice,
+            'ml_confidence_fisherman' => $mlConfidence,
         ]);
 
         // Messaging removed; notification sent below

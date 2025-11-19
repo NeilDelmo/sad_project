@@ -24,6 +24,8 @@ class VendorOffer extends Model implements AuditableConract
         'fisherman_message',
         'expires_at',
         'responded_at',
+        'suggested_price_fisherman',
+        'ml_confidence_fisherman',
     ];
 
     protected function casts(): array
@@ -31,6 +33,8 @@ class VendorOffer extends Model implements AuditableConract
         return [
             'offered_price' => 'decimal:2',
             'fisherman_counter_price' => 'decimal:2',
+            'suggested_price_fisherman' => 'decimal:2',
+            'ml_confidence_fisherman' => 'decimal:4',
             'quantity' => 'integer',
             'expires_at' => 'datetime',
             'responded_at' => 'datetime',

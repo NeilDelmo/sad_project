@@ -1,10 +1,10 @@
 @auth
 <style>
-  .notif-bell { position: relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:9999px; background: rgba(255,255,255,0.15); color:#fff; cursor:pointer; border:none; }
-  .notif-bell:hover { background: rgba(255,255,255,0.25); }
-  .notif-badge { position:absolute; top:-4px; right:-4px; background:#dc3545; color:#fff; border-radius:9999px; font-size:11px; font-weight:700; padding: 2px 6px; line-height:1; display:none; }
-  .notif-dropdown { position:absolute; top:46px; right:0; width:360px; max-height:420px; overflow:auto; background:#fff; color:#333; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.15); border:1px solid #e5e7eb; display:none; z-index:9999; }
-  .notif-dropdown-header { padding:10px 12px; border-bottom:1px solid #eee; font-weight:700; color:#1B5E88; display:flex; align-items:center; justify-content:space-between; }
+  .notif-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:9999px; background:#ffffff; color:#1e293b; cursor:pointer; border:1px solid #d1d5db; }
+  .notif-bell:hover { background:#f1f5f9; }
+  .notif-badge { position:absolute; top:-4px; right:-4px; background:#dc3545; color:#fff; border-radius:9999px; font-size:11px; font-weight:700; padding:2px 6px; line-height:1; display:none; box-shadow:0 0 0 2px #ffffff; }
+  .notif-dropdown { position:absolute; top:46px; right:0; width:360px; max-height:420px; overflow:auto; background:#ffffff; color:#0f172a; border-radius:14px; box-shadow:0 10px 28px rgba(0,0,0,0.12); border:1px solid #e2e8f0; display:none; z-index:9999; }
+  .notif-dropdown-header { padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:700; color:#0f172a; display:flex; align-items:center; justify-content:space-between; }
   .notif-list { list-style:none; margin:0; padding:0; }
   .notif-item { padding:12px; border-bottom:1px solid #f1f5f9; display:flex; gap:10px; }
   .notif-item:last-child { border-bottom:none; }
@@ -18,7 +18,7 @@
   .notif-mark { background:#e2e8f0; color:#0f172a; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer; }
 </style>
 
-<div id="notifBellWrapper" style="position:relative; margin-left:8px;">
+<div id="notifBellWrapper" data-user-id="{{ Auth::id() }}" style="position:relative; margin-left:8px;">
   <button id="notifBellBtn" class="notif-bell" title="Notifications" aria-label="Notifications">
     <i class="fa-solid fa-bell"></i>
     <span id="notifBellBadge" class="notif-badge">0</span>
@@ -26,10 +26,12 @@
   <div id="notifDropdown" class="notif-dropdown" aria-label="Notifications dropdown">
     <div class="notif-dropdown-header">
       <span>Notifications</span>
-      <button id="notifRefreshBtn" class="notif-mark" type="button">Refresh</button>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button id="notifMarkAllBtn" class="notif-mark" type="button">Mark all read</button>
+      </div>
     </div>
     <ul id="notifList" class="notif-list"></ul>
-    <div id="notifEmpty" style="padding:14px; text-align:center; color:#64748b; display:none;">No new offer notifications</div>
+    <div id="notifEmpty" style="padding:14px; text-align:center; color:#64748b; display:none;">No new notifications</div>
   </div>
 </div>
 
@@ -40,18 +42,31 @@
     const dropdown = document.getElementById('notifDropdown');
     const list = document.getElementById('notifList');
     const empty = document.getElementById('notifEmpty');
-    const refreshBtn = document.getElementById('notifRefreshBtn');
+    const markAllBtn = document.getElementById('notifMarkAllBtn');
+    const wrapper = document.getElementById('notifBellWrapper');
     const csrf = '{{ csrf_token() }}';
 
     let polling = null;
     let isOpen = false;
+    let latestCache = [];
+
+    const routes = {
+      count: '{{ route('api.notifications.unread-count') }}',
+      latest: '{{ route('api.notifications.latest') }}',
+      markRead: id => `/notifications/${id}/read`,
+      markAll: '{{ route('notifications.read.all') }}',
+      fallbackLink: '{{ route('notifications.index') }}'
+    };
 
     async function fetchCount() {
       try {
-        const res = await fetch('/api/offers/pending-count', { credentials: 'same-origin' });
+        const res = await fetch(routes.count, {
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
+        });
         if (!res.ok) return;
         const data = await res.json();
-        const count = Number(data.pending_count || 0);
+        const count = Number(data.count || 0);
         if (count > 0) {
           badge.style.display = 'inline-block';
           badge.textContent = count > 99 ? '99+' : String(count);
@@ -62,7 +77,7 @@
     }
 
     function itemIconFor(type) {
-      switch(type){
+      switch(String(type || '').toLowerCase()){
         case 'new_vendor_offer': return 'fa-hand-holding-dollar';
         case 'counter_vendor_offer': return 'fa-arrows-rotate';
         case 'vendor_offer_accepted': return 'fa-circle-check';
@@ -71,19 +86,23 @@
       }
     }
 
-    async function fetchLatest() {
+    async function fetchLatest({ silent = false } = {}) {
       try {
-        const res = await fetch('/api/offers/latest', { credentials: 'same-origin' });
+        const res = await fetch(routes.latest, {
+          credentials: 'same-origin',
+          headers: { 'Accept': 'application/json' }
+        });
         if (!res.ok) return;
         const data = await res.json();
-        const offers = Array.isArray(data.offers) ? data.offers : [];
+        const items = Array.isArray(data.items ?? data.offers) ? (data.items ?? data.offers) : [];
+        latestCache = items;
         list.innerHTML = '';
-        if (offers.length === 0) {
+        if (items.length === 0) {
           empty.style.display = 'block';
           return;
         }
         empty.style.display = 'none';
-        offers.forEach(o => {
+        items.forEach(o => {
           const li = document.createElement('li');
           li.className = 'notif-item';
           li.innerHTML = `
@@ -94,13 +113,14 @@
               <div class="notif-meta">
                 <span>${escapeHtml(o.created_at || '')}</span>
                 <div class="notif-actions">
-                  <a href="${o.link || '#'}" class="notif-link">Open</a>
+                  <a href="${escapeAttribute(o.link || routes.fallbackLink)}" class="notif-link">Open</a>
                   <button class="notif-mark" data-id="${o.id}">Mark read</button>
                 </div>
               </div>
             </div>`;
           list.appendChild(li);
         });
+        if (!silent) fetchCount();
       } catch (e) { /* silent */ }
     }
 
@@ -114,11 +134,19 @@
         .replaceAll("'",'&#039;');
     }
 
+    function escapeAttribute(str){
+      return escapeHtml(str).replaceAll('"','&quot;');
+    }
+
     async function markRead(id, btn){
       try{
-        const res = await fetch(`/api/offers/notifications/${id}/read`, {
+        const res = await fetch(routes.markRead(id), {
           method: 'POST',
-          headers: { 'X-CSRF-TOKEN': csrf },
+          headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
           credentials: 'same-origin'
         });
         if (res.ok) {
@@ -129,8 +157,29 @@
           if (!list.children.length) empty.style.display = 'block';
           // refresh count
           fetchCount();
+        } else {
+          console.warn('Failed to mark notification as read', await res.text());
         }
       } catch(e) { /* silent */ }
+    }
+
+    async function markAll(){
+      try {
+        const res = await fetch(routes.markAll, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        if (res.ok) {
+          list.innerHTML = '';
+          empty.style.display = 'block';
+          fetchCount();
+        }
+      } catch (e) { /* silent */ }
     }
 
     function toggleDropdown(){
@@ -144,10 +193,9 @@
       e.stopPropagation();
       toggleDropdown();
     });
-    refreshBtn && refreshBtn.addEventListener('click', function(e){
+    markAllBtn && markAllBtn.addEventListener('click', function(e){
       e.stopPropagation();
-      fetchLatest();
-      fetchCount();
+      markAll();
     });
     document.addEventListener('click', function(){
       if (isOpen) { isOpen = false; dropdown.style.display = 'none'; }
@@ -161,9 +209,27 @@
       }
     });
 
-    // Initial fetch + polling (30s)
+    function subscribeRealtime(){
+      try {
+        const userId = Number(wrapper?.dataset?.userId || 0);
+        if (window.Echo && userId) {
+          window.Echo.private(`App.Models.User.${userId}`).notification(() => {
+            fetchCount();
+            fetchLatest({ silent: true });
+          });
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // Initial fetch + polling (5s)
     fetchCount();
-    if (!polling) polling = setInterval(fetchCount, 30000);
+    fetchLatest();
+    if (!polling) polling = setInterval(() => {
+      fetchCount();
+      if (isOpen) fetchLatest({ silent: true });
+    }, 5000);
+
+    subscribeRealtime();
   })();
 </script>
 @endauth

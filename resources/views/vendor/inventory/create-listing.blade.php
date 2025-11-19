@@ -297,13 +297,13 @@
             </div>
         </div>
 
-        <!-- ML Pricing Analysis Card -->
+        <!-- Pricing Analysis Card -->
         <div class="pricing-card">
             <div class="pricing-header">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
-                <h2>AI Dynamic Pricing Analysis</h2>
+                <h2>Market-Optimized Pricing</h2>
             </div>
 
             <!-- Market Conditions -->
@@ -317,7 +317,7 @@
                     <p class="metric-value" style="color: #f97316;">{{ $pricingResult['features']['demand_factor'] }}x</p>
                 </div>
                 <div class="metric-box">
-                    <p class="metric-label">ML Confidence</p>
+                    <p class="metric-label">Price Confidence</p>
                     <p class="metric-value" style="color: #0075B5;">{{ round($mlConfidence * 100, 1) }}%</p>
                 </div>
             </div>
@@ -333,8 +333,8 @@
                 
                 <div class="breakdown-row">
                     <span class="breakdown-label">
-                        AI Multiplier
-                        <span style="margin-left: 8px; padding: 4px 8px; background: #e3f2fd; color: #0075B5; font-size: 11px; border-radius: 12px;">{{ $mlMultiplier }}x</span>
+                        Market Price Adjustment
+                        <span style="margin-left: 8px; padding: 4px 8px; background: #e3f2fd; color: #0075B5; font-size: 11px; border-radius: 12px;">×{{ $mlMultiplier }}</span>
                     </span>
                     <span class="breakdown-value" style="color: #0075B5;">₱{{ number_format($dynamicPrice, 2) }}</span>
                 </div>
@@ -420,7 +420,7 @@
                 </div>
                 <div style="margin-left: 15px;">
                     <p style="font-size: 13px; color: #1B5E88;">
-                        <strong>Market Insight:</strong> Our AI model analyzed current market conditions including freshness ({{ round($pricingResult['features']['freshness_score']) }}/100), demand ({{ $pricingResult['features']['demand_factor'] }}x), and seasonality to recommend this optimal price{{ $mlConfidence > 0 ? ' with ' . round($mlConfidence * 100, 1) . '% confidence' : '' }}.
+                        <strong>Pricing Strategy:</strong> The recommended price is based on current market conditions including product freshness ({{ round($pricingResult['features']['freshness_score']) }}/100), market demand ({{ $pricingResult['features']['demand_factor'] }}x), and seasonal factors. This helps you stay competitive while maximizing profit.
                     </p>
                 </div>
             </div>

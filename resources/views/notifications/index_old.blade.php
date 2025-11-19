@@ -19,14 +19,14 @@
     .btn-mark:hover { background:#1d4ed8; }
     .new-badge { background:#2563eb; color:#fff; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:600; }
     .pager { margin-top:24px; }
-    .back-inline { display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:500; padding:6px 12px; border-radius:8px; background:#ffffff; border:1px solid #d1d5db; color:#1f2937; text-decoration:none; margin-bottom:18px; cursor:pointer; }
+    .back-inline { display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:500; padding:6px 12px; border-radius:8px; background:#ffffff; border:1px solid #d1d5db; color:#1f2937; text-decoration:none; margin-bottom:18px; }
     .back-inline:hover { background:#f1f5f9; }
 </style>
 
-<button type="button" class="back-inline" onclick="window.history.back()">
+<a href="{{ url()->previous() }}" class="back-inline" onclick="if(document.referrer===''){this.setAttribute('href','{{ route('dashboard') }}')}">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2 5 8l6 6"/></svg>
     Back
-</button>
+</a>
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
     <h1 style="font-size:22px; font-weight:700; margin:0; color:#0f172a;">Notifications</h1>
     <form method="POST" action="{{ route('notifications.read.all') }}" style="margin:0;">
