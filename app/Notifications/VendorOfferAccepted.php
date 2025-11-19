@@ -26,6 +26,8 @@ class VendorOfferAccepted extends Notification implements ShouldQueue
         $product = $this->offer->product;
         return [
             'type' => 'vendor_offer_accepted',
+            'title' => 'Your Offer Was Accepted',
+            'message' => sprintf('Fisherman accepted your offer for %s at ₱%s', $product?->name ?? 'product', number_format($this->offer->fisherman_counter_price ?? $this->offer->offered_price, 2)),
             'offer_id' => $this->offer->getKey(),
             'product_id' => $this->offer->product_id,
             'product_name' => $product?->name,

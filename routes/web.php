@@ -48,12 +48,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Auth-only map entrypoint (visible to fishermen only in controller)
     Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->name('fishing-safety.public');
 
-    // Notifications API for navbar polling
-    Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
-    Route::get('/api/notifications/latest', [NotificationController::class, 'latest'])->name('api.notifications.latest');
+    // (moved below to auth-only group)
 });
 
 Route::middleware('auth')->group(function () {
+    // Notifications API for navbar polling (auth only, not email-verified)
+    Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
+    Route::get('/api/notifications/latest', [NotificationController::class, 'latest'])->name('api.notifications.latest');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

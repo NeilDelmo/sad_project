@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\NewCatchAvailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -29,9 +30,8 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Get all marketplace categories (Fresh Fish, Shellfish, Gear, Equipment)
-        $categories = ProductCategory::all();
-        
+        // Only allow edible seafood categories (Fish, Shellfish)
+        $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
         return view('fisherman.products.create', compact('categories'));
     }
 
@@ -40,9 +40,10 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $allowedCategoryIds = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->pluck('id')->all();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:product_categories,id',
+            'category_id' => ['required', 'integer', Rule::in($allowedCategoryIds)],
             'description' => 'nullable|string',
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',
@@ -106,8 +107,8 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
-        // Get all marketplace categories (Fresh Fish, Shellfish, Gear, Equipment)
-        $categories = ProductCategory::all();
+        // Only allow edible seafood categories (Fish, Shellfish)
+        $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
 
         return view('fisherman.products.edit', compact('product', 'categories'));
     }
@@ -120,9 +121,10 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
+        $allowedCategoryIds = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->pluck('id')->all();
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:product_categories,id',
+            'category_id' => ['required', 'integer', Rule::in($allowedCategoryIds)],
             'description' => 'nullable|string',
             'unit_price' => 'required|numeric|min:0',
             'available_quantity' => 'required|numeric|min:0',

@@ -58,36 +58,7 @@ class VendorOfferController extends Controller
             'expires_at' => now()->addDays(3),
         ]);
 
-        // Create or find a conversation between this vendor (buyer) and fisherman (seller) for this product
-        $conversation = Conversation::firstOrCreate(
-            [
-                'buyer_id' => Auth::id(),
-                'seller_id' => $product->supplier_id,
-                'product_id' => $product->id,
-            ],
-            [
-                'last_message_at' => now(),
-            ]
-        );
-
-        // Post a message with offer details so the fisherman sees it in their inbox
-        $details = sprintf(
-            'New offer: ₱%s per unit for %d %s on %s.%s',
-            number_format((float) $offer->offered_price, 2),
-            (int) $offer->quantity,
-            $product->unit_of_measure ?? 'units',
-            $product->name,
-            $offer->vendor_message ? ' Message: '.$offer->vendor_message : ''
-        );
-
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id' => Auth::id(),
-            'message' => $details,
-            'is_read' => false,
-        ]);
-
-        $conversation->update(['last_message_at' => now()]);
+        // Messaging removed; notification sent below
 
         // Send a database notification to the fisherman
         $fisherman = User::find($product->supplier_id);
@@ -311,21 +282,6 @@ class VendorOfferController extends Controller
             // Decrement product quantity
             $offer->product->decrement('available_quantity', $offer->quantity);
 
-            // Post acceptance message in conversation
-            $conversation = Conversation::firstOrCreate([
-                'buyer_id' => $offer->vendor_id,
-                'seller_id' => $offer->fisherman_id,
-                'product_id' => $offer->product_id,
-            ], [ 'last_message_at' => now() ]);
-
-            Message::create([
-                'conversation_id' => $conversation->id,
-                'sender_id' => Auth::id(),
-                'message' => 'Vendor accepted the counter offer at ₱' . number_format((float) ($offer->fisherman_counter_price ?? $offer->offered_price), 2) . '.',
-                'is_read' => false,
-            ]);
-            $conversation->update(['last_message_at' => now()]);
-
             // Create order (pending_payment)
             $unitPriceCounter = (float) ($offer->fisherman_counter_price ?? $offer->offered_price);
             \App\Models\Order::create([
@@ -371,19 +327,7 @@ class VendorOfferController extends Controller
             'responded_at' => now(),
         ]);
 
-        // Post decline message
-        $conversation = Conversation::firstOrCreate([
-            'buyer_id' => $offer->vendor_id,
-            'seller_id' => $offer->fisherman_id,
-            'product_id' => $offer->product_id,
-        ], [ 'last_message_at' => now() ]);
-        Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id' => Auth::id(),
-            'message' => 'Vendor declined the counter offer.',
-            'is_read' => false,
-        ]);
-        $conversation->update(['last_message_at' => now()]);
+        // Messaging removed
 
         return back()->with('success', 'Counter offer declined.');
     }

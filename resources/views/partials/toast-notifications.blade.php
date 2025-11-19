@@ -112,7 +112,7 @@
 </style>
 
 <!-- Toast Notification Container -->
-<div id="toast-container" class="toast-container" data-user-id="{{ Auth::id() }}"></div>
+<div id="toast-container" class="toast-container" data-user-id="{{ Auth::id() }}" data-audio-src="/audio/notify.mp3"></div>
 
 <script>
     (function() {
@@ -120,7 +120,26 @@
         window.__toastNotifierInitialized = true;
         
         let shownOfferIds = new Set();
-        const notifAudio = new Audio('/audio/notify.mp3');
+        const containerEl = document.getElementById('toast-container');
+        const audioSrc = (containerEl?.dataset?.audioSrc) || '/audio/notify.mp3';
+        const notifAudio = new Audio(audioSrc);
+        notifAudio.preload = 'auto';
+
+        function unlockAudioOnce() {
+            const tryUnlock = () => {
+                notifAudio.muted = true;
+                notifAudio.play().then(() => {
+                    notifAudio.pause();
+                    notifAudio.currentTime = 0;
+                    notifAudio.muted = false;
+                    window.removeEventListener('pointerdown', tryUnlock);
+                    window.removeEventListener('keydown', tryUnlock);
+                }).catch(() => { /* ignore */ });
+            };
+            window.addEventListener('pointerdown', tryUnlock, { once: false });
+            window.addEventListener('keydown', tryUnlock, { once: false });
+        }
+        unlockAudioOnce();
         
         // Load shown IDs from localStorage to persist across page loads
         const storedIds = localStorage.getItem('shownOfferIds');
@@ -141,17 +160,24 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.offers && data.offers.length > 0) {
+                        let hasNewOffers = false;
                         data.offers.forEach(offer => {
                             if (!shownOfferIds.has(offer.id)) {
-                                showToast(offer.title, offer.message, offer.created_at, offer.link, offer.id);
+                                hasNewOffers = true;
+                                // Delay toast slightly so sound plays first
+                                setTimeout(() => {
+                                    showToast(offer.title, offer.message, offer.created_at, offer.link, offer.id);
+                                }, 150);
                                 shownOfferIds.add(offer.id);
                                 saveShownIds();
-                                
-                                // Play notification sound once for new offers
-                                notifAudio.currentTime = 0;
-                                notifAudio.play().catch(() => {/* ignore autoplay restrictions */});
                             }
                         });
+                        
+                        // Play notification sound immediately for new offers
+                        if (hasNewOffers) {
+                            notifAudio.currentTime = 0;
+                            notifAudio.play().catch(() => {/* blocked until user interacts */});
+                        }
                     }
                 })
                 .catch(err => console.error('Failed to fetch latest offers:', err));
@@ -166,6 +192,10 @@
             toast.onclick = () => {
                 // Mark as read when clicked
                 fetch(`/api/offers/notifications/${notificationId}/read`, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } })
+                    .then(() => {
+                        // Refresh notification badge
+                        if (window.__refreshNotifications) window.__refreshNotifications();
+                    })
                     .catch(() => {});
                 window.location.href = link;
             };
@@ -200,7 +230,12 @@
                 fetch(`/api/offers/notifications/${notificationId}/read`, { 
                     method: 'POST', 
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } 
-                }).catch(() => {});
+                })
+                .then(() => {
+                    // Refresh notification badge
+                    if (window.__refreshNotifications) window.__refreshNotifications();
+                })
+                .catch(() => {});
             }
         }
         window.removeToast = removeToast; // Make it global for onclick
@@ -219,23 +254,25 @@
 
         // Realtime: subscribe to private user channel if Echo is available
         try {
-            const containerEl = document.getElementById('toast-container');
             const userId = Number(containerEl?.dataset?.userId || 0);
             if (window.Echo && userId) {
                 window.Echo.private(`App.Models.User.${userId}`)
                     .notification((notification) => {
                         const payload = notification?.data ?? notification ?? {};
-                        // only toast offer-related notifications
-                        const kind = payload.type || '';
-                        if (!kind.includes('offer')) return;
+                        const rootType = String(notification?.type || '').toLowerCase();
+                        const embeddedType = String(payload?.type || '').toLowerCase();
+                        const isOffer = embeddedType.includes('offer') || rootType.includes('offer');
+                        if (!isOffer) return;
 
-                        const titleMap = {
-                            new_vendor_offer: 'New Offer Received',
-                            counter_vendor_offer: 'Counter Offer Received',
-                            vendor_offer_accepted: 'Your Offer Was Accepted',
-                            vendor_accepted_counter: 'Counter Offer Accepted',
+                        const mapByType = (t) => {
+                            t = t || '';
+                            if (t.includes('new_vendor_offer')) return 'New Offer Received';
+                            if (t.includes('counter_vendor_offer')) return 'Counter Offer Received';
+                            if (t.includes('vendor_offer_accepted')) return 'Your Offer Was Accepted';
+                            if (t.includes('vendor_accepted_counter')) return 'Counter Offer Accepted';
+                            return 'New Notification';
                         };
-                        const title = titleMap[kind] || 'New Notification';
+                        const title = payload.title || mapByType(embeddedType || rootType);
                         const message = payload.message
                             || payload.fisherman_message
                             || `Update on ${payload.product_name || 'your offer'}`;
@@ -244,11 +281,17 @@
                         const notificationId = notification?.id || payload.id || '';
 
                         if (!shownOfferIds.has(notificationId) && notificationId) {
-                            showToast(title, message, time, link, notificationId);
-                            shownOfferIds.add(notificationId);
-                            saveShownIds();
+                            // Play sound immediately
                             notifAudio.currentTime = 0;
                             notifAudio.play().catch(() => {});
+                            
+                            // Show toast after slight delay so sound and toast are more synchronized
+                            setTimeout(() => {
+                                showToast(title, message, time, link, notificationId);
+                            }, 150);
+                            
+                            shownOfferIds.add(notificationId);
+                            saveShownIds();
                         }
                     });
             }

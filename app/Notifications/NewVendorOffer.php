@@ -32,6 +32,8 @@ class NewVendorOffer extends Notification
 
         return [
             'type' => 'new_vendor_offer',
+            'title' => 'New Offer Received',
+            'message' => sprintf('%s wants to buy %d %s of %s at ₱%s', $vendor?->username ?? 'A vendor', $this->offer->quantity, $product?->unit_of_measure ?? 'units', $product?->name ?? 'product', number_format($this->offer->offered_price, 2)),
             'offer_id' => $this->offer->id,
             'product_id' => $product?->id,
             'product_name' => $product?->name,
@@ -39,7 +41,7 @@ class NewVendorOffer extends Notification
             'vendor_name' => $vendor?->username ?? $vendor?->name,
             'offered_price' => (float) $this->offer->offered_price,
             'quantity' => (int) $this->offer->quantity,
-            'message' => $this->offer->vendor_message,
+            'vendor_message' => $this->offer->vendor_message,
             'status' => $this->offer->status,
             'link' => '/fisherman/offers?status=pending',
         ];

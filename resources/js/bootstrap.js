@@ -20,7 +20,28 @@ try {
 			forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? import.meta.env.VITE_PUSHER_SCHEME ?? (location.protocol === 'https:' ? 'https' : 'http')) === 'https',
 			enabledTransports: ['ws', 'wss'],
 		});
+		
+		// Debug: Log Echo connection status
+		console.log('✓ Laravel Echo initialized');
+		console.log('  - Key:', key);
+		console.log('  - Host:', import.meta.env.VITE_REVERB_HOST ?? window.location.hostname);
+		console.log('  - Port:', Number(import.meta.env.VITE_REVERB_PORT ?? 6001));
+		
+		// Log connection events
+		window.Echo.connector.pusher.connection.bind('connected', () => {
+			console.log('✓ Reverb WebSocket connected!');
+		});
+		
+		window.Echo.connector.pusher.connection.bind('disconnected', () => {
+			console.warn('✗ Reverb WebSocket disconnected');
+		});
+		
+		window.Echo.connector.pusher.connection.bind('error', (err) => {
+			console.error('✗ Reverb WebSocket error:', err);
+		});
+	} else {
+		console.warn('⚠ Laravel Echo not initialized: VITE_REVERB_APP_KEY not set');
 	}
 } catch (e) {
-	// Echo setup is optional; ignore if not available
+	console.error('✗ Echo setup failed:', e);
 }

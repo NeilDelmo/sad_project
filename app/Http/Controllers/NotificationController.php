@@ -51,7 +51,8 @@ class NotificationController extends Controller
                 'id' => $n->id,
                 'title' => data_get($n->data, 'title', 'Notification'),
                 'message' => data_get($n->data, 'message'),
-                'created_at' => optional($n->created_at)->toIso8601String(),
+                'link' => data_get($n->data, 'link', route('notifications.index')),
+                'created_at' => optional($n->created_at)->diffForHumans(),
             ];
         });
 

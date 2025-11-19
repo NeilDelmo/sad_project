@@ -26,6 +26,8 @@ class CounterVendorOffer extends Notification implements ShouldQueue
     {
         return [
             'type' => 'counter_vendor_offer',
+            'title' => 'Counter Offer Received',
+            'message' => sprintf('Fisherman countered at ₱%s for %s', number_format($this->offer->fisherman_counter_price ?? 0, 2), $this->offer->product?->name ?? 'product'),
             'offer_id' => $this->offer->id,
             'product_id' => $this->offer->product_id,
             'product_name' => $this->offer->product?->name,

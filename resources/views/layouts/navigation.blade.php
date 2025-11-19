@@ -43,7 +43,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 @auth
                 <div class="relative me-4" x-data="{open:false}" x-init="window.__notifInit && window.__notifInit()" data-user-id="{{ Auth::id() }}">
-                    <button @click="open=!open; window.__refreshNotifications && window.__refreshNotifications();" class="relative inline-flex items-center rounded-full px-3 py-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm transition" title="Notifications">
+                    <button @click="open=!open; if(!open){ window.__refreshNotifications && window.__refreshNotifications(); }" class="relative inline-flex items-center rounded-full px-3 py-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 shadow-sm transition" title="Notifications">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                         @php($unread = Auth::user()->unreadNotifications()->count())
                         <span id="notif-badge" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-600 text-white text-[11px] rounded-full px-1 ring-2 ring-white dark:ring-gray-800 {{ $unread > 0 ? '' : 'hidden' }}">{{ $unread }}</span>
@@ -58,12 +58,18 @@
                         </div>
                         <div id="notif-list" class="max-h-64 overflow-auto">
                             @forelse(Auth::user()->unreadNotifications()->latest()->limit(5)->get() as $n)
-                                <a href="{{ route('notifications.index') }}" class="block px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <div class="text-sm text-gray-800 dark:text-gray-200">{{ data_get($n->data,'title','Notification') }}</div>
-                                    @if(data_get($n->data,'message'))
-                                    <div class="text-xs text-gray-500">{{ data_get($n->data,'message') }}</div>
-                                    @endif
-                                </a>
+                                <div class="flex items-start gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700">
+                                    <a href="{{ data_get($n->data,'link', route('notifications.index')) }}" class="flex-1 min-w-0">
+                                        <div class="text-sm text-gray-800 dark:text-gray-200">{{ data_get($n->data,'title','Notification') }}</div>
+                                        @if(data_get($n->data,'message'))
+                                        <div class="text-xs text-gray-500">{{ data_get($n->data,'message') }}</div>
+                                        @endif
+                                        <div class="text-xs text-gray-400 mt-1">{{ $n->created_at->diffForHumans() }}</div>
+                                    </a>
+                                    <button onclick="event.stopPropagation(); window.__markOneRead && window.__markOneRead('{{ $n->id }}')" class="text-xs px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-100 whitespace-nowrap" title="Mark as read">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </div>
                             @empty
                                 <div class="p-3 text-sm text-gray-500">No new notifications</div>
                             @endforelse
@@ -97,10 +103,16 @@
                                             list.innerHTML = '<div class="p-3 text-sm text-gray-500">No new notifications</div>';
                                         } else {
                                             list.innerHTML = items.map(it => (
-                                                `<a href="{{ route('notifications.index') }}" class="block px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">`
+                                                `<div class="flex items-start gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-b dark:border-gray-700">`
+                                                + `<a href="${it.link || '{{ route('notifications.index') }}'}" class="flex-1 min-w-0">`
                                                 + `<div class="text-sm text-gray-800 dark:text-gray-200">${(it.title||'Notification')}</div>`
                                                 + (it.message ? `<div class="text-xs text-gray-500">${it.message}</div>` : '')
+                                                + `<div class="text-xs text-gray-400 mt-1">${it.created_at || ''}</div>`
                                                 + `</a>`
+                                                + `<button onclick="event.stopPropagation(); window.__markOneRead && window.__markOneRead('${it.id}')" class="text-xs px-2 py-1 rounded bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-900 dark:hover:bg-blue-800 dark:text-blue-100 whitespace-nowrap" title="Mark as read">`
+                                                + `<i class="fa-solid fa-check"></i>`
+                                                + `</button>`
+                                                + `</div>`
                                             )).join('');
                                         }
                                     }
@@ -125,6 +137,20 @@
                             window.__markAllRead = async function(){
                                 try {
                                     await fetch("{{ route('notifications.read.all') }}", {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                            'X-CSRF-TOKEN': (document.querySelector('meta[name=csrf-token]')||{}).getAttribute ? document.querySelector('meta[name=csrf-token]').getAttribute('content') : ''
+                                        }
+                                    });
+                                } catch (e) { /* ignore */ }
+                                refresh();
+                            };
+
+                            window.__markOneRead = async function(notificationId){
+                                try {
+                                    await fetch(`/notifications/${notificationId}/read`, {
                                         method: 'POST',
                                         headers: {
                                             'Accept': 'application/json',

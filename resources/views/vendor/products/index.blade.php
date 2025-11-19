@@ -584,14 +584,6 @@
                             <input type="number" step="0.01" name="offered_price" 
                                    class="form-control-custom" placeholder="Enter your offer" required>
                         </div>
-                        <div class="offer-input-group">
-                            <label class="offer-label">
-                                <i class="fa-solid fa-message"></i>
-                                Message (Optional)
-                            </label>
-                            <textarea name="message" rows="2" class="form-control-custom" 
-                                      placeholder="Add a message to the fisherman..." maxlength="500"></textarea>
-                        </div>
                         @if(in_array($product->id, $pendingOffers))
                         <button type="button" class="btn-make-offer" disabled style="background: #6c757d; cursor: not-allowed; opacity: 0.7;">
                             <i class="fa-solid fa-clock"></i>
