@@ -32,7 +32,7 @@
 
 <nav class="navbar">
   <div class="nav-layout">
-    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 Marketplace & Forum</a>
+    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">SeaLedger</a>
     <div class="nav-links">
       <a href="{{ route('fisherman.dashboard') }}" class="nav-link {{ request()->routeIs('fisherman.dashboard') ? 'active' : '' }}">
         <i class="fa-solid fa-gauge-high"></i> Dashboard

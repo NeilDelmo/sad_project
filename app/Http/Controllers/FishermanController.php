@@ -67,7 +67,7 @@ class FishermanController extends Controller
             ->count();
 
         // Get daily income data for last 14 days (line chart)
-        $chartData = Order::where('fisherman_id', $fisherman->id)
+        $incomeChartData = Order::where('fisherman_id', $fisherman->id)
             ->where('status', Order::STATUS_RECEIVED)
             ->where('created_at', '>=', now()->subDays(13))
             ->select(
@@ -78,14 +78,31 @@ class FishermanController extends Controller
             ->orderBy('date')
             ->get();
 
+        // Get daily spending data for last 14 days (rentals)
+        $spendingChartData = Rental::where('user_id', $fisherman->id)
+            ->whereIn('status', ['completed', 'returned'])
+            ->where('created_at', '>=', now()->subDays(13))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total_charges) as spending')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         // Fill in missing days with 0
         $chartLabels = [];
-        $chartValues = [];
+        $chartIncomeValues = [];
+        $chartSpendingValues = [];
         for ($i = 13; $i >= 0; $i--) {
             $date = now()->subDays($i)->format('Y-m-d');
             $chartLabels[] = now()->subDays($i)->format('M d');
-            $dayData = $chartData->firstWhere('date', $date);
-            $chartValues[] = $dayData ? (float)$dayData->income : 0;
+            
+            $incomeData = $incomeChartData->firstWhere('date', $date);
+            $chartIncomeValues[] = $incomeData ? (float)$incomeData->income : 0;
+            
+            $spendingData = $spendingChartData->firstWhere('date', $date);
+            $chartSpendingValues[] = $spendingData ? (float)$spendingData->spending : 0;
         }
 
         return view('fisherman.dashboard', compact(
@@ -99,7 +116,8 @@ class FishermanController extends Controller
             'activeRentalsCount',
             'pendingRentalsCount',
             'chartLabels',
-            'chartValues'
+            'chartIncomeValues',
+            'chartSpendingValues'
         ));
     }
 

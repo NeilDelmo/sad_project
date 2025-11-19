@@ -123,8 +123,8 @@ class VendorOnboardingController extends Controller
             ->limit(5)
             ->get();
 
-        // Get daily income data for last 14 days (line chart)
-        $chartData = CustomerOrder::where('vendor_id', $user->id)
+        // Get daily income data for last 14 days (marketplace sales)
+        $incomeChartData = CustomerOrder::where('vendor_id', $user->id)
             ->whereIn('status', ['received', 'delivered'])
             ->where('created_at', '>=', now()->subDays(13))
             ->select(
@@ -135,14 +135,31 @@ class VendorOnboardingController extends Controller
             ->orderBy('date')
             ->get();
 
+        // Get daily spending data for last 14 days (buying from fishermen)
+        $spendingChartData = Order::where('vendor_id', $user->id)
+            ->where('status', Order::STATUS_RECEIVED)
+            ->where('created_at', '>=', now()->subDays(13))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as spending')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         // Fill in missing days with 0
         $chartLabels = [];
-        $chartValues = [];
+        $chartIncomeValues = [];
+        $chartSpendingValues = [];
         for ($i = 13; $i >= 0; $i--) {
             $date = now()->subDays($i)->format('Y-m-d');
             $chartLabels[] = now()->subDays($i)->format('M d');
-            $dayData = $chartData->firstWhere('date', $date);
-            $chartValues[] = $dayData ? (float)$dayData->income : 0;
+            
+            $incomeData = $incomeChartData->firstWhere('date', $date);
+            $chartIncomeValues[] = $incomeData ? (float)$incomeData->income : 0;
+            
+            $spendingData = $spendingChartData->firstWhere('date', $date);
+            $chartSpendingValues[] = $spendingData ? (float)$spendingData->spending : 0;
         }
 
         return view('vendor.dashboard', [
@@ -157,7 +174,8 @@ class VendorOnboardingController extends Controller
             'pendingOffersCount' => $pendingOffersCount,
             'recentCustomerOrders' => $recentCustomerOrders,
             'chartLabels' => $chartLabels,
-            'chartValues' => $chartValues,
+            'chartIncomeValues' => $chartIncomeValues,
+            'chartSpendingValues' => $chartSpendingValues,
         ]);
     }
 

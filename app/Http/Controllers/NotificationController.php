@@ -19,6 +19,11 @@ class NotificationController extends Controller
         $user = Auth::user();
         $notification = $user->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
+        
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        
         return back();
     }
 
@@ -26,6 +31,11 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         $user->unreadNotifications->markAsRead();
+        
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+        
         return back();
     }
 

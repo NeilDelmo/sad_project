@@ -422,7 +422,7 @@
                             @php
                                 $product = $productOffers->first()->product;
                             @endphp
-                            <form method="POST" action="{{ route('products.close-bidding', $product) }}" class="d-inline ms-2">
+                            <form method="POST" action="{{ route('fisherman.products.close-bidding', $product) }}" class="d-inline ms-2">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-danger" 
                                         onclick="return confirm('Close all {{ $productOffers->count() }} pending bid(s) for {{ $product->name }}? This will auto-reject all pending offers.')">

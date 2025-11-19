@@ -27,7 +27,7 @@
         .navbar .container-fluid {
             width: 100%;
             max-width: 100%;
-            padding: 0 20px;
+            padding: 0 40px;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
@@ -48,8 +48,7 @@
             gap: 5px;
             align-items: center;
             margin-left: auto;
-            flex-wrap: nowrap;
-            overflow-x: auto;
+            flex-wrap: wrap;
             padding-bottom: 4px;
         }
 
@@ -461,7 +460,6 @@
 </head>
 <body>
 
-    <!-- Navbar -->
     @include('vendor.partials.nav')
 
     <div class="dashboard-shell">
@@ -497,22 +495,60 @@
             </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-sack-dollar"></i>
+        <!-- Revenue Overview Cards -->
+        <div class="section-title">Revenue Overview</div>
+        <div class="stats-grid" style="margin-bottom: 30px;">
+            <div class="stat-card" style="background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%); color: white;">
+                <div class="stat-icon" style="color: white; opacity: 0.9;">
+                    <i class="fa-solid fa-peso-sign"></i>
                 </div>
-                <div class="stat-number" style="color: #16a34a;">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
-                <div class="stat-label">Total Income (Marketplace Sales)</div>
+                <div class="stat-number" style="color: white;">₱{{ number_format($totalIncome ?? 0, 2) }}</div>
+                <div class="stat-label" style="color: rgba(255,255,255,0.9);">Total Income</div>
+                <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Marketplace sales</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
+            <div class="stat-card" style="background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%); color: white;">
+                <div class="stat-icon" style="color: white; opacity: 0.9;">
                     <i class="fa-solid fa-money-bill-trend-up"></i>
                 </div>
-                <div class="stat-number" style="color: #dc2626;">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
-                <div class="stat-label">Total Spending (Received Orders)</div>
+                <div class="stat-number" style="color: white;">₱{{ number_format($totalSpending ?? 0, 2) }}</div>
+                <div class="stat-label" style="color: rgba(255,255,255,0.9);">Total Spending</div>
+                <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Buying from fishermen</div>
             </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%); color: white;">
+                <div class="stat-icon" style="color: white; opacity: 0.9;">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="stat-number" style="color: white;">₱{{ number_format(($totalIncome ?? 0) - ($totalSpending ?? 0), 2) }}</div>
+                <div class="stat-label" style="color: rgba(255,255,255,0.9);">Net Profit</div>
+                <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Income - Spending</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%); color: white;">
+                <div class="stat-icon" style="color: white; opacity: 0.9;">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div class="stat-number" style="color: white;">
+                    @php
+                        $netProfit = ($totalIncome ?? 0) - ($totalSpending ?? 0);
+                        $profitMargin = ($totalIncome ?? 0) > 0 ? (($netProfit / $totalIncome) * 100) : 0;
+                    @endphp
+                    {{ number_format($profitMargin, 1) }}%
+                </div>
+                <div class="stat-label" style="color: rgba(255,255,255,0.9);">Profit Margin</div>
+                <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 5px;">
+                    @if($profitMargin >= 30)
+                        <span>✓ Excellent</span>
+                    @elseif($profitMargin >= 15)
+                        <span>✓ Good</span>
+                    @else
+                        <span>⚠ Low</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Statistics -->
+        <div class="section-title">Business Statistics</div>
+        <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fa-solid fa-handshake"></i>
@@ -522,17 +558,43 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="fa-solid fa-handshake"></i>
+                    <i class="fa-solid fa-clock"></i>
                 </div>
                 <div class="stat-number">{{ $pendingOffersCount ?? 0 }}</div>
                 <div class="stat-label">Pending Offers</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+                <div class="stat-number">
+                    @php
+                        $inventoryCount = \App\Models\VendorInventory::where('vendor_id', Auth::id())->count();
+                    @endphp
+                    {{ $inventoryCount }}
+                </div>
+                <div class="stat-label">Inventory Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div class="stat-number">
+                    @php
+                        $activeListings = \App\Models\MarketplaceListing::whereHas('vendorInventory', function($q) {
+                            $q->where('vendor_id', Auth::id());
+                        })->where('status', 'active')->count();
+                    @endphp
+                    {{ $activeListings }}
+                </div>
+                <div class="stat-label">Active Listings</div>
+            </div>
         </div>
 
-        <!-- Income Chart -->
-        <div class="section-title">Income Trend (Last 14 Days)</div>
+        <!-- Revenue & Spending Trend Chart -->
+        <div class="section-title">Revenue & Spending Trend (Last 14 Days)</div>
         <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
-            <canvas id="incomeChart" style="max-height: 300px;"></canvas>
+            <canvas id="revenueChart" style="max-height: 350px;"></canvas>
         </div>
 
         <!-- Recent Marketplace Customer Orders -->
@@ -737,33 +799,112 @@
             }
         });
 
-        // Income Line Chart
-        const canvas = document.getElementById('incomeChart');
+        // Revenue & Spending Dual-Axis Chart
+        const canvas = document.getElementById('revenueChart');
         if (canvas && window.Chart) {
         const ctx = canvas.getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: @json($chartLabels ?? []),
-                datasets: [{
-                    label: 'Daily Income (₱)',
-                    data: @json($chartValues ?? []),
-                    borderColor: '#0075B5',
-                    backgroundColor: 'rgba(0, 117, 181, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: '#0075B5',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }]
+                datasets: [
+                    {
+                        label: 'Income (₱)',
+                        data: @json($chartIncomeValues ?? []),
+                        borderColor: '#0075B5',
+                        backgroundColor: 'rgba(0, 117, 181, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#0075B5',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Spending (₱)',
+                        data: @json($chartSpendingValues ?? []),
+                        borderColor: '#0075B5',
+                        backgroundColor: 'rgba(0, 117, 181, 0.05)',
+                        borderWidth: 3,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#0075B5',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y'
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
                 plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 13, weight: '500' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        bodySpacing: 6,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                return label + ': ₱' + value.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            },
+                            footer: function(tooltipItems) {
+                                if (tooltipItems.length >= 2) {
+                                    const income = tooltipItems[0].parsed.y;
+                                    const spending = tooltipItems[1].parsed.y;
+                                    const net = income - spending;
+                                    return '\nNet: ₱' + net.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString('en-PH');
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        }
                     legend: {
                         display: true,
                         position: 'top'
