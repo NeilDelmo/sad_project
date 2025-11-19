@@ -1,5 +1,34 @@
+<style>
+  .navbar .nav-layout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+
+  .navbar .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  .navbar .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navbar .nav-link {
+    white-space: nowrap;
+  }
+</style>
+
 <nav class="navbar">
-  <div class="container-fluid d-flex justify-content-between align-items-center">
+  <div class="nav-layout">
     <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">🐟 SeaLedger</a>
     <div class="nav-links">
       <a href="{{ route('vendor.dashboard') }}" class="nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">

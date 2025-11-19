@@ -12,12 +12,16 @@
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 15px 20px;
+            padding: 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            margin: 0;
         }
 
         .nav-brand {
@@ -31,6 +35,7 @@
         .nav-links {
             display: flex;
             gap: 10px;
+            margin-left: auto;
         }
 
         .nav-link {
@@ -74,10 +79,14 @@
         }
 
         .container-main {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
         }
+
+        /* keep the inner layout spacing of the navbar, but snap it to the viewport edge */
+        .navbar .nav-layout { padding: 12px 20px; }
 
         .page-header {
             display: flex;

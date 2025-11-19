@@ -16,13 +16,24 @@
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 15px 20px;
+            padding: 8px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar .container-fluid {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 16px;
+            flex-wrap: nowrap;
         }
 
         .nav-brand {
             color: white;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             font-family: "Koulen", sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
@@ -30,7 +41,16 @@
 
         .nav-links {
             display: flex;
-            gap: 10px;
+            gap: 5px;
+            align-items: center;
+            margin-left: auto;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .nav-links::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-link {
@@ -43,6 +63,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            white-space: nowrap;
         }
 
         .nav-link::before {

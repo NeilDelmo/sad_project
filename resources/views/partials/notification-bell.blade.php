@@ -1,8 +1,8 @@
 @auth
 <style>
-  .notif-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:9999px; background:#ffffff; color:#1e293b; cursor:pointer; border:1px solid #d1d5db; }
-  .notif-bell:hover { background:#f1f5f9; }
-  .notif-badge { position:absolute; top:-4px; right:-4px; background:#dc3545; color:#fff; border-radius:9999px; font-size:11px; font-weight:700; padding:2px 6px; line-height:1; display:none; box-shadow:0 0 0 2px #ffffff; }
+  .notif-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:auto; height:auto; border-radius:0; background:transparent; color:rgba(255, 255, 255, 0.9); cursor:pointer; border:none; padding:10px 20px; transition: all 0.3s ease; }
+  .notif-bell:hover { background:rgba(255, 255, 255, 0.1); border-radius:8px; }
+  .notif-badge { position:absolute; top:4px; right:14px; background:#dc3545; color:#fff; border-radius:9999px; font-size:10px; font-weight:700; padding:2px 5px; line-height:1; display:none; }
   .notif-dropdown { position:absolute; top:46px; right:0; width:360px; max-height:420px; overflow:auto; background:#ffffff; color:#0f172a; border-radius:14px; box-shadow:0 10px 28px rgba(0,0,0,0.12); border:1px solid #e2e8f0; display:none; z-index:9999; }
   .notif-dropdown-header { padding:10px 12px; border-bottom:1px solid #e2e8f0; font-weight:700; color:#0f172a; display:flex; align-items:center; justify-content:space-between; }
   .notif-list { list-style:none; margin:0; padding:0; }
@@ -18,8 +18,8 @@
   .notif-mark { background:#e2e8f0; color:#0f172a; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer; }
 </style>
 
-<div id="notifBellWrapper" data-user-id="{{ Auth::id() }}" style="position:relative; margin-left:8px;">
-  <button id="notifBellBtn" class="notif-bell" title="Notifications" aria-label="Notifications">
+<div id="notifBellWrapper" data-user-id="{{ Auth::id() }}" style="position:relative;">
+  <button id="notifBellBtn" class="notif-bell nav-link" title="Notifications" aria-label="Notifications">
     <i class="fa-solid fa-bell"></i>
     <span id="notifBellBadge" class="notif-badge">0</span>
   </button>

@@ -76,6 +76,13 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
+        .navbar .container-fluid {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            flex-wrap: nowrap !important;
+        }
+
         .nav-brand {
             color: white;
             font-size: 28px;
@@ -87,6 +94,7 @@
         .nav-links {
             display: flex;
             gap: 10px;
+            margin-left: auto;
         }
 
         .nav-link {
@@ -99,6 +107,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
         .nav-link::before {

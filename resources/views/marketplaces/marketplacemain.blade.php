@@ -14,17 +14,29 @@
 
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             min-height: 100vh;
         }
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 18px 0;
+            padding: 12px 0;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             position: sticky;
             top: 0;
             z-index: 1000;
+        }
+
+        .navbar .container-fluid {
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 20px;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 16px;
+            flex-wrap: nowrap;
+            margin: 0 auto;
         }
 
         .nav-brand {
@@ -36,18 +48,30 @@
             letter-spacing: 1px;
         }
 
-        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .nav-links::-webkit-scrollbar { display: none; }
 
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             padding: 10px 18px;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
             transition: all 0.3s ease;
             white-space: nowrap;
             background: transparent;
+            font-family: Arial, sans-serif;
         }
         .nav-link:hover { color: #fff; background: rgba(255,255,255,0.15); transform: translateY(-1px); }
         .nav-link.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 600; }
@@ -109,7 +133,6 @@
         .empty-state p { color:#6c757d; font-size:16px; }
 
         @media (max-width: 768px) {
-            .nav-links { flex-direction: column; gap: 4px; }
             .product-grid { grid-template-columns: 1fr; gap: 20px; }
             .container-custom { padding: 30px 20px; }
             .page-title { font-size: 32px; }
