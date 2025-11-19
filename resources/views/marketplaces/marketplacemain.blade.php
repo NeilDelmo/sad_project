@@ -193,10 +193,31 @@
 
         @if(isset($recommendations))
         <!-- Recommended For You -->
-        @php
-            $priceOf = function($l){ return $l->final_price ?? $l->dynamic_price ?? $l->asking_price ?? $l->base_price; };
-        @endphp
-        @if(($recommendations['cheapest'] ?? collect())->isNotEmpty())
+        @php $priceOf = function($l){ return $l->final_price ?? $l->dynamic_price ?? $l->asking_price ?? $l->base_price; }; @endphp
+
+        @if(isset($recommendations['sellers']) && count($recommendations['sellers']))
+        <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Recommended Sellers</div>
+        <div class="product-grid">
+            @foreach($recommendations['sellers'] as $seller)
+            <div class="product-card">
+                <div class="product-name" style="margin-bottom:6px;">{{ $seller->name ?? ('Seller #'.$seller->id) }}</div>
+                @if(!empty($seller->phone))
+                <div class="contact-row" style="margin:0 0 12px 0;">
+                    <span class="contact-phone">📞 {{ $seller->phone }}</span>
+                    <button type="button" class="copy-btn" data-contact="{{ $seller->phone }}" onclick="copyContact(this)">
+                        <i class="fa-regular fa-clipboard"></i> Copy
+                    </button>
+                </div>
+                @endif
+                <div style="display:flex; gap:10px;">
+                    <a class="contact-btn" href="{{ route('marketplace.shop', ['seller' => $seller->id]) }}"><i class="fa-solid fa-store"></i> View listings</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        @if(isset($recommendations['cheapest']) && count($recommendations['cheapest']))
         <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Cheapest Picks</div>
         <div class="product-grid">
             @foreach($recommendations['cheapest'] as $listing)
@@ -222,7 +243,7 @@
         </div>
         @endif
 
-        @if(($recommendations['freshest'] ?? collect())->isNotEmpty())
+        @if(isset($recommendations['freshest']) && count($recommendations['freshest']))
         <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Freshest Today</div>
         <div class="product-grid">
             @foreach($recommendations['freshest'] as $listing)
@@ -246,6 +267,48 @@
             </div>
             @endforeach
         </div>
+        @endif
+
+        @if(isset($recommendations['racks']))
+            @php $racks = $recommendations['racks']; @endphp
+            @if(isset($racks['cheapest_by_category']))
+                @foreach($racks['cheapest_by_category'] as $catName => $listings)
+                    @if(count($listings))
+                    <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Cheapest {{ $catName }}</div>
+                    <div class="product-grid">
+                        @foreach($listings as $listing)
+                        @php $product = $listing->product; $uom = $product->unit_of_measure ?? 'kg'; @endphp
+                        <div class="product-card">
+                            <div class="product-name">{{ $product->name }}</div>
+                            <div class="product-price">
+                                <span class="price-label">From</span>
+                                ₱{{ number_format($priceOf($listing), 2) }}/{{ $uom }}
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                @endforeach
+            @endif
+            @if(isset($racks['freshest_by_category']))
+                @foreach($racks['freshest_by_category'] as $catName => $listings)
+                    @if(count($listings))
+                    <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Freshest {{ $catName }}</div>
+                    <div class="product-grid">
+                        @foreach($listings as $listing)
+                        @php $product = $listing->product; $uom = $product->unit_of_measure ?? 'kg'; @endphp
+                        <div class="product-card">
+                            <div class="product-name">{{ $product->name }}</div>
+                            <div class="product-price">
+                                <span class="price-label">Price</span>
+                                ₱{{ number_format($priceOf($listing), 2) }}/{{ $uom }}
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                @endforeach
+            @endif
         @endif
         @endif
 

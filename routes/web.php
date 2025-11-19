@@ -92,6 +92,8 @@ Route::get('/test-profile', function () {
 
 Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
+// Marketplace Recommendations API (JSON)
+Route::get('/api/recommendations', [MarketplaceController::class, 'recommendations'])->name('api.recommendations');
 Route::middleware('auth')->group(function () {
     Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])->name('marketplace.buy');
     Route::get('/marketplace/orders', [CustomerOrderController::class, 'index'])->name('marketplace.orders.index');
