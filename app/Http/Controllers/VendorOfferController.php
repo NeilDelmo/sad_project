@@ -120,7 +120,7 @@ class VendorOfferController extends Controller
             $product = \App\Models\Product::where('id', $offer->product_id)->lockForUpdate()->first();
             if ($product->available_quantity < $offer->quantity) {
                 DB::rollBack();
-                return back()->withErrors(['error' => 'Insufficient stock available for this product.']);
+                return back()->withErrors(['error' => 'Insufficient stock available. Only ' . $product->available_quantity . 'kg remaining.']);
             }
             $offer->update([
                 'status' => 'accepted',
@@ -156,8 +156,8 @@ class VendorOfferController extends Controller
             // Link inventory to order
             $inventory->update(['order_id' => $order->id]);
 
-            // Link inventory to order
-            $inventory->update(['order_id' => $order->id]);
+            // Auto-reject offers that can no longer be fulfilled
+            $rejectedCount = VendorOffer::autoRejectInsufficientStock($offer->product_id);
 
             DB::commit();
 
@@ -167,38 +167,23 @@ class VendorOfferController extends Controller
                 $vendor->notify(new \App\Notifications\VendorOfferAccepted($offer));
             }
 
-            return back()->with('success', 'Offer accepted! The vendor has been notified.');
+            $remainingStock = $product->available_quantity - $offer->quantity;
+            $message = 'Offer accepted! The vendor has been notified.';
+            if ($rejectedCount > 0) {
+                $message .= " {$rejectedCount} bid(s) auto-rejected due to insufficient stock.";
+            }
+            if ($remainingStock > 0) {
+                $message .= " {$remainingStock}kg remaining.";
+            } else {
+                $message .= ' All stock allocated!';
+            }
+
+            return back()->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'Failed to accept offer: ' . $e->getMessage()]);
         }
-    }
-
-    /**
-     * Fisherman rejects an offer
-     */
-    public function reject(Request $request, VendorOffer $offer)
-    {
-        $this->authorize('respond', $offer);
-
-        if (!$offer->canRespond()) {
-            return back()->withErrors(['error' => 'This offer has expired or already been responded to.']);
-        }
-
-        $offer->update([
-            'status' => 'rejected',
-            'responded_at' => now(),
-            'fisherman_message' => $request->message,
-        ]);
-
-        // Notify vendor of rejection
-        $vendor = \App\Models\User::find($offer->vendor_id);
-        if ($vendor) {
-            $vendor->notify(new \App\Notifications\VendorOfferRejected($offer));
-        }
-
-        return back()->with('success', 'Offer rejected.');
     }
 
     /**
@@ -342,4 +327,85 @@ class VendorOfferController extends Controller
 
         return back()->with('success', 'Counter offer declined.');
     }
+
+    /**
+     * Vendor modifies their pending bid
+     */
+    public function modifyBid(Request $request, VendorOffer $offer)
+    {
+        if ($offer->vendor_id !== Auth::id()) {
+            return back()->withErrors(['error' => 'Unauthorized.']);
+        }
+
+        if (!$offer->canModify()) {
+            return back()->withErrors(['error' => 'Cannot modify this bid. It may have expired or been responded to.']);
+        }
+
+        $request->validate([
+            'offered_price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:1|max:' . $offer->product->available_quantity,
+        ]);
+
+        $oldPrice = $offer->offered_price;
+        $offer->update([
+            'offered_price' => $request->offered_price,
+            'quantity' => $request->quantity,
+        ]);
+
+        return back()->with('success', 'Bid updated from ₱' . number_format($oldPrice, 2) . ' to ₱' . number_format($request->offered_price, 2) . '/kg');
+    }
+
+    /**
+     * Vendor withdraws their pending bid
+     */
+    public function withdrawBid(VendorOffer $offer)
+    {
+        if ($offer->vendor_id !== Auth::id()) {
+            return back()->withErrors(['error' => 'Unauthorized.']);
+        }
+
+        if (!$offer->canWithdraw()) {
+            return back()->withErrors(['error' => 'Cannot withdraw this bid. It may have expired or been responded to.']);
+        }
+
+        $offer->update([
+            'status' => 'withdrawn',
+            'responded_at' => now(),
+        ]);
+
+        return back()->with('success', 'Bid withdrawn successfully.');
+    }
+
+    /**
+     * Fisherman closes bidding on a product (auto-rejects all pending bids)
+     */
+    public function closeBidding(Product $product)
+    {
+        if ($product->supplier_id !== Auth::id()) {
+            return back()->withErrors(['error' => 'Unauthorized.']);
+        }
+
+        $rejectedCount = VendorOffer::where('product_id', $product->id)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'closed',
+                'fisherman_message' => 'Bidding closed by fisherman.',
+                'responded_at' => now(),
+            ]);
+
+        // Notify all affected vendors
+        $offers = VendorOffer::where('product_id', $product->id)
+            ->where('status', 'closed')
+            ->with('vendor')
+            ->get();
+
+        foreach ($offers as $offer) {
+            if ($offer->vendor) {
+                $offer->vendor->notify(new \App\Notifications\BiddingClosed($offer));
+            }
+        }
+
+        return back()->with('success', "Bidding closed. {$rejectedCount} pending bid(s) rejected.");
+    }
 }
+

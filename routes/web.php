@@ -143,10 +143,12 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
     // Offers Management
     Route::get('/offers', [FishermanController::class, 'offers'])->name('offers.index');
 
-    // Fisherman Offers actions (keep actions for integrations; index removed)
+    // Fisherman Offers actions (keep actions for integrations; index removed)    // Vendor bidding on fisherman products
     Route::post('/offers/{offer}/accept', [\App\Http\Controllers\VendorOfferController::class, 'accept'])->name('offers.accept');
-    Route::post('/offers/{offer}/reject', [\App\Http\Controllers\VendorOfferController::class, 'reject'])->name('offers.reject');
     Route::post('/offers/{offer}/counter', [\App\Http\Controllers\VendorOfferController::class, 'counter'])->name('offers.counter');
+    Route::post('/offers/{offer}/modify', [\App\Http\Controllers\VendorOfferController::class, 'modifyBid'])->name('offers.modify');
+    Route::post('/offers/{offer}/withdraw', [\App\Http\Controllers\VendorOfferController::class, 'withdrawBid'])->name('offers.withdraw');
+    Route::post('/products/{product}/close-bidding', [\App\Http\Controllers\VendorOfferController::class, 'closeBidding'])->name('products.close-bidding');
 });
 
 // Vendor routes (requires authentication)

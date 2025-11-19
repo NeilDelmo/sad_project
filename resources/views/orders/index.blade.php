@@ -170,6 +170,143 @@
     .status-refund_requested { background: #f8d7da; color: #721c24; }
     .status-refunded { background: #e2e3e5; color: #383d41; }
     .status-refund_declined { background: #f8d7da; color: #721c24; }
+    
+    /* Status filter tabs */
+    .status-filter-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 15px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .status-tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      color: #666;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .status-tab:hover {
+      border-color: var(--tab-color, #0075B5);
+      background: rgba(0, 117, 181, 0.05);
+      color: var(--tab-color, #0075B5);
+      transform: translateY(-2px);
+    }
+    
+    .status-tab.active {
+      background: var(--tab-color, #0075B5);
+      color: white;
+      border-color: var(--tab-color, #0075B5);
+      box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
+    }
+    
+    .status-tab i {
+      font-size: 16px;
+    }
+    
+    /* Transaction timeline */
+    .transaction-timeline {
+      margin: 15px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #0075B5;
+    }
+    
+    .timeline-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1B5E88;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .timeline-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    
+    .timeline-step:hover {
+      background: rgba(0, 117, 181, 0.05);
+    }
+    
+    .timeline-step.completed {
+      color: #198754;
+    }
+    
+    .timeline-step.active {
+      color: #0075B5;
+      font-weight: 600;
+      background: rgba(0, 117, 181, 0.1);
+    }
+    
+    .timeline-step.pending {
+      color: #adb5bd;
+    }
+    
+    .timeline-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+    
+    .timeline-step.completed .timeline-icon {
+      background: #198754;
+      color: white;
+    }
+    
+    .timeline-step.active .timeline-icon {
+      background: #0075B5;
+      color: white;
+    }
+    
+    .timeline-step.pending .timeline-icon {
+      background: #e9ecef;
+      color: #adb5bd;
+    }
+    
+    .timeline-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .timeline-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .timeline-time {
+      font-size: 12px;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
@@ -181,21 +318,33 @@
   @include('vendor.partials.nav')
 @endif
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">My Orders</h1>
-    <form class="d-flex" method="get">
-      <select name="status" class="form-select me-2" onchange="this.form.submit()">
-        <option value="">All statuses</option>
-        <option value="pending_payment" {{ request('status')==='pending_payment' ? 'selected' : '' }}>Pending Payment</option>
-        <option value="in_transit" {{ request('status')==='in_transit' ? 'selected' : '' }}>In Transit</option>
-        <option value="delivered" {{ request('status')==='delivered' ? 'selected' : '' }}>Delivered</option>
-        <option value="received" {{ request('status')==='received' ? 'selected' : '' }}>Received</option>
-        <option value="refund_requested" {{ request('status')==='refund_requested' ? 'selected' : '' }}>Refund Requested</option>
-        <option value="refunded" {{ request('status')==='refunded' ? 'selected' : '' }}>Refunded</option>
-        <option value="refund_declined" {{ request('status')==='refund_declined' ? 'selected' : '' }}>Refund Declined</option>
-      </select>
-      <noscript><button class="btn btn-outline-secondary" type="submit">Filter</button></noscript>
-    </form>
+  <div class="mb-4">
+    <h1 class="h3 mb-3">My Orders</h1>
+    
+    @php
+      $currentStatus = request('status');
+      $statuses = [
+        ['value' => '', 'label' => 'All Orders', 'icon' => 'list', 'color' => '#6c757d'],
+        ['value' => 'pending_payment', 'label' => 'Pending', 'icon' => 'clock', 'color' => '#6c757d'],
+        ['value' => 'in_transit', 'label' => 'In Transit', 'icon' => 'truck-fast', 'color' => '#0dcaf0'],
+        ['value' => 'delivered', 'label' => 'Delivered', 'icon' => 'box-open', 'color' => '#ffc107'],
+        ['value' => 'received', 'label' => 'Received', 'icon' => 'check-circle', 'color' => '#198754'],
+        ['value' => 'refund_requested', 'label' => 'Refund Req.', 'icon' => 'exclamation-triangle', 'color' => '#dc3545'],
+        ['value' => 'refunded', 'label' => 'Refunded', 'icon' => 'undo', 'color' => '#6c757d'],
+        ['value' => 'refund_declined', 'label' => 'Declined', 'icon' => 'times-circle', 'color' => '#dc3545'],
+      ];
+    @endphp
+    
+    <div class="status-filter-tabs">
+      @foreach($statuses as $status)
+        <a href="{{ route('orders.index', ['status' => $status['value']]) }}" 
+           class="status-tab {{ ($currentStatus === $status['value'] || ($currentStatus === null && $status['value'] === '')) ? 'active' : '' }}"
+           style="--tab-color: {{ $status['color'] }}">
+          <i class="fa-solid fa-{{ $status['icon'] }}"></i>
+          <span>{{ $status['label'] }}</span>
+        </a>
+      @endforeach
+    </div>
   </div>
 
   @if(session('success'))
@@ -239,6 +388,17 @@
           <span class="order-label">Total Amount</span>
           <span class="order-value" style="color: #16a34a; font-weight: 700;">₱{{ number_format($order->total, 2) }}</span>
         </div>
+        @if($user->user_type === 'vendor')
+        <div class="order-detail">
+          <span class="order-label">Fisherman</span>
+          <span class="order-value">{{ optional($order->fisherman)->name ?? 'N/A' }}</span>
+        </div>
+        @else
+        <div class="order-detail">
+          <span class="order-label">Vendor</span>
+          <span class="order-value">{{ optional($order->vendor)->name ?? 'N/A' }}</span>
+        </div>
+        @endif
         @if($order->proof_photo_path)
         <div class="order-detail">
           <span class="order-label">Delivery Proof</span>
@@ -255,30 +415,78 @@
           </a>
         </div>
         @endif
-        @if(in_array($order->status, ['refund_requested', 'refunded', 'refund_declined']))
-        <div class="order-detail">
-          <span class="order-label">Refund Status</span>
-          <span class="order-value">
-            @if($order->status === 'refund_requested')
-              <span style="color: #dc2626;"><i class="fa-solid fa-hourglass-half"></i> Requested</span>
-            @elseif($order->status === 'refunded')
-              <span style="color: #666;"><i class="fa-solid fa-check"></i> Refunded</span>
-            @else
-              <span style="color: #666;"><i class="fa-solid fa-times"></i> Declined</span>
-            @endif
-          </span>
-        </div>
-        @endif
-        @if($order->delivered_at && $order->isRefundWindowOpen() && in_array($order->status, ['delivered','received']))
-        <div class="order-detail">
-          <span class="order-label">Refund Window</span>
-          <span class="order-value" style="color: #dc3545; font-weight: 600;">
-            <i class="fa-solid fa-clock"></i>
-            <span class="refund-countdown" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
-          </span>
-        </div>
-        @endif
       </div>
+
+      <!-- Transaction Timeline -->
+      <div class="transaction-timeline">
+        <div class="timeline-title"><i class="fa-solid fa-timeline"></i> Transaction Flow</div>
+        <div class="timeline-steps">
+          @php
+            $steps = [
+              ['status' => 'pending_payment', 'label' => 'Order Placed', 'icon' => 'fa-receipt', 'time' => $order->created_at],
+              ['status' => 'in_transit', 'label' => 'In Transit', 'icon' => 'fa-truck-fast', 'time' => null],
+              ['status' => 'delivered', 'label' => 'Delivered', 'icon' => 'fa-box-open', 'time' => $order->delivered_at],
+              ['status' => 'received', 'label' => 'Received & Confirmed', 'icon' => 'fa-check-circle', 'time' => $order->received_at],
+            ];
+            
+            // Add refund steps if applicable
+            if (in_array($order->status, ['refund_requested', 'refunded', 'refund_declined'])) {
+              if ($order->status === 'refund_requested') {
+                $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-exclamation-triangle', 'time' => $order->updated_at];
+              } elseif ($order->status === 'refunded') {
+                $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-exclamation-triangle', 'time' => null];
+                $steps[] = ['status' => 'refunded', 'label' => 'Refunded', 'icon' => 'fa-undo', 'time' => $order->refund_at];
+              } else {
+                $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-exclamation-triangle', 'time' => null];
+                $steps[] = ['status' => 'refund_declined', 'label' => 'Refund Declined', 'icon' => 'fa-times-circle', 'time' => $order->refund_at];
+              }
+            }
+            
+            $currentIndex = collect($steps)->search(fn($s) => $s['status'] === $order->status);
+          @endphp
+          
+          @foreach($steps as $index => $step)
+            @php
+              $stepClass = $index < $currentIndex ? 'completed' : ($index === $currentIndex ? 'active' : 'pending');
+            @endphp
+            <div class="timeline-step {{ $stepClass }}">
+              <div class="timeline-icon">
+                <i class="fa-solid {{ $step['icon'] }}"></i>
+              </div>
+              <div class="timeline-text">
+                <span class="timeline-label">{{ $step['label'] }}</span>
+                @if($step['time'])
+                  <span class="timeline-time">{{ $step['time']->format('M d, Y g:i A') }}</span>
+                @endif
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+
+      @if(in_array($order->status, ['refund_requested', 'refunded', 'refund_declined']))
+      <div class="order-detail">
+        <span class="order-label">Refund Status</span>
+        <span class="order-value">
+          @if($order->status === 'refund_requested')
+            <span style="color: #dc2626;"><i class="fa-solid fa-hourglass-half"></i> Requested</span>
+          @elseif($order->status === 'refunded')
+            <span style="color: #666;"><i class="fa-solid fa-check"></i> Refunded</span>
+          @else
+            <span style="color: #666;"><i class="fa-solid fa-times"></i> Declined</span>
+          @endif
+        </span>
+      </div>
+      @endif
+      @if($order->delivered_at && $order->isRefundWindowOpen() && in_array($order->status, ['delivered','received']))
+      <div class="order-detail">
+        <span class="order-label">Refund Window</span>
+        <span class="order-value" style="color: #dc3545; font-weight: 600;">
+          <i class="fa-solid fa-clock"></i>
+          <span class="refund-countdown" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
+        </span>
+      </div>
+      @endif
 
       <div class="order-actions">
         @if($user && $user->id === $order->fisherman_id)

@@ -15,6 +15,101 @@
     .status-tab { background:#fff; color:#64748b; border:2px solid #e2e8f0; padding:10px 20px; border-radius:12px; font-weight:600; transition:.2s; cursor:pointer; text-decoration:none; }
     .status-tab:hover { background:#f8fafc; color:#334155; }
     .status-tab.active { background:#0075B5; color:#fff; border-color:#0075B5; }
+    
+    /* Transaction timeline */
+    .transaction-timeline {
+      margin: 12px 0;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #0075B5;
+    }
+    
+    .timeline-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1B5E88;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .timeline-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      transition: background 0.2s ease;
+    }
+    
+    .timeline-step:hover {
+      background: rgba(0, 117, 181, 0.05);
+    }
+    
+    .timeline-step.completed {
+      color: #198754;
+    }
+    
+    .timeline-step.active {
+      color: #0075B5;
+      font-weight: 600;
+      background: rgba(0, 117, 181, 0.1);
+    }
+    
+    .timeline-step.pending {
+      color: #adb5bd;
+    }
+    
+    .timeline-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+    
+    .timeline-step.completed .timeline-icon {
+      background: #198754;
+      color: white;
+    }
+    
+    .timeline-step.active .timeline-icon {
+      background: #0075B5;
+      color: white;
+    }
+    
+    .timeline-step.pending .timeline-icon {
+      background: #e9ecef;
+      color: #adb5bd;
+    }
+    
+    .timeline-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .timeline-label {
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .timeline-time {
+      font-size: 10px;
+      opacity: 0.8;
+    }
+    
     .orders-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 20px; }
     .order-card { background:#fff; border-radius:16px; padding:16px; box-shadow: 0 6px 18px rgba(0,0,0,.08); border: 2px solid transparent; transition: .2s; }
     .order-card:hover { transform: translateY(-3px); border-color:#0075B5; box-shadow: 0 12px 28px rgba(0,0,0,.12); }
@@ -233,6 +328,53 @@
                 <a href="{{ asset('storage/'.$order->refund_proof_path) }}" target="_blank" class="btn btn-sm btn-outline-danger ms-1">Refund Proof</a>
               @endif
             </div>
+          </div>
+        </div>
+
+        <!-- Transaction Timeline -->
+        <div class="transaction-timeline">
+          <div class="timeline-title"><i class="fa-solid fa-timeline"></i> Order Progress</div>
+          <div class="timeline-steps">
+            @php
+              $steps = [
+                ['status' => 'pending_payment', 'label' => 'Order Placed', 'icon' => 'fa-receipt', 'time' => $order->created_at],
+                ['status' => 'in_transit', 'label' => 'In Transit', 'icon' => 'fa-truck-fast', 'time' => null],
+                ['status' => 'delivered', 'label' => 'Delivered', 'icon' => 'fa-box', 'time' => $order->delivered_at],
+                ['status' => 'received', 'label' => 'Received', 'icon' => 'fa-circle-check', 'time' => $order->received_at],
+              ];
+              
+              // Add refund steps if applicable
+              if (in_array($order->status, ['refund_requested', 'refunded', 'refund_declined'])) {
+                if ($order->status === 'refund_requested') {
+                  $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-rotate-left', 'time' => $order->updated_at];
+                } elseif ($order->status === 'refunded') {
+                  $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-rotate-left', 'time' => null];
+                  $steps[] = ['status' => 'refunded', 'label' => 'Refunded', 'icon' => 'fa-money-bill-transfer', 'time' => $order->refund_at ?? $order->updated_at];
+                } else {
+                  $steps[] = ['status' => 'refund_requested', 'label' => 'Refund Requested', 'icon' => 'fa-rotate-left', 'time' => null];
+                  $steps[] = ['status' => 'refund_declined', 'label' => 'Refund Declined', 'icon' => 'fa-times-circle', 'time' => $order->refund_at ?? $order->updated_at];
+                }
+              }
+              
+              $currentIndex = collect($steps)->search(fn($s) => $s['status'] === $order->status);
+            @endphp
+            
+            @foreach($steps as $index => $step)
+              @php
+                $stepClass = $index < $currentIndex ? 'completed' : ($index === $currentIndex ? 'active' : 'pending');
+              @endphp
+              <div class="timeline-step {{ $stepClass }}">
+                <div class="timeline-icon">
+                  <i class="fa-solid {{ $step['icon'] }}"></i>
+                </div>
+                <div class="timeline-text">
+                  <span class="timeline-label">{{ $step['label'] }}</span>
+                  @if($step['time'])
+                    <span class="timeline-time">{{ $step['time']->format('M d, g:i A') }}</span>
+                  @endif
+                </div>
+              </div>
+            @endforeach
           </div>
         </div>
 

@@ -11,16 +11,23 @@ class FishermanOfferController extends Controller
     /**
      * Display offers from vendors
      */
-    public function index()
+    public function index(Request $request)
     {
         $fisherman = Auth::user();
+        $status = $request->get('status', 'pending');
 
-        // Get all offers for fisherman's products
-        $offers = VendorOffer::where('fisherman_id', $fisherman->id)
-            ->with(['vendor', 'product', 'product.category'])
-            ->whereIn('status', ['pending', 'countered'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Build query
+        $query = VendorOffer::where('fisherman_id', $fisherman->id)
+            ->with(['vendor', 'product', 'product.category']);
+
+        // Filter by status
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // Get paginated offers
+        $offers = $query->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('fisherman.offers.index', compact('offers'));
     }

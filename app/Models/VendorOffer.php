@@ -79,4 +79,64 @@ class VendorOffer extends Model implements AuditableConract
     {
         return in_array($this->status, ['pending', 'countered']) && !$this->isExpired();
     }
+
+    /**
+     * Check if this offer can be fulfilled with available stock
+     */
+    public function canBeFulfilled(): bool
+    {
+        if (!$this->product) {
+            return false;
+        }
+        return $this->product->available_quantity >= $this->quantity;
+    }
+
+    /**
+     * Get the bid rank for this offer (1 = highest bidder)
+     */
+    public function getBidRank(): int
+    {
+        return VendorOffer::where('product_id', $this->product_id)
+            ->where('status', 'pending')
+            ->where('offered_price', '>', $this->offered_price)
+            ->count() + 1;
+    }
+
+    /**
+     * Check if vendor can modify this bid
+     */
+    public function canModify(): bool
+    {
+        return $this->status === 'pending' && !$this->isExpired();
+    }
+
+    /**
+     * Check if vendor can withdraw this bid
+     */
+    public function canWithdraw(): bool
+    {
+        return in_array($this->status, ['pending']) && !$this->isExpired();
+    }
+
+    /**
+     * Auto-reject offers when stock is insufficient
+     */
+    public static function autoRejectInsufficientStock(int $productId): int
+    {
+        $product = Product::find($productId);
+        if (!$product) {
+            return 0;
+        }
+
+        $rejected = VendorOffer::where('product_id', $productId)
+            ->where('status', 'pending')
+            ->where('quantity', '>', $product->available_quantity)
+            ->update([
+                'status' => 'auto_rejected',
+                'fisherman_message' => 'Insufficient stock remaining. Only ' . $product->available_quantity . 'kg available.',
+                'responded_at' => now(),
+            ]);
+
+        return $rejected;
+    }
 }

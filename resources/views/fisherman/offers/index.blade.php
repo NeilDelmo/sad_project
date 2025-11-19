@@ -130,6 +130,21 @@
             color: #383d41;
         }
 
+        .status-auto_rejected {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-withdrawn {
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+
+        .status-closed {
+            background: #b2bec3;
+            color: #2d3436;
+        }
+
         .offer-detail-row {
             display: flex;
             justify-content: space-between;
@@ -371,17 +386,54 @@
             </button>
             <button class="tab {{ request('status') == 'accepted' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'accepted']) }}'">
-                Accepted Offers
+                Accepted
             </button>
             <button class="tab {{ request('status') == 'rejected' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'rejected']) }}'">
-                Rejected Offers
+                Rejected
+            </button>
+            <button class="tab {{ request('status') == 'auto_rejected' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'auto_rejected']) }}'">
+                Auto-Rejected
+            </button>
+            <button class="tab {{ request('status') == 'withdrawn' ? 'active' : '' }}" 
+                    onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'withdrawn']) }}'">
+                Withdrawn
             </button>
             <button class="tab {{ request('status') == 'all' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'all']) }}'">
                 All
             </button>
         </div>
+
+        @if((request('status') == 'pending' || !request('status')) && $offers->isNotEmpty())
+            @php
+                $productsWithBids = $offers->groupBy('product_id');
+            @endphp
+            @if($productsWithBids->count() > 0)
+                <div class="alert alert-warning mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-gavel"></i>
+                            <strong>Bidding Management:</strong> You have {{ $offers->count() }} pending bid(s) across {{ $productsWithBids->count() }} product(s). 
+                            Accept bids from highest to lowest to maximize profit.
+                        </div>
+                        @foreach($productsWithBids as $productId => $productOffers)
+                            @php
+                                $product = $productOffers->first()->product;
+                            @endphp
+                            <form method="POST" action="{{ route('products.close-bidding', $product) }}" class="d-inline ms-2">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Close all {{ $productOffers->count() }} pending bid(s) for {{ $product->name }}? This will auto-reject all pending offers.')">
+                                    <i class="fas fa-times-circle"></i> Close Bidding for {{ $product->name }}
+                                </button>
+                            </form>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        @endif
 
         @if($offers->isEmpty())
             <div class="empty-state">
@@ -400,10 +452,44 @@
                                 <span>{{ $offer->vendor->name }}</span>
                             </div>
                         </div>
-                        <span class="offer-status status-{{ $offer->status }}">
-                            {{ ucfirst($offer->status) }}
-                        </span>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="offer-status status-{{ $offer->status }}">
+                                {{ ucfirst($offer->status) }}
+                            </span>
+                            @if($offer->status === 'pending')
+                                @php
+                                    $bidRank = $offer->getBidRank();
+                                    $canFulfill = $offer->canBeFulfilled();
+                                @endphp
+                                <span class="badge" style="background: {{ $canFulfill ? '#28a745' : '#dc3545' }}; color: white; font-size: 0.8rem;">
+                                    Bid Rank: #{{ $bidRank }}
+                                </span>
+                                @if($canFulfill)
+                                    <span class="badge" style="background: #d4edda; color: #155724; font-size: 0.75rem;">
+                                        <i class="fas fa-check-circle"></i> Can Fulfill
+                                    </span>
+                                @else
+                                    <span class="badge" style="background: #f8d7da; color: #721c24; font-size: 0.75rem;">
+                                        <i class="fas fa-exclamation-triangle"></i> Insufficient Stock
+                                    </span>
+                                @endif
+                            @endif
+                        </div>
                     </div>
+
+                    @if($offer->status === 'pending')
+                        <div class="alert alert-info mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Stock Status:</strong> {{ $offer->product->stock_quantity }} {{ $offer->product->unit_of_measure }} available
+                                @if($offer->canBeFulfilled())
+                                    → <span class="text-success fw-bold">{{ $offer->product->stock_quantity - $offer->quantity }} {{ $offer->product->unit_of_measure }} remaining after this bid</span>
+                                @else
+                                    → <span class="text-danger fw-bold">Not enough stock to fulfill this bid</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="offer-detail-row">
                         <span class="offer-detail-label">Your Asking Price</span>
@@ -536,7 +622,9 @@
                         <div class="action-buttons">
                             <form method="POST" action="{{ route('fisherman.offers.accept', $offer) }}" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-accept" onclick="return confirm('Accept this offer for ₱{{ number_format($offer->offered_price, 2) }} per unit?')">
+                                <button type="submit" class="btn btn-accept" 
+                                        @if(!$offer->canBeFulfilled()) disabled title="Insufficient stock to fulfill this bid" @endif
+                                        onclick="return confirm('Accept this offer for ₱{{ number_format($offer->offered_price, 2) }} per unit?')">
                                     <i class="fas fa-check"></i> Accept Offer
                                 </button>
                             </form>
@@ -544,13 +632,6 @@
                             <button type="button" class="btn btn-counter" onclick="toggleCounterForm('counter-{{ $offer->id }}')">
                                 <i class="fas fa-reply"></i> Counter Offer
                             </button>
-
-                            <form method="POST" action="{{ route('fisherman.offers.reject', $offer) }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-reject" onclick="return confirm('Are you sure you want to reject this offer?')">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
-                            </form>
                         </div>
 
                         <!-- Counter Offer Form (Hidden by default) -->
@@ -607,6 +688,27 @@
                         <div class="alert alert-secondary mt-3 mb-0">
                             <i class="fas fa-clock"></i> 
                             This offer has expired and can no longer be accepted.
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'auto_rejected')
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="fas fa-robot"></i> 
+                            This offer was automatically rejected on {{ $offer->responded_at?->format('M d, Y g:i A') }} due to insufficient stock after higher bids were accepted.
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'withdrawn')
+                        <div class="alert alert-info mt-3 mb-0">
+                            <i class="fas fa-undo"></i> 
+                            This offer was withdrawn by the vendor on {{ $offer->responded_at?->format('M d, Y g:i A') }}.
+                        </div>
+                    @endif
+
+                    @if($offer->status === 'closed')
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <i class="fas fa-gavel"></i> 
+                            Bidding was closed on {{ $offer->responded_at?->format('M d, Y g:i A') }}. All pending offers were auto-rejected.
                         </div>
                     @endif
                 </div>

@@ -19,10 +19,22 @@
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-countered { background: #dbeafe; color: #1e40af; }
     .status-accepted { background: #dcfce7; color: #166534; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-auto_rejected { background: #ffeaa7; color: #d63031; }
+    .status-withdrawn { background: #dfe6e9; color: #2d3436; }
+    .status-closed { background: #b2bec3; color: #2d3436; }
+    .status-expired { background: #e2e3e5; color: #383d41; }
     .btn-accept { background: #16a34a; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
     .btn-accept:hover { background: #15803d; }
     .btn-counter { background: #0075B5; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
     .btn-counter:hover { background: #1B5E88; }
+    .btn-modify { background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+    .btn-modify:hover { background: #d97706; }
+    .btn-withdraw { background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+    .btn-withdraw:hover { background: #4b5563; }
+    .bid-rank-badge { background: #0075B5; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .modify-form { background: #f8f9fa; padding: 15px; margin-top: 10px; border-radius: 8px; display: none; }
+    .modify-form.show { display: block; }
 
     /* === VENDOR NAVBAR STYLES (COPY FROM WORKING PAGES) === */
     .navbar {
@@ -107,6 +119,8 @@
       <a class="btn btn-sm {{ request('status') === 'countered' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'countered']) }}">Countered</a>
       <a class="btn btn-sm {{ request('status') === 'accepted' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'accepted']) }}">Accepted</a>
       <a class="btn btn-sm {{ request('status') === 'rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'rejected']) }}">Rejected</a>
+      <a class="btn btn-sm {{ request('status') === 'auto_rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'auto_rejected']) }}">Auto-Rejected</a>
+      <a class="btn btn-sm {{ request('status') === 'withdrawn' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'withdrawn']) }}">Withdrawn</a>
       <a class="btn btn-sm {{ request('status') === 'all' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'all']) }}">All</a>
     </div>
     <div class="offers-table">
@@ -119,6 +133,7 @@
             <th>Quantity</th>
             <th>Your Offer</th>
             <th>Counter Price</th>
+            <th>Bid Rank</th>
             <th>Status</th>
             <th>Date</th>
             <th>Actions</th>
@@ -129,7 +144,12 @@
           <tr>
             <td>
               <strong>{{ $offer->product->name }}</strong><br>
-              <small class="text-muted">{{ $offer->product->category->name ?? 'N/A' }}</small>
+              <small class="text-muted">{{ $offer->product->category->name ?? 'N/A' }}</small><br>
+              @if($offer->status === 'pending')
+                <small class="text-info">
+                  <i class="fas fa-box"></i> {{ $offer->product->stock_quantity }} {{ $offer->product->unit_of_measure }} available
+                </small>
+              @endif
             </td>
             <td>{{ $offer->fisherman->username ?? $offer->fisherman->email }}</td>
             <td>{{ $offer->quantity }} {{ $offer->product->unit_of_measure }}</td>
@@ -139,21 +159,86 @@
                 ₱{{ number_format($offer->fisherman_counter_price, 2) }}
               @else - @endif
             </td>
-            <td><span class="status-badge status-{{ $offer->status }}">{{ ucfirst($offer->status) }}</span></td>
+            <td>
+              @if($offer->status === 'pending')
+                @php $bidRank = $offer->getBidRank(); @endphp
+                <span class="bid-rank-badge">
+                  #{{ $bidRank }}
+                  @if($bidRank === 1)
+                    <i class="fas fa-trophy"></i>
+                  @endif
+                </span>
+                @if($offer->canBeFulfilled())
+                  <br><small class="text-success"><i class="fas fa-check-circle"></i> Can fulfill</small>
+                @else
+                  <br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Insufficient stock</small>
+                @endif
+              @else
+                <span class="text-muted">-</span>
+              @endif
+            </td>
+            <td><span class="status-badge status-{{ $offer->status }}">{{ ucfirst(str_replace('_', ' ', $offer->status)) }}</span></td>
             <td>{{ $offer->created_at->format('M d, Y') }}</td>
             <td>
-              @if($offer->status === 'countered')
+              @if($offer->status === 'pending' && $offer->canModify())
+                <button type="button" class="btn btn-modify btn-sm mb-1" onclick="toggleModifyForm('modify-{{ $offer->id }}')">
+                  <i class="fas fa-edit"></i> Modify
+                </button>
+                <form method="POST" action="{{ route('offers.withdraw', $offer) }}" class="d-inline">
+                  @csrf
+                  <button type="submit" class="btn btn-withdraw btn-sm mb-1" onclick="return confirm('Withdraw this bid?')">
+                    <i class="fas fa-undo"></i> Withdraw
+                  </button>
+                </form>
+              @elseif($offer->status === 'countered')
                 <form method="POST" action="{{ route('vendor.offers.accept-counter', $offer->id) }}" class="d-inline">
                   @csrf
                   <button type="submit" class="btn btn-accept btn-sm" onclick="return confirm('Accept this counter offer?')">
                     <i class="fa-solid fa-check"></i> Accept Counter
                   </button>
                 </form>
+              @elseif($offer->status === 'auto_rejected')
+                <small class="text-muted"><i class="fas fa-robot"></i> Auto-rejected</small>
+              @elseif($offer->status === 'withdrawn')
+                <small class="text-muted"><i class="fas fa-undo"></i> Withdrawn</small>
               @else
                 <span class="text-muted">No actions</span>
               @endif
             </td>
           </tr>
+          @if($offer->status === 'pending' && $offer->canModify())
+          <tr id="modify-{{ $offer->id }}" class="modify-form">
+            <td colspan="9">
+              <form method="POST" action="{{ route('offers.modify', $offer) }}">
+                @csrf
+                <div class="row g-3">
+                  <div class="col-md-3">
+                    <label class="form-label fw-bold">New Price (per {{ $offer->product->unit_of_measure }})</label>
+                    <input type="number" name="new_price" class="form-control" step="0.01" min="0.01" 
+                           value="{{ $offer->offered_price }}" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label fw-bold">New Quantity</label>
+                    <input type="number" name="new_quantity" class="form-control" min="1" 
+                           value="{{ $offer->quantity }}" required>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label fw-bold">Reason (Optional)</label>
+                    <input type="text" name="reason" class="form-control" placeholder="Why modify this bid?">
+                  </div>
+                  <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                      <i class="fas fa-save"></i> Save
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleModifyForm('modify-{{ $offer->id }}')">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </td>
+          </tr>
+          @endif
           @endforeach
         </tbody>
       </table>
@@ -166,5 +251,12 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleModifyForm(id) {
+      const form = document.getElementById(id);
+      form.classList.toggle('show');
+    }
+  </script>
+  @include('partials.toast-notifications')
 </body>
 </html>
