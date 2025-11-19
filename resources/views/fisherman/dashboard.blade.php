@@ -648,7 +648,20 @@
                             {{ $product->name }}
                         </div>
                         <div class="product-details">
-                            {{ $product->available_quantity }} kg available • {{ $product->freshness_metric ?? 'Fresh' }}
+                            {{ $product->available_quantity }} kg available • 
+                            @if($product->freshness_level)
+                                <span class="badge 
+                                    @if($product->freshness_level == 'Fresh') bg-success
+                                    @elseif($product->freshness_level == 'Good') bg-info
+                                    @elseif($product->freshness_level == 'Aging') bg-warning text-dark
+                                    @elseif($product->freshness_level == 'Stale') bg-warning text-dark
+                                    @else bg-danger
+                                    @endif">
+                                    {{ $product->freshness_level }}
+                                </span>
+                            @else
+                                {{ $product->freshness_metric ?? 'Fresh' }}
+                            @endif
                             <span style="color: #999; margin-left: 10px;">Posted {{ $product->created_at->diffForHumans() }}</span>
                         </div>
                     </div>

@@ -93,4 +93,39 @@ class MarketplaceListing extends Model implements Auditable
         }
         return $this->listing_date->diffForHumans(now(), true);
     }
+
+    /**
+     * Compute freshness level dynamically based on product's initial assessment and time decay.
+     */
+    public function getFreshnessLevelAttribute(): ?string
+    {
+        // Get the product's initial freshness assessment
+        $product = $this->product;
+        if (!$product) {
+            return null;
+        }
+
+        $initialFreshness = $product->freshness_metric ?? 'Good';
+        
+        // Calculate hours since product creation
+        $hoursOld = $product->created_at->diffInHours(now());
+        
+        // Get category-specific decay multiplier
+        $categoryName = $product->category->name ?? 'Fish';
+        $decayMultiplier = config("fish.category_decay_multipliers.{$categoryName}", 1.0);
+        
+        // Get decay thresholds for this initial freshness
+        $decayThresholds = config("fish.freshness_decay_hours.{$initialFreshness}", []);
+        
+        // Find current freshness level based on decay (adjusted for category)
+        foreach ($decayThresholds as $level => $baseHours) {
+            $adjustedHours = $baseHours * $decayMultiplier;
+            if ($hoursOld >= $adjustedHours) {
+                return $level;
+            }
+        }
+        
+        // Still at initial freshness if no threshold exceeded
+        return $initialFreshness;
+    }
 }

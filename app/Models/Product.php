@@ -84,22 +84,33 @@ class Product extends Model implements AuditableConract
     }
 
     /**
-     * Compute freshness level dynamically based on active listing age.
+     * Compute freshness level dynamically based on initial assessment and time decay.
      */
     public function computeFreshnessLevel(): ?string
     {
-        $listing = $this->activeMarketplaceListing()->first();
-        if (!$listing || !$listing->listing_date) {
-            return null;
-        }
-        $minutes = $listing->listing_date->diffInMinutes();
-        $thresholds = config('fish.freshness_threshold_minutes', []);
-        foreach ($thresholds as $level => $maxMinutes) {
-            if ($minutes <= $maxMinutes) {
+        // Use initial fisherman assessment
+        $initialFreshness = $this->freshness_metric ?? 'Good';
+        
+        // Calculate hours since product creation
+        $hoursOld = $this->created_at->diffInHours(now());
+        
+        // Get category-specific decay multiplier
+        $categoryName = $this->category->name ?? 'Fish';
+        $decayMultiplier = config("fish.category_decay_multipliers.{$categoryName}", 1.0);
+        
+        // Get decay thresholds for this initial freshness
+        $decayThresholds = config("fish.freshness_decay_hours.{$initialFreshness}", []);
+        
+        // Find current freshness level based on decay (adjusted for category)
+        foreach ($decayThresholds as $level => $baseHours) {
+            $adjustedHours = $baseHours * $decayMultiplier;
+            if ($hoursOld >= $adjustedHours) {
                 return $level;
             }
         }
-        return 'Spoiled';
+        
+        // Still at initial freshness if no threshold exceeded
+        return $initialFreshness;
     }
 
     public function getFreshnessLevelAttribute(): ?string

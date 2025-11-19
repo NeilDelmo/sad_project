@@ -6,17 +6,59 @@ return [
     | Fish Freshness Thresholds
     |--------------------------------------------------------------------------
     |
-    | Minutes thresholds for each freshness stage (inclusive upper bounds).
-    | Products exceeding the last threshold are considered 'Spoiled'.
-    | Adjust per species/category later if needed.
+    | Hours thresholds for freshness decay from initial assessment.
+    | Fishermen set initial freshness (Very Fresh/Fresh/Good), then it decays:
+    | - Very Fresh -> Fresh -> Good -> Spoiled
+    | - Fresh -> Good -> Spoiled
+    | - Good -> Spoiled
     |
     */
-    'freshness_threshold_minutes' => [
-        'Fresh' => 360,    // <= 6 hours
-        'Good' => 720,     // <= 12 hours
-        'Aging' => 1200,   // <= 20 hours
-        'Stale' => 1680,   // <= 28 hours
-        // Beyond 28 hours = Spoiled
+    'freshness_decay_hours' => [
+        'Very Fresh' => [
+            'Fresh' => 6,      // Becomes Fresh after 6 hours
+            'Good' => 12,      // Becomes Good after 12 hours  
+            'Spoiled' => 24,   // Becomes Spoiled after 24 hours
+        ],
+        'Fresh' => [
+            'Good' => 8,       // Becomes Good after 8 hours
+            'Spoiled' => 18,   // Becomes Spoiled after 18 hours
+        ],
+        'Good' => [
+            'Spoiled' => 12,   // Becomes Spoiled after 12 hours
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category-Specific Freshness Decay Multipliers
+    |--------------------------------------------------------------------------
+    |
+    | Different fish types spoil at different rates. These multipliers adjust
+    | the decay hours based on category. Lower multiplier = faster spoilage.
+    | Default multiplier is 1.0 if category not specified.
+    |
+    */
+    'category_decay_multipliers' => [
+        // Fast spoilage (shellfish, crustaceans)
+        'Shellfish' => 0.5,      // 50% faster decay
+        'Crustaceans' => 0.5,
+        'Shrimp' => 0.5,
+        'Crabs' => 0.5,
+        
+        // Medium-fast spoilage (oily fish)
+        'Tuna' => 0.7,           // 30% faster decay
+        'Mackerel' => 0.7,
+        'Sardines' => 0.7,
+        
+        // Normal spoilage (white fish)
+        'Tilapia' => 1.0,        // Standard decay
+        'Bangus' => 1.0,
+        'Fish' => 1.0,           // Default fish category
+        
+        // Slower spoilage (preserved/processed)
+        'Dried Fish' => 3.0,     // 3x slower decay
+        'Smoked Fish' => 2.5,
+        'Salted Fish' => 3.0,
     ],
 
     /*

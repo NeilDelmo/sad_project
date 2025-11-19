@@ -418,6 +418,12 @@
                 <!-- Freshness Level -->
                 <div class="form-group">
                     <label class="form-label required">Freshness Level</label>
+                    <div id="freshness-decay-info" style="background: #E3F2FD; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: none;">
+                        <small style="color: #1976D2;">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong id="category-freshness-text">Select a category to see freshness duration</strong>
+                        </small>
+                    </div>
                     <div class="freshness-options">
                         <div class="freshness-option">
                             <input type="radio" 
@@ -428,6 +434,7 @@
                                    required>
                             <label for="freshness_very" class="freshness-label">
                                 🌟🌟🌟<br>Very Fresh
+                                <small class="freshness-duration" style="display: block; color: #666; font-size: 11px; margin-top: 4px;" id="very-fresh-duration"></small>
                             </label>
                         </div>
                         <div class="freshness-option">
@@ -439,6 +446,7 @@
                                    required>
                             <label for="freshness_fresh" class="freshness-label">
                                 🌟🌟<br>Fresh
+                                <small class="freshness-duration" style="display: block; color: #666; font-size: 11px; margin-top: 4px;" id="fresh-duration"></small>
                             </label>
                         </div>
                         <div class="freshness-option">
@@ -450,6 +458,7 @@
                                    required>
                             <label for="freshness_good" class="freshness-label">
                                 🌟<br>Good
+                                <small class="freshness-duration" style="display: block; color: #666; font-size: 11px; margin-top: 4px;" id="good-duration"></small>
                             </label>
                         </div>
                     </div>
@@ -485,6 +494,54 @@
     </div>
 
     <script>
+        // Category decay multipliers from config
+        const categoryDecayMultipliers = {
+            'Shellfish': 0.5,
+            'Crustaceans': 0.5,
+            'Shrimp': 0.5,
+            'Crabs': 0.5,
+            'Tuna': 0.7,
+            'Mackerel': 0.7,
+            'Sardines': 0.7,
+            'Tilapia': 1.0,
+            'Bangus': 1.0,
+            'Fish': 1.0,
+            'Dried Fish': 3.0,
+            'Smoked Fish': 2.5,
+            'Salted Fish': 3.0
+        };
+
+        // Update freshness duration when category changes
+        document.getElementById('category_id').addEventListener('change', function() {
+            const categoryName = this.options[this.selectedIndex].text;
+            const multiplier = categoryDecayMultipliers[categoryName] || 1.0;
+            
+            // Very Fresh durations (base: 6h->Fresh, 12h->Good, 24h->Spoiled)
+            const veryFreshToSpoiled = Math.round(24 * multiplier);
+            document.getElementById('very-fresh-duration').textContent = `Stays fresh ~${veryFreshToSpoiled}h`;
+            
+            // Fresh durations (base: 8h->Good, 18h->Spoiled)
+            const freshToSpoiled = Math.round(18 * multiplier);
+            document.getElementById('fresh-duration').textContent = `Stays fresh ~${freshToSpoiled}h`;
+            
+            // Good durations (base: 12h->Spoiled)
+            const goodToSpoiled = Math.round(12 * multiplier);
+            document.getElementById('good-duration').textContent = `Stays fresh ~${goodToSpoiled}h`;
+            
+            // Show info box
+            const infoBox = document.getElementById('freshness-decay-info');
+            const infoText = document.getElementById('category-freshness-text');
+            infoBox.style.display = 'block';
+            
+            if (multiplier < 1.0) {
+                infoText.innerHTML = `<strong>${categoryName}</strong> spoils faster than average fish`;
+            } else if (multiplier > 1.0) {
+                infoText.innerHTML = `<strong>${categoryName}</strong> stays fresh longer than average fish`;
+            } else {
+                infoText.innerHTML = `<strong>${categoryName}</strong> has standard freshness duration`;
+            }
+        });
+
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const previewContainer = document.getElementById('imagePreview');

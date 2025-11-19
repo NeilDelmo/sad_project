@@ -513,7 +513,21 @@
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Quality</span>
-                        <span class="detail-value">{{ $product->freshness_metric ?? 'Good' }}</span>
+                        <span class="detail-value">
+                            @if($product->freshness_level)
+                                <span class="badge 
+                                    @if($product->freshness_level == 'Fresh') bg-success
+                                    @elseif($product->freshness_level == 'Good') bg-info
+                                    @elseif($product->freshness_level == 'Aging') bg-warning text-dark
+                                    @elseif($product->freshness_level == 'Stale') bg-warning text-dark
+                                    @else bg-danger
+                                    @endif">
+                                    {{ $product->freshness_level }}
+                                </span>
+                            @else
+                                {{ $product->freshness_metric ?? 'Good' }}
+                            @endif
+                        </span>
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Listed</span>

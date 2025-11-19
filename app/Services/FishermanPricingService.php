@@ -138,17 +138,9 @@ class FishermanPricingService
     {
         $now = Carbon::now();
         
-        // Freshness score (simplified - you can enhance this)
-        $freshnessScore = 85; // Default
-        if ($product->freshness_metric) {
-            $freshnessScore = match(strtolower($product->freshness_metric)) {
-                'very fresh', 'excellent' => 95,
-                'fresh', 'good' => 85,
-                'moderate' => 70,
-                'low' => 50,
-                default => 75,
-            };
-        }
+        // Calculate time-based freshness score (decays 2 points per hour)
+        $hoursOld = Carbon::parse($product->created_at)->diffInHours(Carbon::now());
+        $freshnessScore = max(0, 100 - ($hoursOld * 2));
         
         // Demand factor (based on category popularity - simplified)
         $demandFactor = 1.2;

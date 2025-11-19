@@ -231,7 +231,22 @@
                 <div class="product-details">
                     <div class="product-detail-row">
                         <span class="detail-label">Freshness</span>
-                        <span class="detail-value">{{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}</span>
+                        <span class="detail-value">
+                            @if($listing->freshness_level)
+                                <span class="badge 
+                                    @if($listing->freshness_level == 'Fresh') bg-success
+                                    @elseif($listing->freshness_level == 'Good') bg-info
+                                    @elseif($listing->freshness_level == 'Aging') bg-warning text-dark
+                                    @elseif($listing->freshness_level == 'Stale') bg-warning text-dark
+                                    @else bg-danger
+                                    @endif">
+                                    {{ $listing->freshness_level }}
+                                </span>
+                                <small class="text-muted">({{ $listing->freshness_score ?? 'N/A' }}/100)</small>
+                            @else
+                                {{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}
+                            @endif
+                        </span>
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Listed</span>
@@ -257,7 +272,22 @@
                 <div class="product-details">
                     <div class="product-detail-row">
                         <span class="detail-label">Freshness</span>
-                        <span class="detail-value">{{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}</span>
+                        <span class="detail-value">
+                            @if($listing->freshness_level)
+                                <span class="badge 
+                                    @if($listing->freshness_level == 'Fresh') bg-success
+                                    @elseif($listing->freshness_level == 'Good') bg-info
+                                    @elseif($listing->freshness_level == 'Aging') bg-warning text-dark
+                                    @elseif($listing->freshness_level == 'Stale') bg-warning text-dark
+                                    @else bg-danger
+                                    @endif">
+                                    {{ $listing->freshness_level }}
+                                </span>
+                                <small class="text-muted">({{ $listing->freshness_score ?? 'N/A' }}/100)</small>
+                            @else
+                                {{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}
+                            @endif
+                        </span>
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Demand</span>
