@@ -35,7 +35,9 @@ class PricingService
         // Calculate final price
         $basePrice = $product->unit_price;
         $multiplier = $mlResult['multiplier'] ?? 1.0;
-        $finalPrice = round($basePrice * $multiplier, 2);
+        // New: Adjust by vendor portfolio (overall products) factor
+        $portfolioFactor = $vendor ? $this->calculateVendorPortfolioFactor($vendor) : 1.0;
+        $finalPrice = round($basePrice * $multiplier * $portfolioFactor, 2);
         
         return [
             'base_price' => $basePrice,
@@ -43,6 +45,7 @@ class PricingService
             'final_price' => $finalPrice,
             'confidence' => $mlResult['confidence'] ?? 0.85,
             'features' => $features,
+            'portfolio_factor' => $portfolioFactor,
         ];
     }
     
@@ -68,7 +71,7 @@ class PricingService
         // Time of day (0-23)
         $timeOfDay = (int) Carbon::now()->format('H');
         
-        return [
+        $featureSet = [
             'freshness_score' => round($freshnessScore, 2),
             'available_quantity' => $product->available_quantity ?? 10,
             'demand_factor' => $demandFactor,
@@ -77,6 +80,14 @@ class PricingService
             'vendor_rating' => $vendorRating,
             'category_id' => $product->category_id ?? 1,
         ];
+
+        // Optional: expose vendor portfolio signals in features for transparency/logging
+        if ($vendor) {
+            $featureSet['vendor_total_items'] = $this->getVendorTotalInventoryItems($vendor);
+            $featureSet['vendor_total_quantity'] = $this->getVendorTotalInventoryQuantity($vendor);
+        }
+
+        return $featureSet;
     }
     
     /**
@@ -119,6 +130,55 @@ class PricingService
         // TODO: Implement actual vendor rating from reviews/transactions
         // For now, return a default value
         return 4.0;
+    }
+
+    /**
+     * Compute a portfolio factor (0.97 - 1.03) based on vendor's overall products.
+     * More items stocked -> slight discount (economies of scale);
+     * fewer items -> slight premium.
+     */
+    private function calculateVendorPortfolioFactor(User $vendor): float
+    {
+        // Aggregate inventory across all items the vendor currently holds
+        $totals = DB::table('vendor_inventories')
+            ->selectRaw('COUNT(*) as items, COALESCE(SUM(quantity),0) as qty')
+            ->where('vendor_id', $vendor->id)
+            ->whereIn('status', ['in_stock', 'listed'])
+            ->first();
+
+        $items = (int) ($totals->items ?? 0);
+        $qty = (int) ($totals->qty ?? 0);
+
+        // Derive a simple factor from portfolio size (items) and volume (qty)
+        // Bound impact tightly to avoid surprises in price swings
+        $itemAdj = 0.0;
+        if ($items >= 50) $itemAdj = -0.03; // discount
+        elseif ($items >= 20) $itemAdj = -0.015;
+        elseif ($items <= 3) $itemAdj = 0.02; // premium for small portfolio
+
+        $qtyAdj = 0.0;
+        if ($qty >= 1000) $qtyAdj = -0.02;
+        elseif ($qty >= 300) $qtyAdj = -0.01;
+        elseif ($qty <= 20) $qtyAdj = 0.01;
+
+        $factor = 1.0 + $itemAdj + $qtyAdj;
+        return max(0.97, min(1.03, round($factor, 4)));
+    }
+
+    private function getVendorTotalInventoryItems(User $vendor): int
+    {
+        return (int) DB::table('vendor_inventories')
+            ->where('vendor_id', $vendor->id)
+            ->whereIn('status', ['in_stock', 'listed'])
+            ->count();
+    }
+
+    private function getVendorTotalInventoryQuantity(User $vendor): int
+    {
+        return (int) (DB::table('vendor_inventories')
+            ->where('vendor_id', $vendor->id)
+            ->whereIn('status', ['in_stock', 'listed'])
+            ->sum('quantity') ?? 0);
     }
     
     /**

@@ -191,6 +191,64 @@
             </div>
         </form>
 
+        @if(isset($recommendations))
+        <!-- Recommended For You -->
+        @php
+            $priceOf = function($l){ return $l->final_price ?? $l->dynamic_price ?? $l->asking_price ?? $l->base_price; };
+        @endphp
+        @if(($recommendations['cheapest'] ?? collect())->isNotEmpty())
+        <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Cheapest Picks</div>
+        <div class="product-grid">
+            @foreach($recommendations['cheapest'] as $listing)
+            @php $product = $listing->product; $uom = $product->unit_of_measure ?? 'kg'; @endphp
+            <div class="product-card">
+                <div class="product-name">{{ $product->name }}</div>
+                <div class="product-price">
+                    <span class="price-label">From</span>
+                    ₱{{ number_format($priceOf($listing), 2) }}/{{ $uom }}
+                </div>
+                <div class="product-details">
+                    <div class="product-detail-row">
+                        <span class="detail-label">Freshness</span>
+                        <span class="detail-value">{{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}</span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Listed</span>
+                        <span class="detail-value">{{ optional($listing->listing_date)->diffForHumans() }}</span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        @if(($recommendations['freshest'] ?? collect())->isNotEmpty())
+        <div class="page-subtitle" style="font-weight:600; margin: 20px 0 10px;">Freshest Today</div>
+        <div class="product-grid">
+            @foreach($recommendations['freshest'] as $listing)
+            @php $product = $listing->product; $uom = $product->unit_of_measure ?? 'kg'; @endphp
+            <div class="product-card">
+                <div class="product-name">{{ $product->name }}</div>
+                <div class="product-price">
+                    <span class="price-label">Price</span>
+                    ₱{{ number_format($priceOf($listing), 2) }}/{{ $uom }}
+                </div>
+                <div class="product-details">
+                    <div class="product-detail-row">
+                        <span class="detail-label">Freshness</span>
+                        <span class="detail-value">{{ $listing->freshness_score ? ($listing->freshness_score.'/100') : 'N/A' }}</span>
+                    </div>
+                    <div class="product-detail-row">
+                        <span class="detail-label">Demand</span>
+                        <span class="detail-value">{{ $listing->demand_factor ? ($listing->demand_factor.'x') : '—' }}</span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+        @endif
+
         <!-- Fresh Fish Section -->
         @if(!isset($filter) || $filter == 'all' || $filter == 'fish')
         <div class="page-subtitle" id="fish-section" style="font-weight:600; margin-bottom: 12px;">Fresh Fish</div>

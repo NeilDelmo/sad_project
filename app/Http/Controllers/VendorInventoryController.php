@@ -107,7 +107,7 @@ class VendorInventoryController extends Controller
         }
 
         // Get ML dynamic pricing
-        $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product);
+        $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product, auth()->user());
         
         $baseCost = $inventory->purchase_price;
         $dynamicPrice = $pricingResult['final_price'];
@@ -148,7 +148,7 @@ class VendorInventoryController extends Controller
         DB::beginTransaction();
         try {
             // Get ML dynamic pricing
-            $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product);
+            $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product, auth()->user());
             
             $baseCost = $inventory->purchase_price;
             $mlMultiplier = $pricingResult['multiplier'];
