@@ -90,9 +90,10 @@
 
         .navbar .container-fluid {
             display: flex !important;
-            justify-content: space-between !important;
             align-items: center !important;
             flex-wrap: nowrap !important;
+            gap: 16px !important;
+            max-width: 100% !important;
         }
 
         .nav-brand {
@@ -107,8 +108,15 @@
         .nav-links {
             display: flex !important;
             gap: 10px !important;
-            margin-left: auto !important;
-            flex-shrink: 0;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            align-items: center !important;
+            flex: 0 1 auto !important;
+            min-width: 0 !important;
+        }
+
+        .nav-links::-webkit-scrollbar {
+            display: none;
         }
 
         .nav-link {
@@ -122,6 +130,7 @@
             position: relative;
             overflow: hidden;
             font-family: Arial, sans-serif;
+             margin-left: auto !important;
         }
 
         .nav-link::before {

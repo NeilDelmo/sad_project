@@ -1,9 +1,9 @@
 <style>
   .navbar .nav-layout {
     width: 100%;
+    max-width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 12px;
     flex-wrap: nowrap;
   }
@@ -12,13 +12,12 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-left: auto;
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow-x: auto;
-    padding-right: 20px; /* ensure right-side items (eg. logout) are visible on Edge */
     -webkit-overflow-scrolling: touch;
-    flex-shrink: 0;
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   .navbar .nav-links::-webkit-scrollbar {
@@ -28,11 +27,20 @@
   .navbar .nav-link {
     white-space: nowrap;
   }
+
+  .navbar .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
 </style>
 
 <nav class="navbar">
   <div class="nav-layout">
     <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">SeaLedger</a>
+    
     <div class="nav-links">
       <a href="{{ route('vendor.dashboard') }}" class="nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">
         <i class="fa-solid fa-gauge-high"></i> Dashboard
@@ -52,6 +60,9 @@
       <a href="{{ route('marketplace.orders.index') }}" class="nav-link {{ request()->routeIs('marketplace.orders.*') ? 'active' : '' }}">
         <i class="fa-solid fa-shopping-cart"></i> My Orders
       </a>
+    </div>
+
+    <div class="nav-actions">
       @include('partials.notification-bell')
       <form method="POST" action="{{ route('logout') }}" style="display:inline;">
         @csrf
