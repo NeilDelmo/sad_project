@@ -53,6 +53,16 @@ class CustomerOrder extends Model implements Auditable
     public function listing(): BelongsTo { return $this->belongsTo(MarketplaceListing::class, 'listing_id'); }
     
     /**
+     * Get formatted order number (e.g., AB123)
+     */
+    public function getFormattedOrderNumberAttribute(): string
+    {
+        $letters = chr(65 + ($this->id % 26)) . chr(65 + (intval($this->id / 26) % 26));
+        $numbers = str_pad($this->id % 1000, 3, '0', STR_PAD_LEFT);
+        return $letters . $numbers;
+    }
+    
+    /**
      * Check if refund request window is still open (3 hours from delivery)
      */
     public function isRefundWindowOpen(): bool

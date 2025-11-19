@@ -267,7 +267,14 @@
           @endif
           <div class="flex-grow-1">
             <h5 class="order-title">{{ $product?->name ?? ('Product #'.$order->listing_id) }}</h5>
-            <div class="order-meta">Order #{{ $order->id }}</div>
+            <div class="order-meta" style="font-weight: 600; color: #1B5E88; font-family: monospace; letter-spacing: 0.5px;">Order #{{ $order->formatted_order_number }}</div>
+            <div class="order-meta" style="font-size: 12px; margin-top: 2px;">
+              @if($user && $user->id === $order->buyer_id)
+                <i class="fa-solid fa-store"></i> Vendor: <strong>{{ optional($order->vendor)->name ?? optional($order->vendor)->username ?? 'N/A' }}</strong>
+              @elseif($user && $user->id === $order->vendor_id)
+                <i class="fa-solid fa-user"></i> Buyer: <strong>{{ optional($order->buyer)->name ?? optional($order->buyer)->username ?? 'N/A' }}</strong>
+              @endif
+            </div>
           </div>
           <div class="order-badges">
             <span class="badge bg-{{ $badge }} text-uppercase">{{ str_replace('_',' ', $order->status) }}</span>
@@ -280,20 +287,16 @@
             <div class="value">{{ $order->quantity }} {{ $uom }}</div>
           </div>
           <div>
+            <div class="label">Unit Price</div>
+            <div class="value">₱{{ number_format($order->unit_price, 2) }}</div>
+          </div>
+          <div>
             <div class="label">Total</div>
-            <div class="value">₱{{ number_format($order->total, 2) }}</div>
+            <div class="value" style="color: #198754; font-weight: 700;">₱{{ number_format($order->total, 2) }}</div>
           </div>
           <div>
-            <div class="label">Buyer</div>
-            <div class="value">{{ optional($order->buyer)->name ?? ('Buyer #'.$order->buyer_id) }}</div>
-          </div>
-          <div>
-            <div class="label">Vendor</div>
-            <div class="value">{{ optional($order->vendor)->name ?? ('Vendor #'.$order->vendor_id) }}</div>
-          </div>
-          <div>
-            <div class="label">Placed</div>
-            <div class="value">{{ $order->created_at?->diffForHumans() }}</div>
+            <div class="label">Order Date</div>
+            <div class="value">{{ $order->created_at?->format('M d, Y g:i A') }}</div>
           </div>
           @if($order->delivered_at)
           <div>
@@ -427,7 +430,7 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Request Refund - Order #{{ $order->id }}</h5>
+                <h5 class="modal-title">Request Refund - Order #{{ $order->formatted_order_number }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form method="post" action="{{ route('marketplace.orders.refund.request', $order) }}" enctype="multipart/form-data">

@@ -369,9 +369,16 @@
     <div class="order-card">
       <div class="order-header">
         <div>
-          <span class="order-id"><i class="fa-solid fa-receipt"></i> Order #{{ $order->id }}</span>
+          <span class="order-id"><i class="fa-solid fa-receipt"></i> Order #{{ $order->formatted_order_number }}</span>
           <div style="font-size: 14px; color: #666; margin-top: 5px;">
-            {{ optional($order->product)->name ?? 'Product #'.$order->product_id }}
+            <strong>{{ optional($order->product)->name ?? 'Product #'.$order->product_id }}</strong>
+          </div>
+          <div style="font-size: 13px; color: #888; margin-top: 3px;">
+            @if($user->user_type === 'vendor')
+              <i class="fa-solid fa-user-tie"></i> Fisherman: <strong>{{ optional($order->fisherman)->name ?? optional($order->fisherman)->username ?? 'N/A' }}</strong>
+            @else
+              <i class="fa-solid fa-store"></i> Vendor: <strong>{{ optional($order->vendor)->name ?? optional($order->vendor)->username ?? 'N/A' }}</strong>
+            @endif
           </div>
         </div>
         <span class="status-badge status-{{ $order->status }}">
@@ -381,24 +388,25 @@
 
       <div class="order-body">
         <div class="order-detail">
+          <span class="order-label">Order Number</span>
+          <span class="order-value" style="color: #1B5E88; font-weight: 700; font-family: monospace; letter-spacing: 1px;">#{{ $order->formatted_order_number }}</span>
+        </div>
+        <div class="order-detail">
           <span class="order-label">Quantity</span>
-          <span class="order-value">{{ $order->quantity }} kg</span>
+          <span class="order-value">{{ $order->quantity }} {{ $order->product->unit_of_measure ?? 'kg' }}</span>
+        </div>
+        <div class="order-detail">
+          <span class="order-label">Unit Price</span>
+          <span class="order-value">₱{{ number_format($order->unit_price, 2) }}</span>
         </div>
         <div class="order-detail">
           <span class="order-label">Total Amount</span>
           <span class="order-value" style="color: #16a34a; font-weight: 700;">₱{{ number_format($order->total, 2) }}</span>
         </div>
-        @if($user->user_type === 'vendor')
         <div class="order-detail">
-          <span class="order-label">Fisherman</span>
-          <span class="order-value">{{ optional($order->fisherman)->name ?? 'N/A' }}</span>
+          <span class="order-label">Order Date</span>
+          <span class="order-value">{{ $order->created_at->format('M d, Y g:i A') }}</span>
         </div>
-        @else
-        <div class="order-detail">
-          <span class="order-label">Vendor</span>
-          <span class="order-value">{{ optional($order->vendor)->name ?? 'N/A' }}</span>
-        </div>
-        @endif
         @if($order->proof_photo_path)
         <div class="order-detail">
           <span class="order-label">Delivery Proof</span>
@@ -551,7 +559,7 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Mark Delivered - Order #{{ $order->id }}</h5>
+                <h5 class="modal-title">Mark Delivered - Order #{{ $order->formatted_order_number }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form method="post" action="{{ route('orders.delivered', $order) }}" enctype="multipart/form-data">
@@ -580,7 +588,7 @@
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title">Request Refund - Order #{{ $order->id }}</h5>
+                <h5 class="modal-title">Request Refund - Order #{{ $order->formatted_order_number }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <form method="post" action="{{ route('orders.refund.request', $order) }}" enctype="multipart/form-data">
