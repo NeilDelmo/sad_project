@@ -14,14 +14,19 @@
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Fishing Risk Prediction</h3>
                         <p class="text-gray-600 mb-4">Predict fishing safety risks using ML based on weather conditions and location.</p>
                         <div class="flex flex-wrap items-center gap-3">
-                            <a href="{{ route('risk-form') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-                                <span>⚡</span>
-                                <span>Run Prediction</span>
-                            </a>
-                            <a href="{{ route('risk-history') }}" class="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition">
-                                <span>📚</span>
-                                <span>View Logs</span>
-                            </a>
+                            @php($userType = Auth::check() ? Auth::user()->user_type : null)
+                            @if($userType === 'fisherman')
+                                <a href="{{ route('risk-form') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+                                    <span>⚡</span>
+                                    <span>Run Prediction</span>
+                                </a>
+                            @endif
+                            @if($userType === 'regulator')
+                                <a href="{{ route('risk-history') }}" class="inline-flex items-center gap-2 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition">
+                                    <span>📚</span>
+                                    <span>View Logs</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>

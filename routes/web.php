@@ -21,8 +21,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Public fishing safety map (no authentication required)
-Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->name('fishing-safety.public');
+// Fishing safety map (restricted; auth required). Public access removed.
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
@@ -45,6 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/dashboard/risk', [RiskPredictionController::class, 'predict'])->name('predict-risk');
     Route::get('/dashboard/risk/history', [RiskPredictionController::class, 'history'])->name('risk-history');
     Route::get('/api/risk/latest', [RiskPredictionController::class, 'latest'])->name('risk-latest');
+
+    // Auth-only map entrypoint (visible to fishermen only in controller)
+    Route::get('/fishing-safety', [RiskPredictionController::class, 'publicMap'])->name('fishing-safety.public');
 });
 
 Route::middleware('auth')->group(function () {

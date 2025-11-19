@@ -25,12 +25,17 @@
                     <x-nav-link :href="route($homeName)" :active="$dashboardActive">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('risk-form')" :active="request()->routeIs('risk-form') || request()->routeIs('predict-risk')">
-                        {{ __('Risk Predictor') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('risk-history')" :active="request()->routeIs('risk-history')">
-                        {{ __('Risk Logs') }}
-                    </x-nav-link>
+                    @php $userType = Auth::check() ? Auth::user()->user_type : null; @endphp
+                    @if($userType === 'fisherman')
+                        <x-nav-link :href="route('risk-form')" :active="request()->routeIs('risk-form') || request()->routeIs('predict-risk')">
+                            {{ __('Risk Predictor') }}
+                        </x-nav-link>
+                    @endif
+                    @if($userType === 'regulator')
+                        <x-nav-link :href="route('risk-history')" :active="request()->routeIs('risk-history')">
+                            {{ __('Risk Logs') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -93,12 +98,16 @@
             <x-responsive-nav-link :href="route($homeName)" :active="$dashboardActive">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('risk-form')" :active="request()->routeIs('risk-form') || request()->routeIs('predict-risk')">
-                {{ __('Risk Predictor') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('risk-history')" :active="request()->routeIs('risk-history')">
-                {{ __('Risk Logs') }}
-            </x-responsive-nav-link>
+            @if($userType === 'fisherman')
+                <x-responsive-nav-link :href="route('risk-form')" :active="request()->routeIs('risk-form') || request()->routeIs('predict-risk')">
+                    {{ __('Risk Predictor') }}
+                </x-responsive-nav-link>
+            @endif
+            @if($userType === 'regulator')
+                <x-responsive-nav-link :href="route('risk-history')" :active="request()->routeIs('risk-history')">
+                    {{ __('Risk Logs') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

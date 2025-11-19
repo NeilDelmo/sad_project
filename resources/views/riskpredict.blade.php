@@ -1,8 +1,10 @@
 <x-app-layout>
     @php
         $compactLayout = $compactLayout ?? false;
-        $allowHistory = auth()->check() && in_array(auth()->user()->user_type, ['admin', 'regulator']);
-        $enableOutcomeLogging = auth()->check();
+        // Only regulators can view history; admin excluded per requirement
+        $allowHistory = auth()->check() && in_array(auth()->user()->user_type, ['regulator']);
+        // Hide training/outcome logging UI entirely
+        $enableOutcomeLogging = false;
     @endphp
     @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -24,29 +26,15 @@
             color: #1f2937 !important;
         }
 
-        .dark .text-improved {
-            color: #f3f4f6 !important;
-        }
-
         /* Better contrast for cards */
         .card-light {
             background-color: #ffffff;
-        }
-
-        .dark .card-light {
-            background-color: #1f2937;
         }
 
         .on-land-card {
             background-color: #f3f4f6;
             border-color: #d1d5db;
             color: #374151;
-        }
-
-        .dark .on-land-card {
-            background-color: rgba(55, 65, 81, 0.7);
-            border-color: rgba(75, 85, 99, 0.7);
-            color: #d1d5db;
         }
     </style>
     @if($compactLayout)
@@ -238,23 +226,23 @@
                 </div>
 
                 <!-- Welcome Panel -->
-                <div id="default-panel" class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden">
+                <div id="default-panel" class="bg-white shadow-xl rounded-2xl overflow-hidden">
                         <div class="p-6">
                             <div class="text-center mb-6">
-                                <div class="inline-block p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
-                                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
+                                    <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                 </div>
-                                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">Welcome to Fishing Safety Map</h3>
-                                <p class="text-gray-600 dark:text-gray-400 mt-2">Click anywhere on the map to check real-time fishing safety conditions and use right-click drag to pan</p>
+                                <h3 class="text-xl font-bold text-gray-900">Welcome to Fishing Safety Map</h3>
+                                <p class="text-gray-800 mt-2">Click anywhere on the map to check real-time fishing safety conditions and use right-click drag to pan</p>
                             </div>
 
                             <div class="space-y-4">
-                                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                                    <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-2">How to Use</h4>
-                                    <ol class="list-decimal list-inside space-y-1 text-sm text-blue-800 dark:text-blue-200">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-gray-900 mb-2">How to Use</h4>
+                                    <ol class="list-decimal list-inside space-y-1 text-sm text-gray-800">
                                         <li>Click on the map to check safety conditions</li>
                                         <li>Hold the right mouse button and drag to pan the map</li>
                                         <li>Use the "My Location" button to find your current position</li>
@@ -263,9 +251,9 @@
                                     </ol>
                                 </div>
 
-                                <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                                    <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">Safety Features</h4>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-green-700 dark:text-green-200">
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-gray-900 mb-2">Safety Features</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-800">
                                         <li>Real-time weather and marine conditions</li>
                                         <li>Wave height and wind speed analysis</li>
                                         <li>Historical incident data</li>
@@ -435,15 +423,6 @@
                                         </form>
                                     </div>
                                     @else
-                                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md border border-emerald-200/60 dark:border-emerald-900/40">
-                                        <h4 class="font-semibold text-gray-800 dark:text-gray-100 mb-3 flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            Log Trip Outcome
-                                        </h4>
-                                        <p class="text-xs text-gray-600 dark:text-gray-300">Sign in to record trip outcomes and help improve the safety model.</p>
-                                    </div>
                                     @endif
 
                                     @if($allowHistory)
@@ -585,6 +564,47 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Disable Tailwind dark: utilities for this view (remove all dark:* classes)
+            function removeDarkClassesWithin(root = document) {
+                try {
+                    // Remove from root element if present
+                    if (root.nodeType === 1 && root.classList && root.className.includes('dark:')) {
+                        root.className = root.className
+                            .split(/\s+/)
+                            .filter(c => c && !c.startsWith('dark:'))
+                            .join(' ');
+                    }
+                    // Remove from all descendants
+                    const nodes = root.querySelectorAll('[class*="dark:"]');
+                    nodes.forEach(el => {
+                        el.className = (el.className || '')
+                            .split(/\s+/)
+                            .filter(c => c && !c.startsWith('dark:'))
+                            .join(' ');
+                    });
+                } catch (e) {
+                    // No-op if anything unexpected occurs
+                    console.warn('Dark class cleanup skipped:', e);
+                }
+            }
+
+            // Initial cleanup on load
+            removeDarkClassesWithin(document);
+
+            // Observe future DOM changes and strip dark:* classes from injected content
+            const darkObserver = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    m.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            removeDarkClassesWithin(node);
+                        }
+                    });
+                }
+            });
+            try {
+                darkObserver.observe(document.body, { childList: true, subtree: true });
+            } catch (_) { /* ignore */ }
+
             const mapContainer = document.getElementById('fishing-map');
             if (!mapContainer) {
                 console.error('Fishing map container not found');
@@ -595,6 +615,8 @@
                 mapContainer.innerHTML = `<div class="flex items-center justify-center h-full text-sm font-semibold text-red-600 dark:text-red-400">
                     Unable to load map tiles. Check your internet connection and allow access to unpkg.com.
                 </div>`;
+                // Clean up dark:* classes from injected error message
+                removeDarkClassesWithin(mapContainer);
                 return;
             }
 

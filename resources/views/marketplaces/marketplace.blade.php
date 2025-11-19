@@ -250,9 +250,7 @@
                         <a href="{{ route('fisherman.offers.index') }}" class="nav-link">
                             <i class="fa-solid fa-handshake"></i> Offers
                         </a>
-                        <a href="{{ route('fishing-safety.public') }}" class="nav-link">
-                            <i class="fa-solid fa-life-ring"></i> Safety Map
-                        </a>
+                        {{-- Safety Map removed from public/other roles; only fishermen can access via dashboard if needed --}}
                         <a href="{{ route('marketplace.index') }}" class="nav-link active">
                             <i class="fa-solid fa-store"></i> Marketplace
                         </a>

@@ -10,7 +10,12 @@ class RiskPredictionController extends Controller
 {
     public function publicMap()
     {
-        // Public fishing safety map - no authentication required
+        // Restrict map to fishermen only
+        $user = request()->user();
+        if (! $user || $user->user_type !== 'fisherman') {
+            abort(403, 'Only fishermen can access the fishing safety map.');
+        }
+
         return view('riskpredict', [
             'compactLayout' => true,
             'recentLogs' => collect(),
@@ -19,6 +24,10 @@ class RiskPredictionController extends Controller
 
     public function showForm()
     {
+        $user = request()->user();
+        if (! $user || $user->user_type !== 'fisherman') {
+            abort(403, 'Only fishermen can access the risk prediction tool.');
+        }
         $recentLogs = RiskPredictionLog::query()
             ->latest('predicted_at')
             ->take(5)
@@ -29,6 +38,10 @@ class RiskPredictionController extends Controller
 
     public function predict(Request $request)
     {
+        $user = request()->user();
+        if (! $user || $user->user_type !== 'fisherman') {
+            abort(403, 'Only fishermen can submit predictions.');
+        }
         $data = [
             'wind_speed_kph' => $request->wind_speed_kph,
             'wave_height_m' => $request->wave_height_m,
@@ -126,7 +139,8 @@ class RiskPredictionController extends Controller
     {
         $userType = optional($request->user())->user_type;
 
-        if (! in_array($userType, ['admin', 'regulator'], true)) {
+        // Restrict history to regulators only (admins excluded per requirement)
+        if (! in_array($userType, ['regulator'], true)) {
             abort(403, 'You do not have permission to view prediction history.');
         }
 
