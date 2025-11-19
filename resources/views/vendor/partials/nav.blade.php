@@ -20,6 +20,7 @@
       <a href="{{ route('marketplace.orders.index') }}" class="nav-link {{ request()->routeIs('marketplace.orders.*') ? 'active' : '' }}">
         <i class="fa-solid fa-shopping-cart"></i> My Orders
       </a>
+      @include('partials.notification-bell')
       <form method="POST" action="{{ route('logout') }}" style="display:inline;">
         @csrf
         <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;">
