@@ -140,7 +140,7 @@ class PricingService
     private function calculateVendorPortfolioFactor(User $vendor): float
     {
         // Aggregate inventory across all items the vendor currently holds
-        $totals = DB::table('vendor_inventories')
+        $totals = DB::table('vendor_inventory')
             ->selectRaw('COUNT(*) as items, COALESCE(SUM(quantity),0) as qty')
             ->where('vendor_id', $vendor->id)
             ->whereIn('status', ['in_stock', 'listed'])
@@ -167,7 +167,7 @@ class PricingService
 
     private function getVendorTotalInventoryItems(User $vendor): int
     {
-        return (int) DB::table('vendor_inventories')
+        return (int) DB::table('vendor_inventory')
             ->where('vendor_id', $vendor->id)
             ->whereIn('status', ['in_stock', 'listed'])
             ->count();
@@ -175,7 +175,7 @@ class PricingService
 
     private function getVendorTotalInventoryQuantity(User $vendor): int
     {
-        return (int) (DB::table('vendor_inventories')
+        return (int) (DB::table('vendor_inventory')
             ->where('vendor_id', $vendor->id)
             ->whereIn('status', ['in_stock', 'listed'])
             ->sum('quantity') ?? 0);

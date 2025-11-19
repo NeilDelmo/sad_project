@@ -338,6 +338,12 @@
                     </span>
                     <span class="breakdown-value" style="color: #0075B5;">₱{{ number_format($dynamicPrice, 2) }}</span>
                 </div>
+                @if(isset($pricingResult['portfolio_factor']))
+                <div class="breakdown-row" style="padding-top: 8px;">
+                    <span class="breakdown-label">Portfolio Factor</span>
+                    <span class="breakdown-value">{{ number_format($pricingResult['portfolio_factor'], 3) }}x</span>
+                </div>
+                @endif
                 
                 <div class="breakdown-row">
                     <span class="breakdown-label">
