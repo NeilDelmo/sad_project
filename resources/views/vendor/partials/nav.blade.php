@@ -16,6 +16,9 @@
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow-x: auto;
+    padding-right: 20px; /* ensure right-side items (eg. logout) are visible on Edge */
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
   }
 
   .navbar .nav-links::-webkit-scrollbar {
@@ -29,7 +32,7 @@
 
 <nav class="navbar">
   <div class="nav-layout">
-    <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">🐟 SeaLedger</a>
+    <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">🐟 Marketplace & Forum</a>
     <div class="nav-links">
       <a href="{{ route('vendor.dashboard') }}" class="nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">
         <i class="fa-solid fa-gauge-high"></i> Dashboard
@@ -44,7 +47,7 @@
         <i class="fa-solid fa-handshake"></i> Offers
       </a>
       <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.index') || request()->routeIs('marketplace.shop') ? 'active' : '' }}">
-        <i class="fa-solid fa-store"></i> Marketplace
+        <i class="fa-solid fa-store"></i> Marketplace & Forum
       </a>
       <a href="{{ route('marketplace.orders.index') }}" class="nav-link {{ request()->routeIs('marketplace.orders.*') ? 'active' : '' }}">
         <i class="fa-solid fa-shopping-cart"></i> My Orders

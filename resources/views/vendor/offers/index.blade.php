@@ -23,6 +23,77 @@
     .btn-accept:hover { background: #15803d; }
     .btn-counter { background: #0075B5; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
     .btn-counter:hover { background: #1B5E88; }
+
+    /* === VENDOR NAVBAR STYLES (COPY FROM WORKING PAGES) === */
+    .navbar {
+      background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+      padding: 15px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin: 0;
+    }
+    .navbar .container-fluid {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+      padding: 0;
+    }
+    .nav-brand {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      font-family: "Koulen", cursive;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex !important;
+      gap: 10px !important;
+      align-items: center;
+      margin-left: auto;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: white;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .nav-link:hover::before {
+      transform: translateX(0);
+    }
+    .nav-link.active {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    /* === END NAVBAR STYLES === */
   </style>
 </head>
 <body>

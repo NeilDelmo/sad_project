@@ -12,18 +12,22 @@
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-            padding: 8px 20px;
+            padding: 15px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            margin: 0;
         }
 
         .navbar .container-fluid {
             width: 100%;
             max-width: 100%;
-            padding: 0;
+            padding: 0 20px;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
@@ -94,10 +98,21 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
+        .dashboard-shell {
+            width: 100%;
+            padding: 40px 0 60px;
+            box-sizing: border-box;
+        }
+
         .dashboard-container {
+            width: 100%;
             max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
+            margin: 0 auto;
+            padding: 0 24px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            box-sizing: border-box;
         }
 
         .welcome-section {
@@ -449,7 +464,9 @@
     <!-- Navbar -->
     @include('vendor.partials.nav')
 
-    <div class="dashboard-container">
+    <div class="dashboard-shell">
+
+        <div class="dashboard-container">
         @if(session('success'))
             <div class="alert-success">{{ session('success') }}</div>
         @endif
@@ -647,6 +664,7 @@
             @endforeach
         </div>
         @endif
+    </div>
     </div>
 
     <!-- Toasts handled by shared partial via vendor.nav -->

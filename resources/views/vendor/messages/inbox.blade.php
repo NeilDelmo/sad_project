@@ -110,7 +110,7 @@
                     <i class="fa-solid fa-handshake"></i> Offers
                 </a>
                 <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-store"></i> Marketplace
+                    <i class="fa-solid fa-store"></i> Marketplace & Forum
                 </a>
                 <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                     @csrf

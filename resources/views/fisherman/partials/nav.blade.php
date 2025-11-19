@@ -16,6 +16,9 @@
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow-x: auto;
+    padding-right: 20px; /* ensure the last item is visible on edge browsers */
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
   }
 
   .navbar .nav-links::-webkit-scrollbar {
@@ -29,7 +32,7 @@
 
 <nav class="navbar">
   <div class="nav-layout">
-    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 Marketplace & Forum</a>
     <div class="nav-links">
       <a href="{{ route('fisherman.dashboard') }}" class="nav-link {{ request()->routeIs('fisherman.dashboard') ? 'active' : '' }}">
         <i class="fa-solid fa-gauge-high"></i> Dashboard
@@ -47,7 +50,7 @@
         <i class="fa-solid fa-life-ring"></i> Safety Map
       </a>
       <a href="{{ route('marketplace.index') }}" class="nav-link {{ request()->routeIs('marketplace.*') ? 'active' : '' }}">
-        <i class="fa-solid fa-store"></i> Marketplace
+        <i class="fa-solid fa-store"></i> Marketplace & Forum
       </a>
       @include('partials.notification-bell')
       <form method="POST" action="{{ route('logout') }}" style="display:inline;">

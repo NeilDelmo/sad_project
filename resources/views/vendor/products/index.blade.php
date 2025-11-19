@@ -32,11 +32,11 @@
 
         .nav-brand {
             color: white;
-            font-size: 32px;
+            font-size: 22px;
             font-weight: bold;
             font-family: "Koulen", sans-serif;
+            font-style: normal;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-            letter-spacing: 1px;
         }
 
         .nav-links {

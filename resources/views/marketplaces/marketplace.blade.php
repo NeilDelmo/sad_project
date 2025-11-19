@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,9 @@
     <link rel="stylesheet" href="bootstrap5/css/bootstrap.min.css" />
 
     <!-- icons -->
-    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
 
+    <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Koulen&display=swap">
     <title>SeaLedger Marketplace</title>
 
     <style>
@@ -19,10 +21,20 @@
             font-style: normal;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
-            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #BFBFBF;
+            font-family: Arial, sans-serif;
+            /* ← default for everything except brand */
         }
 
         a {
@@ -73,7 +85,7 @@
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .navbar .container-fluid {
@@ -84,17 +96,19 @@
         }
 
         .nav-brand {
+            flex-shrink: 0;
             color: white;
             font-size: 28px;
             font-weight: bold;
             font-family: "Koulen", sans-serif;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .nav-links {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
+            display: flex !important;
+            gap: 10px !important;
+            margin-left: auto !important;
+            flex-shrink: 0;
         }
 
         .nav-link {
@@ -135,7 +149,7 @@
             background: rgba(255, 255, 255, 0.25);
             color: white;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         /* Keep your original page styles */
@@ -146,11 +160,14 @@
             justify-content: center;
             height: calc(100vh - 68px);
             text-align: center;
+            background: url('/images/fishing.jpg') center center/cover no-repeat;
+            min-height: calc(100vh - 68px);
+            width: 100%;
         }
 
         .btn-size {
             padding: 3px 20px;
-            width: auto;            
+            width: auto;
             max-width: 90%;
             white-space: nowrap;
         }
@@ -182,6 +199,7 @@
         }
     </style>
 </head>
+
 <body style="background-color: #BFBFBF;">
 
     @include('partials.toast-notifications')
@@ -201,79 +219,84 @@
         </div>
     </div>
     <script>
-      setTimeout(function(){ var t=document.getElementById('flash-toast'); if(t){ t.remove(); } }, 4000);
+        setTimeout(function() {
+            var t = document.getElementById('flash-toast');
+            if (t) {
+                t.remove();
+            }
+        }, 4000);
     </script>
     @endif
 
     <!-- Role-Based Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 Marketplace &amp; Forum</a>
             <div class="nav-links">
                 @if(Auth::check())
-                    @if(Auth::user()->user_type === 'vendor')
-                        <!-- Vendor Navigation -->
-                        <a href="{{ route('vendor.dashboard') }}" class="nav-link">
-                            <i class="fa-solid fa-gauge-high"></i> Dashboard
-                        </a>
-                        <a href="{{ route('vendor.products.index') }}" class="nav-link">
-                            <i class="fa-solid fa-fish"></i> Browse
-                        </a>
-                        <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
-                            <i class="fa-solid fa-box"></i> Inventory
-                        </a>
-                        <a href="{{ route('vendor.offers.index') }}" class="nav-link">
-                            <i class="fa-solid fa-handshake"></i> Offers
-                        </a>
-                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
-                            <i class="fa-solid fa-store"></i> Marketplace
-                        </a>
-                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
-                            <i class="fa-solid fa-shopping-cart"></i> My Orders
-                        </a>
-                    @elseif(Auth::user()->user_type === 'buyer')
-                        <!-- Buyer Navigation -->
-                        <a href="{{ route('marketplace.shop') }}" class="nav-link">
-                            <i class="fa-solid fa-fire"></i> Latest
-                        </a>
-                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
-                            <i class="fa-solid fa-store"></i> Marketplace
-                        </a>
-                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
-                            <i class="fa-solid fa-receipt"></i> My Orders
-                        </a>
-                        <a href="{{ route('forums.index') }}" class="nav-link">
-                            <i class="fa-solid fa-comments"></i> Forum
-                        </a>
-                    @else
-                        <!-- Fisherman Navigation -->
-                        <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
-                            <i class="fa-solid fa-gauge-high"></i> Dashboard
-                        </a>
-                        <a href="{{ route('fisherman.products.index') }}" class="nav-link">
-                            <i class="fa-solid fa-box"></i> My Products
-                        </a>
-                        <a href="{{ route('orders.index') }}" class="nav-link">
-                            <i class="fa-solid fa-receipt"></i> Orders
-                        </a>
-                        <a href="{{ route('fisherman.offers.index') }}" class="nav-link">
-                            <i class="fa-solid fa-handshake"></i> Offers
-                        </a>
-                        {{-- Safety Map removed from public/other roles; only fishermen can access via dashboard if needed --}}
-                        <a href="{{ route('marketplace.index') }}" class="nav-link active">
-                            <i class="fa-solid fa-store"></i> Marketplace
-                        </a>
-                    @endif
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </button>
-                    </form>
+                @if(Auth::user()->user_type === 'vendor')
+                <!-- Vendor Navigation -->
+                <a href="{{ route('vendor.dashboard') }}" class="nav-link">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+                <a href="{{ route('vendor.products.index') }}" class="nav-link">
+                    <i class="fa-solid fa-fish"></i> Browse
+                </a>
+                <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
+                    <i class="fa-solid fa-box"></i> Inventory
+                </a>
+                <a href="{{ route('vendor.offers.index') }}" class="nav-link">
+                    <i class="fa-solid fa-handshake"></i> Offers
+                </a>
+                <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                    <i class="fa-solid fa-store"></i> Marketplace & Forum
+                </a>
+                <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                    <i class="fa-solid fa-shopping-cart"></i> My Orders
+                </a>
+                @elseif(Auth::user()->user_type === 'buyer')
+                <!-- Buyer Navigation -->
+                <a href="{{ route('marketplace.shop') }}" class="nav-link">
+                    <i class="fa-solid fa-fire"></i> Latest
+                </a>
+                <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                    <i class="fa-solid fa-store"></i> Marketplace & Forum
+                </a>
+                <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                    <i class="fa-solid fa-receipt"></i> My Orders
+                </a>
+                <a href="{{ route('forums.index') }}" class="nav-link">
+                    <i class="fa-solid fa-comments"></i> Forum
+                </a>
                 @else
-                    <a href="{{ route('login') }}" class="nav-link">
-                        <i class="fa-solid fa-right-to-bracket"></i> Login
-                    </a>
+                <!-- Fisherman Navigation -->
+                <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+                <a href="{{ route('fisherman.products.index') }}" class="nav-link">
+                    <i class="fa-solid fa-box"></i> My Products
+                </a>
+                <a href="{{ route('orders.index') }}" class="nav-link">
+                    <i class="fa-solid fa-receipt"></i> Orders
+                </a>
+                <a href="{{ route('fisherman.offers.index') }}" class="nav-link">
+                    <i class="fa-solid fa-handshake"></i> Offers
+                </a>
+                {{-- Safety Map removed from public/other roles; only fishermen can access via dashboard if needed --}}
+                <a href="{{ route('marketplace.index') }}" class="nav-link active">
+                    <i class="fa-solid fa-store"></i> Marketplace & Forum
+                </a>
+                @endif
+                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                </form>
+                @else
+                <a href="{{ route('login') }}" class="nav-link">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </a>
                 @endif
             </div>
         </div>
@@ -303,4 +326,5 @@
         });
     </script>
 </body>
+
 </html>
