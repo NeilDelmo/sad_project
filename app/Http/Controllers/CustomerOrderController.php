@@ -7,6 +7,7 @@ use App\Models\MarketplaceListing;
 use App\Models\VendorInventory;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Models\OrganizationRevenue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -56,6 +57,9 @@ class CustomerOrderController extends Controller
             }
             $total = $unitPrice * $qty;
 
+            $platformUnitFee = $listing->platform_fee ?? 0; // fee per unit stored when listing created
+            $orderPlatformFee = $platformUnitFee * $qty; // total fee for this order (recorded but not yet collected)
+
             $order = CustomerOrder::create([
                 'buyer_id' => $user->id,
                 'vendor_id' => $listing->seller_id,
@@ -63,6 +67,7 @@ class CustomerOrderController extends Controller
                 'quantity' => $qty,
                 'unit_price' => $unitPrice,
                 'total' => $total,
+                'platform_fee' => $orderPlatformFee,
                 'status' => 'pending_payment', // COD default
             ]);
 
@@ -120,6 +125,22 @@ class CustomerOrderController extends Controller
             throw ValidationException::withMessages(['status' => 'Only delivered orders can be confirmed received.']);
         }
         $order->update(['status' => 'received', 'received_at' => now()]);
+
+        // Record platform fee revenue once order is successfully received (finalized)
+        if ($order->platform_fee && $order->platform_fee > 0) {
+            $existing = \App\Models\OrganizationRevenue::where('order_id', $order->id)->where('type', 'platform_fee')->first();
+            if (!$existing) {
+                \App\Models\OrganizationRevenue::create([
+                    'order_id' => $order->id,
+                    'listing_id' => $order->listing_id,
+                    'vendor_id' => $order->vendor_id,
+                    'buyer_id' => $order->buyer_id,
+                    'amount' => $order->platform_fee,
+                    'type' => 'platform_fee',
+                    'collected_at' => now(),
+                ]);
+            }
+        }
         $this->notify($order, "Order #{$order->id} confirmed received.");
         return back()->with('success', 'Order confirmed received.');
     }
@@ -176,6 +197,7 @@ class CustomerOrderController extends Controller
             'status' => CustomerOrder::STATUS_REFUNDED,
             'refund_at' => now(),
         ]);
+        // Optional: future logic could reverse revenue; currently fee only recognized upon receipt.
         $this->notify($order, "Refund approved for Order #{$order->id}.");
         return back()->with('success', 'Refund approved.');
     }
@@ -193,6 +215,7 @@ class CustomerOrderController extends Controller
             'refund_notes' => $data['notes'] ?? $order->refund_notes,
             'refund_at' => now(),
         ]);
+        // No revenue reversal; order not refunded.
         $this->notify($order, "Refund declined for Order #{$order->id}.");
         return back()->with('success', 'Refund declined.');
     }

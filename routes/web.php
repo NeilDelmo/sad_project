@@ -8,6 +8,7 @@ use App\Http\Controllers\RentalController;
 use App\Http\Controllers\VendorInventoryController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\CustomerOrderController;
+use App\Http\Controllers\AdminRevenueController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -73,6 +74,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/refund-request', [OrdersController::class, 'requestRefund'])->name('orders.refund.request');
     Route::post('/orders/{order}/refund-approve', [OrdersController::class, 'approveRefund'])->name('orders.refund.approve');
     Route::post('/orders/{order}/refund-decline', [OrdersController::class, 'declineRefund'])->name('orders.refund.decline');
+
+    // Admin revenue dashboard (ensure to wrap with proper admin middleware later)
+    Route::get('/admin/revenue', [AdminRevenueController::class, 'index'])->name('admin.revenue.index');
+    Route::get('/admin/revenue/export', [AdminRevenueController::class, 'exportCsv'])->name('admin.revenue.export');
 });
 
 require __DIR__.'/auth.php';

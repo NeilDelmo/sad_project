@@ -179,25 +179,64 @@
         }
 
         .action-link {
-            color: #0075B5;
+            position: relative;
+            color: #0d5c85;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
-            margin-right: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px 8px 12px;
+            border-radius: 9999px;
+            background: linear-gradient(135deg,#E7FAFE 0%, #d4eef8 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: all .25s ease;
+            margin: 0 10px 8px 0;
         }
 
         .action-link:hover {
-            color: #1B5E88;
-            text-decoration: underline;
+            color: #094766;
+            background: linear-gradient(135deg,#dff4fa 0%, #c7e6f2 100%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .action-link .icon-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0075B5;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+            transition: background .25s ease, transform .25s ease;
+        }
+
+        .action-link:hover .icon-circle {
+            background: #1B5E88;
+            transform: scale(1.05);
         }
 
         .action-link.success {
-            color: #28a745;
+            background: linear-gradient(135deg,#d8f9e5 0%, #c2f1d4 100%);
+            color: #166534;
         }
+        .action-link.success .icon-circle { background: #16a34a; }
+        .action-link.success:hover { background: linear-gradient(135deg,#c9f4d9 0%, #afecc4 100%); color:#14532d; }
+        .action-link.success:hover .icon-circle { background:#15803d; }
 
-        .action-link.success:hover {
-            color: #218838;
-        }
+        .action-link.track { background: linear-gradient(135deg,#fff3cd 0%, #ffe69c 100%); color:#7c5e00; }
+        .action-link.track .icon-circle { background:#f0ad4e; }
+        .action-link.track:hover { background: linear-gradient(135deg,#ffe8a1 0%, #ffd86a 100%); color:#5e4600; }
+        .action-link.track:hover .icon-circle { background:#e69522; }
+
+        /* details variant uses base styling */
 
         .empty-state {
             background: white;
@@ -314,15 +353,20 @@
                         </td>
                         <td style="color: #6c757d; font-size: 14px;">{{ $item->purchased_at->diffForHumans() }}</td>
                         <td>
-                            @if($item->order)
-                            <a href="{{ route('orders.index') }}?order_id={{ $item->order->id }}" class="action-link">View Order</a>
+                            @if($item->status === 'pending_delivery')
+                                {{-- Item not yet received - show order tracking --}}
+                                @if($item->order)
+                                <a href="{{ route('orders.index') }}?order_id={{ $item->order->id }}" class="action-link track"><span class="icon-circle"><i class="fa-solid fa-truck"></i></span> <span>Track Delivery</span></a>
+                                @else
+                                <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link details"><span class="icon-circle"><i class="fa-solid fa-eye"></i></span> <span>View Details</span></a>
+                                @endif
+                                <span style="color: #856404; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Delivery</span>
                             @else
-                            <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link">View</a>
-                            @endif
-                            @if($item->status === 'in_stock')
-                            <a href="{{ route('vendor.inventory.create-listing', $item) }}" class="action-link success">List on Marketplace</a>
-                            @elseif($item->status === 'pending_delivery')
-                            <span style="color: #856404; font-size: 13px;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Delivery</span>
+                                {{-- Item received (in_stock or listed) - show details only --}}
+                                <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link details"><span class="icon-circle"><i class="fa-solid fa-eye"></i></span> <span>View Details</span></a>
+                                @if($item->status === 'in_stock')
+                                <a href="{{ route('vendor.inventory.create-listing', $item) }}" class="action-link success"><span class="icon-circle"><i class="fa-solid fa-bullhorn"></i></span> <span>List on Marketplace</span></a>
+                                @endif
                             @endif
                         </td>
                     </tr>

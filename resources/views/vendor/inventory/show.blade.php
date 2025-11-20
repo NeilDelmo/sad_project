@@ -4,11 +4,23 @@
 <div class="min-h-screen flex items-start justify-center py-10 px-4">
     <div class="w-full max-w-4xl">
         <div class="mb-6 flex items-center justify-between">
-            <a href="{{ route('vendor.dashboard') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition">
+            <nav aria-label="Breadcrumb" class="flex items-center text-sm font-medium text-gray-500 gap-2">
+                <a href="{{ route('vendor.inventory.index') }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l7-9v4h11v10H10v4l-7-9z" />
+                    </svg>
+                    Inventory
+                </a>
+                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                <span class="text-gray-700">Item #{{ $inventory->id }}</span>
+            </nav>
+            <a href="{{ route('vendor.inventory.index') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Back to Dashboard
+                Back
             </a>
         </div>
 

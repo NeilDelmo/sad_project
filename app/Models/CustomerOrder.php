@@ -31,6 +31,7 @@ class CustomerOrder extends Model implements Auditable
         'listing_id',
         'quantity',
         'unit_price',
+        'platform_fee',
         'total',
         'status',
         'proof_photo_path',
@@ -46,6 +47,7 @@ class CustomerOrder extends Model implements Auditable
         'delivered_at' => 'datetime',
         'received_at' => 'datetime',
         'refund_at' => 'datetime',
+        'platform_fee' => 'decimal:2',
     ];
 
     public function buyer(): BelongsTo { return $this->belongsTo(User::class, 'buyer_id'); }
