@@ -109,7 +109,6 @@ class GearRentalSeeder extends Seeder
                 'available_quantity' => 0,
                 'freshness_metric' => null,
                 'seasonality_factor' => 1.0,
-                'quality_rating' => 5,
             ]);
         }
 

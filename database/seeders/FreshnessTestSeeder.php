@@ -103,7 +103,6 @@ class FreshnessTestSeeder extends Seeder
                 'unit_price' => rand(200, 800),
                 'available_quantity' => rand(5, 50),
                 'seasonality_factor' => rand(8, 12) / 10,
-                'quality_rating' => rand(3, 5),
             ]);
 
             // Create marketplace listing with specific timestamp
