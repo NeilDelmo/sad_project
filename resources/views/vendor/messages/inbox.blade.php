@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <!-- Defense-in-depth: discourage caching at the document level -->
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -31,6 +32,14 @@
             font-family: "Koulen", sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo {
+            height: 40px;
+            width: auto;
         }
 
         .nav-links {
@@ -91,7 +100,10 @@
     <div class="container-fluid">
         <!-- Logo row -->
         <div class="w-100 text-start mb-2">
-            <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">🐟 SeaLedger</a>
+            <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">
+                <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+                SeaLedger
+            </a>
         </div>
         
         <!-- Nav links row -->

@@ -1,6 +1,9 @@
 <nav class="navbar">
   <div class="container-fluid d-flex justify-content-between align-items-center">
-    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
+      <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+      SeaLedger
+    </a>
     <div class="nav-links">
       <a href="{{ route('marketplace.shop') }}" class="nav-link">
         <i class="fa-solid fa-fire"></i> Latest
@@ -72,6 +75,14 @@
     font-family: "Koulen", sans-serif;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo {
+    height: 40px;
+    width: auto;
   }
 
   .nav-links {

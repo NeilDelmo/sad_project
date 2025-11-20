@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
   <title>Marketplace Orders</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
@@ -141,6 +142,13 @@
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
       letter-spacing: 1px;
       text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo {
+      height: 40px;
+      width: auto;
     }
     .nav-links { display: flex; gap: 8px; align-items: center; }
     .nav-link {
@@ -180,7 +188,10 @@
   <!-- Guest navbar -->
   <nav class="navbar">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-      <a class="nav-brand" href="{{ route('marketplace.index') }}">🐟 SeaLedger</a>
+      <a class="nav-brand" href="{{ route('marketplace.index') }}">
+        <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+        SeaLedger
+      </a>
       <div class="nav-links">
         <a href="{{ route('marketplace.shop') }}" class="nav-link">
           <i class="fa-solid fa-fire"></i> Latest

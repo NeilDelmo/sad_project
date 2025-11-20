@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gear Rental Catalog - SeaLedger</title>
+    <title>Gear Rentals - SeaLedger</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
@@ -48,7 +49,8 @@
             padding: 15px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .nav-brand { color:#fff; font-size:28px; font-weight:bold; text-decoration:none; }
+        .nav-brand { color:#fff; font-size:28px; font-weight:bold; text-decoration:none; display: flex; align-items: center; gap: 10px; }
+        .nav-logo { height: 40px; width: auto; }
         .nav-link { color: rgba(255,255,255,0.9); text-decoration:none; padding:10px 16px; border-radius:8px; transition: all .2s; }
         .nav-link:hover { color:#fff; background: rgba(255,255,255,0.15); }
         .nav-link.active { background: rgba(255,255,255,0.25); color:#fff; font-weight:600; }
@@ -157,7 +159,10 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
+            <a class="nav-brand" href="{{ route('dashboard') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+                SeaLedger
+            </a>
             <div class="d-flex align-items-center" style="gap:8px;">
                 <a href="{{ route('rentals.index') }}" class="nav-link active"><i class="fa-solid fa-toolbox"></i> Gear Rentals</a>
                 @auth

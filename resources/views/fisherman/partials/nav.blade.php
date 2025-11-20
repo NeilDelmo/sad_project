@@ -28,6 +28,17 @@
     white-space: nowrap;
   }
 
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo {
+    height: 40px;
+    width: auto;
+  }
+
   .navbar .nav-actions {
     display: flex;
     align-items: center;
@@ -39,7 +50,10 @@
 
 <nav class="navbar">
   <div class="nav-layout">
-    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">SeaLedger</a>
+    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
+      <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+      SeaLedger
+    </a>
     @if(Auth::check() && Auth::user()->user_type === 'fisherman')
       <div style="margin-left:8px;">
         @include('components.trust-badge', ['score'=>Auth::user()->trust_score,'tier'=>Auth::user()->trust_tier,'compact'=>false])

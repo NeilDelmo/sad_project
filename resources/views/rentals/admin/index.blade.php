@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <title>Admin - Rental Management - SeaLedger</title>
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
@@ -41,6 +42,14 @@
             font-family: "Koulen", sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-logo {
+            height: 40px;
+            width: auto;
         }
 
         .nav-link {
@@ -312,7 +321,10 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-container">
-            <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
+            <a class="nav-brand" href="{{ route('dashboard') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+                SeaLedger
+            </a>
             <div>
                 <a href="{{ route('rentals.admin.index') }}" class="nav-link">
                     <i class="fa-solid fa-toolbox"></i> Rentals

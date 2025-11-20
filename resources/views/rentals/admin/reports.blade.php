@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <title>Rental Issue Reports - SeaLedger</title>
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <style>
@@ -11,7 +12,8 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background-color: #f8f9fa; min-height: 100vh; }
         .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .navbar-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .nav-brand { color: white; font-size: 28px; font-weight: bold; font-family: "Koulen", sans-serif; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); text-decoration: none; }
+        .nav-brand { color: white; font-size: 28px; font-weight: bold; font-family: "Koulen", sans-serif; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .nav-logo { height: 40px; width: auto; }
         .nav-link { color: rgba(255, 255, 255, 0.9); text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: 500; transition: all 0.3s ease; }
         .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.15); }
         .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
@@ -69,7 +71,10 @@
 <body>
     <nav class="navbar">
         <div class="navbar-container">
-            <a class="nav-brand" href="{{ route('dashboard') }}">🐟 SeaLedger</a>
+            <a class="nav-brand" href="{{ route('dashboard') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+                SeaLedger
+            </a>
             <div>
                 <a href="{{ route('rentals.admin.index') }}" class="nav-link"><i class="fa-solid fa-toolbox"></i> Rentals</a>
                 <a href="{{ route('rentals.admin.reports') }}" class="nav-link"><i class="fa-solid fa-flag"></i> Reports</a>
