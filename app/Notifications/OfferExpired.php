@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class OfferExpired extends Notification implements ShouldQueue
+class OfferExpired extends Notification
 {
     use Queueable;
 

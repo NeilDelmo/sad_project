@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class VendorOfferRejected extends Notification implements ShouldQueue
+class VendorOfferRejected extends Notification
 {
     use Queueable;
 

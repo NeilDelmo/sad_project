@@ -18,7 +18,7 @@ class OrdersController extends Controller
         $user = Auth::user();
         $status = $request->query('status');
 
-        $query = Order::query();
+        $query = Order::with(['product', 'fisherman', 'vendor']);
         if ($user->user_type === 'vendor') {
             $query->where('vendor_id', $user->id);
         } elseif ($user->user_type === 'fisherman') {
@@ -74,10 +74,8 @@ class OrdersController extends Controller
             'delivered_at' => now(),
         ]);
 
-        // Update vendor inventory status to in_stock now that it's delivered
-        \App\Models\VendorInventory::where('order_id', $order->id)
-            ->where('status', 'pending_delivery')
-            ->update(['status' => 'in_stock']);
+        // DON'T update inventory yet - wait for vendor to confirm receipt
+        // Inventory stays as 'pending_delivery' until vendor confirms
 
         $this->notifyAndMessage($order, "Order #{$order->id} has been delivered. Please confirm receipt.");
 
@@ -99,9 +97,14 @@ class OrdersController extends Controller
             'received_at' => now(),
         ]);
 
+        // NOW update inventory to in_stock when vendor confirms receipt
+        \App\Models\VendorInventory::where('order_id', $order->id)
+            ->where('status', 'pending_delivery')
+            ->update(['status' => 'in_stock']);
+
         $this->notifyAndMessage($order, "Order #{$order->id} has been confirmed received.");
 
-        return back()->with('success', 'Order confirmed as received.');
+        return back()->with('success', 'Order confirmed as received. Products added to your inventory.');
     }
 
     public function requestRefund(Request $request, Order $order)

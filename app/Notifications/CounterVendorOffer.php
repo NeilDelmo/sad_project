@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class CounterVendorOffer extends Notification implements ShouldQueue
+class CounterVendorOffer extends Notification
 {
     use Queueable;
 
