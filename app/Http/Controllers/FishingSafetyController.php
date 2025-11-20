@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class FishingSafetyController extends Controller
 {
     // Use host.docker.internal to access host machine from Docker container
-    private $flaskApiUrl = 'http://host.docker.internal:5000';
+    private $flaskApiUrl = 'http://127.0.0.1:5000';
 
     /**
      * Check fishing safety for a location
