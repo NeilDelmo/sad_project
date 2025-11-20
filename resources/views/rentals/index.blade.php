@@ -161,6 +161,15 @@
             <div class="d-flex align-items-center" style="gap:8px;">
                 <a href="{{ route('rentals.index') }}" class="nav-link active"><i class="fa-solid fa-toolbox"></i> Gear Rentals</a>
                 @auth
+                    <a href="{{ route('rentals.create') }}" class="nav-link">
+                        <i class="fa-solid fa-shopping-cart"></i> Cart
+                        @php
+                            $cartCount = count(session()->get('rental_cart', []));
+                        @endphp
+                        @if($cartCount > 0)
+                            <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 5px;">{{ $cartCount }}</span>
+                        @endif
+                    </a>
                     <a href="{{ route('rentals.myrentals') }}" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> My Rentals</a>
                     <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
                     <form method="POST" action="{{ route('logout') }}" style="display:inline;">
@@ -204,9 +213,21 @@
                             </div>
                             
                             @auth
-                                <button onclick="window.location.href='{{ route('rentals.create', ['product_id' => $gear->id]) }}'" class="rent-button">
-                                    Rent Now
-                                </button>
+                                @if($gear->rental_stock > 0)
+                                    <form action="{{ route('rentals.cart.add') }}" method="POST" style="display: flex; gap: 5px; align-items: center; margin-top: 10px;">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $gear->id }}">
+                                        <input type="number" name="quantity" value="1" min="1" max="{{ $gear->rental_stock }}" 
+                                               style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                        <button type="submit" class="rent-button" style="flex: 1;">
+                                            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                @else
+                                    <button class="rent-button" disabled style="background: #ccc; cursor: not-allowed;">
+                                        Out of Stock
+                                    </button>
+                                @endif
                             @else
                                 <button onclick="window.location.href='{{ route('login') }}'" class="rent-button">
                                     Login to Rent

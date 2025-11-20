@@ -208,6 +208,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals/{rental}/report', [RentalController::class, 'submitReport'])->name('rentals.report.submit');
     Route::post('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('rentals.cancel');
     
+    // Cart management routes
+    Route::post('/rentals/cart/add', [RentalController::class, 'addToCart'])->name('rentals.cart.add');
+    Route::post('/rentals/cart/remove', [RentalController::class, 'removeFromCart'])->name('rentals.cart.remove');
+    Route::post('/rentals/cart/clear', [RentalController::class, 'clearCart'])->name('rentals.cart.clear');
+    Route::get('/rentals/cart/count', [RentalController::class, 'getCartCount'])->name('rentals.cart.count');
+    
     // Admin rental management
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('rentals.admin.index');
     Route::post('/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('rentals.approve');

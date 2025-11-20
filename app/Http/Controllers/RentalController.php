@@ -43,16 +43,83 @@ class RentalController extends Controller
 
     public function create(Request $request)
     {
-        $productId = $request->query('product_id');
-        $product = null;
+        // Get cart items from session
+        $cart = session()->get('rental_cart', []);
+        $cartItems = [];
         
-        if ($productId) {
+        foreach ($cart as $productId => $quantity) {
             $product = Product::where('id', $productId)
                 ->where('is_rentable', true)
                 ->first();
+            if ($product) {
+                $cartItems[] = [
+                    'product' => $product,
+                    'quantity' => $quantity,
+                ];
+            }
         }
 
-        return view('rentals.create', compact('product'));
+        return view('rentals.create', compact('cartItems'));
+    }
+
+    public function addToCart(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $product = Product::findOrFail($validated['product_id']);
+        
+        if (!$product->is_rentable) {
+            return back()->withErrors(['error' => 'This item is not available for rent.']);
+        }
+
+        $cart = session()->get('rental_cart', []);
+        $productId = $validated['product_id'];
+        
+        // Add or update quantity in cart
+        if (isset($cart[$productId])) {
+            $cart[$productId] += $validated['quantity'];
+        } else {
+            $cart[$productId] = $validated['quantity'];
+        }
+        
+        // Validate against stock
+        if ($cart[$productId] > $product->rental_stock) {
+            $cart[$productId] = $product->rental_stock;
+            session()->put('rental_cart', $cart);
+            return back()->with('warning', "Added {$product->name} to cart (limited to available stock: {$product->rental_stock})");
+        }
+        
+        session()->put('rental_cart', $cart);
+        
+        return back()->with('success', "{$product->name} added to cart!");
+    }
+
+    public function removeFromCart(Request $request)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $cart = session()->get('rental_cart', []);
+        unset($cart[$validated['product_id']]);
+        session()->put('rental_cart', $cart);
+        
+        return back()->with('success', 'Item removed from cart.');
+    }
+
+    public function clearCart()
+    {
+        session()->forget('rental_cart');
+        return back()->with('success', 'Cart cleared.');
+    }
+
+    public function getCartCount()
+    {
+        $cart = session()->get('rental_cart', []);
+        return response()->json(['count' => count($cart)]);
     }
 
     public function store(Request $request)
@@ -61,10 +128,25 @@ class RentalController extends Controller
             'rental_date' => 'required|date|after_or_equal:today',
             'return_date' => 'required|date|after:rental_date',
             'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
         ]);
+
+        // Get cart items from session
+        $cart = session()->get('rental_cart', []);
+        
+        if (empty($cart)) {
+            return back()->withErrors(['error' => 'Your cart is empty. Please add items before submitting.']);
+        }
+
+        // Convert cart to items array format
+        $items = [];
+        foreach ($cart as $productId => $quantity) {
+            $items[] = [
+                'product_id' => $productId,
+                'quantity' => $quantity,
+            ];
+        }
+        
+        $validated['items'] = $items;
 
         DB::beginTransaction();
         try {
@@ -113,6 +195,9 @@ class RentalController extends Controller
             ]);
 
             DB::commit();
+
+            // Clear the cart after successful submission
+            session()->forget('rental_cart');
 
             return redirect()->route('rentals.myrentals')
                 ->with('success', 'Rental request submitted successfully! Awaiting approval.');
