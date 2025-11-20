@@ -105,6 +105,7 @@ class DatabaseSeeder extends Seeder
             MarketplaceSeeder::class,
             ForumCategorySeeder::class,
             GearRentalSeeder::class,
+            TrustDemoSeeder::class,
         ]);
     }
 }

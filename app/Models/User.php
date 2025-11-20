@@ -32,6 +32,8 @@ class User extends Authenticatable implements AuditableConract
         'email_verified_at',
         'last_seen_at',
         'is_active',
+            'trust_score',
+            'trust_tier',
     ];
 
     /**
@@ -63,6 +65,7 @@ class User extends Authenticatable implements AuditableConract
             'password' => 'hashed',
             'last_seen_at' => 'datetime',
             'is_active' => 'boolean',
+            'trust_score' => 'integer',
         ];
     }
 
@@ -98,5 +101,42 @@ class User extends Authenticatable implements AuditableConract
             // Fall through to user_type check if Spatie not initialized
         }
         return ($this->user_type === 'admin');
+    }
+
+    public function trustTransactions()
+    {
+        return $this->hasMany(TrustTransaction::class);
+    }
+
+    public function adjustTrustScore(int $amount, string $type, ?Model $reference = null, ?string $reason = null, ?string $adminNotes = null): void
+    {
+        \DB::transaction(function () use ($amount, $type, $reference, $reason, $adminNotes) {
+            $new = ($this->trust_score ?? 100) + $amount;
+            // Clamp between 0 and 200
+            $this->trust_score = max(0, min(200, $new));
+            $this->updateTrustTier();
+            $this->save();
+            TrustTransaction::create([
+                'user_id' => $this->id,
+                'amount' => $amount,
+                'type' => $type,
+                'reference_type' => $reference ? get_class($reference) : null,
+                'reference_id' => $reference?->id,
+                'reason' => $reason,
+                'admin_notes' => $adminNotes,
+            ]);
+        });
+    }
+
+    public function updateTrustTier(): void
+    {
+        $score = $this->trust_score ?? 100;
+        $tier = match (true) {
+            $score >= 150 => 'platinum',
+            $score >= 120 => 'gold',
+            $score >= 90  => 'silver',
+            default => 'bronze',
+        };
+        $this->trust_tier = $tier;
     }
 }

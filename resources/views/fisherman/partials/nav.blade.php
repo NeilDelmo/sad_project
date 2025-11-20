@@ -40,6 +40,11 @@
 <nav class="navbar">
   <div class="nav-layout">
     <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">SeaLedger</a>
+    @if(Auth::check() && Auth::user()->user_type === 'fisherman')
+      <div style="margin-left:8px;">
+        @include('components.trust-badge', ['score'=>Auth::user()->trust_score,'tier'=>Auth::user()->trust_tier,'compact'=>false])
+      </div>
+    @endif
     
     <div class="nav-links">
       <a href="{{ route('fisherman.dashboard') }}" class="nav-link {{ request()->routeIs('fisherman.dashboard') ? 'active' : '' }}">

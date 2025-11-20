@@ -126,6 +126,12 @@ class CustomerOrderController extends Controller
         }
         $order->update(['status' => 'received', 'received_at' => now()]);
 
+        // Trust score: reward vendor for successful completed order
+        $vendor = User::find($order->vendor_id);
+        if ($vendor && method_exists($vendor, 'adjustTrustScore')) {
+            $vendor->adjustTrustScore(2, 'order_completed', $order, 'Order received without issues');
+        }
+
         // Record platform fee revenue once order is successfully received (finalized)
         if ($order->platform_fee && $order->platform_fee > 0) {
             $existing = \App\Models\OrganizationRevenue::where('order_id', $order->id)->where('type', 'platform_fee')->first();
@@ -197,6 +203,11 @@ class CustomerOrderController extends Controller
             'status' => CustomerOrder::STATUS_REFUNDED,
             'refund_at' => now(),
         ]);
+        // Trust penalty: refund approved against vendor
+        $vendor = User::find($order->vendor_id);
+        if ($vendor && method_exists($vendor, 'adjustTrustScore')) {
+            $vendor->adjustTrustScore(-10, 'refund_penalty', $order, 'Refund approved against vendor');
+        }
         // Optional: future logic could reverse revenue; currently fee only recognized upon receipt.
         $this->notify($order, "Refund approved for Order #{$order->id}.");
         return back()->with('success', 'Refund approved.');
