@@ -151,6 +151,7 @@
           case 'vendor_accepted_counter':
             return 'fa-circle-check';
           case 'new_customer_order':
+          case 'customer_order_status':
             return 'fa-shopping-cart';
           case 'order_status_updated':
             return 'fa-box';

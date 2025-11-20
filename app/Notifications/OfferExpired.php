@@ -25,6 +25,11 @@ class OfferExpired extends Notification
         $product = $this->offer->product;
         return [
             'type' => 'offer_expired',
+                        'title' => 'Offer Expired',
+                        'message' => sprintf('Your offer of ₱%s for %s has expired.', 
+                            number_format($this->offer->offered_price, 2),
+                            $product?->name
+                        ),
             'offer_id' => $this->offer->getKey(),
             'product_id' => $this->offer->product_id,
             'product_name' => $product?->name,

@@ -24,12 +24,16 @@ class VendorOfferRejected extends Notification
     {
         return [
             'type' => 'vendor_offer_rejected',
+                        'title' => 'Your Offer Was Rejected',
             'offer_id' => $this->offer->getKey(),
             'product_id' => $this->offer->product_id,
             'product_name' => $this->offer->product?->name,
             'quantity' => (int) $this->offer->quantity,
             'final_price' => (float) ($this->offer->fisherman_counter_price ?? $this->offer->offered_price),
-            'message' => 'Your offer was rejected by the fisherman.',
+            'message' => sprintf('Your offer of ₱%s for %s was rejected by the fisherman.', 
+                number_format($this->offer->offered_price, 2),
+                $this->offer->product?->name
+            ),
             'status' => $this->offer->status,
         ];
     }

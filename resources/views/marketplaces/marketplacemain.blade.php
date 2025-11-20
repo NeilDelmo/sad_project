@@ -145,35 +145,42 @@
     @include('partials.message-notification')
 
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
-            <div class="nav-links">
-                <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
-                    <i class="fa-solid fa-fire"></i> Latest
-                </a>
-                @auth
-                    @if(auth()->user()->user_type === 'buyer')
-                        <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
-                            <i class="fa-solid fa-receipt"></i> My Orders
+    @auth
+        @if(auth()->user()->user_type === 'buyer')
+            @include('buyer.partials.nav')
+        @else
+            <nav class="navbar">
+                <div class="container-fluid d-flex justify-content-between align-items-center">
+                    <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+                    <div class="nav-links">
+                        <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
+                            <i class="fa-solid fa-fire"></i> Latest
                         </a>
-                    @endif
-                @endauth
-                @if(Auth::check())
-                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
-                        </button>
-                    </form>
-                @else
+                        <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                            @csrf
+                            <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                                <i class="fa-solid fa-right-from-bracket"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        @endif
+    @else
+        <nav class="navbar">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">🐟 SeaLedger</a>
+                <div class="nav-links">
+                    <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
+                        <i class="fa-solid fa-fire"></i> Latest
+                    </a>
                     <a href="{{ route('login') }}" class="nav-link">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
                     </a>
-                @endif
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    @endauth
 
     @if(session('success'))
     <div id="flash-toast" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">

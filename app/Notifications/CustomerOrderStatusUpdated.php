@@ -23,9 +23,11 @@ class CustomerOrderStatusUpdated extends Notification
     {
         return [
             'type' => 'customer_order_status',
+            'title' => 'Order Update',
+            'message' => $this->text,
             'order_id' => $this->order->id,
             'status' => $this->order->status,
-            'message' => $this->text,
+            'link' => '/marketplace/orders?order_id=' . $this->order->id,
         ];
     }
 }

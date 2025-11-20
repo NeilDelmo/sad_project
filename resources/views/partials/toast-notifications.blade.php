@@ -200,9 +200,12 @@
                 window.location.href = link;
             };
             
+            const isOrderNotif = (title || '').toLowerCase().includes('order');
+            const icon = isOrderNotif ? 'fa-shopping-cart' : 'fa-handshake';
+            
             toast.innerHTML = `
                 <div class="toast-icon">
-                    <i class="fa-solid fa-handshake"></i>
+                    <i class="fa-solid ${icon}"></i>
                 </div>
                 <div class="toast-content">
                     <div class="toast-title">${escapeHtml(title)}</div>
@@ -262,7 +265,8 @@
                         const rootType = String(notification?.type || '').toLowerCase();
                         const embeddedType = String(payload?.type || '').toLowerCase();
                         const isOffer = embeddedType.includes('offer') || rootType.includes('offer');
-                        if (!isOffer) return;
+                        const isOrder = embeddedType.includes('customer_order') || rootType.includes('customer_order');
+                        if (!isOffer && !isOrder) return;
 
                         const mapByType = (t) => {
                             t = t || '';
@@ -270,6 +274,7 @@
                             if (t.includes('counter_vendor_offer')) return 'Counter Offer Received';
                             if (t.includes('vendor_offer_accepted')) return 'Your Offer Was Accepted';
                             if (t.includes('vendor_accepted_counter')) return 'Counter Offer Accepted';
+                            if (t.includes('customer_order')) return 'Order Update';
                             return 'New Notification';
                         };
                         const title = payload.title || mapByType(embeddedType || rootType);
