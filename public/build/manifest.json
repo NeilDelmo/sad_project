@@ -1,0 +1,31 @@
+{
+  "_pusher-LfkwaHMO.js": {
+    "file": "assets/pusher-LfkwaHMO.js",
+    "name": "pusher",
+    "isDynamicEntry": true
+  },
+  "node_modules/laravel-echo/dist/echo.js": {
+    "file": "assets/echo-DCHnC3kb.js",
+    "name": "echo",
+    "src": "node_modules/laravel-echo/dist/echo.js",
+    "isDynamicEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-Cn5MaVK1.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-C-urGUxr.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "_pusher-LfkwaHMO.js",
+      "node_modules/laravel-echo/dist/echo.js"
+    ]
+  }
+}
