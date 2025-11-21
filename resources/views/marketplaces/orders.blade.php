@@ -302,9 +302,9 @@
           @if($order->delivered_at && $order->isRefundWindowOpen() && in_array($order->status, ['delivered','received']))
           <div>
             <div class="label">Refund Period</div>
-            <div class="value" style="color: #dc3545; font-weight: 600;">
-              <i class="fa-solid fa-clock"></i>
-              <span class="refund-countdown" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
+              <div class="value" style="color: #dc3545; font-weight: 600;">
+                <i class="fa-solid fa-clock"></i>
+                <span class="refund-countdown" data-order-id="{{ $order->id }}" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
             </div>
           </div>
           @endif
@@ -398,7 +398,7 @@
           @endif
           @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
             @if($order->isRefundWindowOpen())
-              <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
+                <button class="btn btn-outline-danger refund-button" data-order-id="{{ $order->id }}" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
             @else
               <button class="btn btn-outline-secondary" disabled title="Refund period closed (3 hours after delivery)"><i class="fa-solid fa-ban"></i> Refund Period Closed</button>
             @endif
@@ -477,18 +477,32 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+function disableRefundButton(orderId) {
+  const button = document.querySelector(`.refund-button[data-order-id="${orderId}"]`);
+  if (!button) return;
+  button.setAttribute('disabled', 'disabled');
+  button.classList.remove('btn-outline-danger');
+  button.classList.add('btn-outline-secondary');
+  button.innerHTML = '<i class="fa-solid fa-ban"></i> Refund Period Closed';
+  button.removeAttribute('data-bs-toggle');
+  button.removeAttribute('data-bs-target');
+  button.title = 'Refund period closed (3 hours after delivery)';
+}
+
 // Refund countdown timer (3-hour window from delivery)
 function updateRefundCountdowns() {
   const countdowns = document.querySelectorAll('.refund-countdown');
   
   countdowns.forEach(countdown => {
     const deliveredAt = new Date(countdown.dataset.delivered);
+    const orderId = countdown.dataset.orderId;
     const now = new Date();
     const hoursSinceDelivery = (now - deliveredAt) / (1000 * 60 * 60);
     
     if (hoursSinceDelivery >= 3) {
       countdown.textContent = 'Period Closed';
       countdown.style.color = '#6c757d';
+      disableRefundButton(orderId);
       return;
     }
     
@@ -499,6 +513,7 @@ function updateRefundCountdowns() {
     if (remainingMinutes <= 0) {
       countdown.textContent = 'Period Closed';
       countdown.style.color = '#6c757d';
+      disableRefundButton(orderId);
       return;
     }
     
