@@ -498,11 +498,17 @@
         <div class="product-grid">
             @forelse($products as $product)
             <!-- Product Card -->
-            <div class="product-card">
+            <div class="product-card" style="position: relative; overflow: hidden;">
+                @if($product->available_quantity <= 0)
+                    <div style="position: absolute; top: 20px; right: -35px; background: #dc3545; color: white; padding: 5px 40px; transform: rotate(45deg); font-weight: bold; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        SOLD OUT
+                    </div>
+                @endif
+
                 @if($product->image_path)
-                    <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" class="product-image">
+                    <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" class="product-image" style="{{ $product->available_quantity <= 0 ? 'filter: grayscale(100%); opacity: 0.7;' : '' }}">
                 @else
-                    <div class="product-image-placeholder">
+                    <div class="product-image-placeholder" style="{{ $product->available_quantity <= 0 ? 'filter: grayscale(100%); opacity: 0.7;' : '' }}">
                         <i class="fa-solid fa-fish"></i>
                     </div>
                 @endif
@@ -518,7 +524,13 @@
                 <div class="product-details">
                     <div class="product-detail-row">
                         <span class="detail-label">Available</span>
-                        <span class="detail-value">{{ $product->available_quantity }} {{ $product->unit_of_measure ?? 'kg' }}</span>
+                        <span class="detail-value">
+                            @if($product->available_quantity > 0)
+                                {{ $product->available_quantity }} {{ $product->unit_of_measure ?? 'kg' }}
+                            @else
+                                <span class="text-danger">Sold Out</span>
+                            @endif
+                        </span>
                     </div>
                     <div class="product-detail-row">
                         <span class="detail-label">Quality</span>
@@ -589,6 +601,7 @@
                 </div>
 
                 <div class="offer-section">
+                    @if($product->available_quantity > 0)
                     <form action="{{ route('vendor.offers.store', $product) }}" method="post">
                         @csrf
                         <div class="offer-input-group">
@@ -619,6 +632,13 @@
                         </button>
                         @endif
                     </form>
+                    @else
+                    <div class="text-center py-3">
+                        <i class="fa-solid fa-circle-xmark text-danger mb-2" style="font-size: 24px;"></i>
+                        <h5 class="text-danger mb-1">Sold Out</h5>
+                        <p class="text-muted small mb-0">This product is no longer available for bidding.</p>
+                    </div>
+                    @endif
                 </div>
 
                 <div class="supplier-info">
