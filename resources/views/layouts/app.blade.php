@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,28 +15,18 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
-        
-        <!-- Dark Mode Script -->
-        <script>
-            // Check system preference and apply dark mode
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark')
-            } else {
-                document.documentElement.classList.remove('dark')
-            }
-        </script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-gray-100 ">
             <!-- Left Side Navigation -->
             <div class="flex" x-data="{ sidebarOpen: true }">
-                <div :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-white dark:bg-gray-800 shadow-sm min-h-screen border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out">
+                <div :class="sidebarOpen ? 'w-64' : 'w-20'" class="bg-white  shadow-sm min-h-screen border-r border-gray-200  transition-all duration-300 ease-in-out">
                     <!-- Header with Toggle Button -->
-                    <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-                        <div x-show="sidebarOpen" class="text-xl font-semibold text-gray-800 dark:text-gray-200 transition-opacity duration-300">
+                    <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200 ">
+                        <div x-show="sidebarOpen" class="text-xl font-semibold text-gray-800  transition-opacity duration-300">
                             {{ config('app.name', 'Laravel') }}
                         </div>
-                        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-150">
+                        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-md text-gray-500  hover:bg-gray-100 :bg-gray-700 focus:outline-none transition-colors duration-150">
                             <!-- Hamburger Icon -->
                             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -49,8 +39,8 @@
                         <a href="{{ route('dashboard') }}" 
                            class="flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150
                                   {{ request()->routeIs('dashboard') 
-                                     ? 'bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white' 
-                                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white' }}"
+                                     ? 'bg-gray-100  text-gray-900 ' 
+                                     : 'text-gray-600  hover:bg-gray-50 :bg-gray-700 hover:text-gray-900 :text-white' }}"
                            :title="!sidebarOpen ? 'Dashboard' : ''">
                             <!-- Dashboard Icon -->
                             <svg class="h-6 w-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +60,7 @@
 
                     <!-- Page Heading -->
                     @if (isset($header))
-                        <header class="bg-white dark:bg-gray-800 shadow">
+                        <header class="bg-white  shadow">
                             <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                                 <div>
                                     {{ $header }}
@@ -80,7 +70,7 @@
                                 <div class="flex items-center">
                                     <x-dropdown align="right" width="48">
                                         <x-slot name="trigger">
-                                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                            <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500  bg-white  hover:text-gray-700 :text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                                 <div>{{ Auth::user()->username }}</div>
 
                                                 <div class="ms-1">
