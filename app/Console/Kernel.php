@@ -11,6 +11,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('offers:expire')->hourly();
         $schedule->command('rentals:cancel-expired')->everyFiveMinutes();
+        // Dynamic pricing recalculation for active listings every hour
+        $schedule->command('pricing:update-listings --only-active')->hourly();
         // Example: run fancy-gear retirement nightly (commented by default)
         // $schedule->command('rentals:retire-fancy-gear --dry')->dailyAt('02:00');
     }
