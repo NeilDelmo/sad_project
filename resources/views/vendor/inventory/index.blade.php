@@ -350,13 +350,38 @@
                                 @if($item->status === 'in_stock') badge-success
                                 @elseif($item->status === 'listed') badge-info
                                 @elseif($item->status === 'pending_delivery') badge-warning
+                                @elseif($item->status === 'refunded') badge-secondary
                                 @else badge-secondary
                                 @endif">
                                 {{ ucfirst(str_replace('_', ' ', $item->status)) }}
                             </span>
-                            @if($item->status === 'pending_delivery' && $item->order)
-                                <div style="font-size: 11px; color: #856404; margin-top: 4px;">
-                                    <i class="fa-solid fa-truck"></i> Order #{{ $item->order->id }} - {{ ucfirst($item->order->status) }}
+                            @if($item->order)
+                                @php
+                                    $orderStatus = $item->order->status;
+                                    $statusDisplay = ucfirst(str_replace('_', ' ', $orderStatus));
+                                    $statusColor = match($orderStatus) {
+                                        'pending_payment' => '#6c757d',
+                                        'in_transit' => '#0dcaf0',
+                                        'delivered' => '#ffc107',
+                                        'received' => '#198754',
+                                        'refund_requested' => '#dc3545',
+                                        'refunded' => '#6c757d',
+                                        'refund_declined' => '#dc3545',
+                                        default => '#6c757d'
+                                    };
+                                    $statusIcon = match($orderStatus) {
+                                        'pending_payment' => 'fa-clock',
+                                        'in_transit' => 'fa-truck',
+                                        'delivered' => 'fa-box',
+                                        'received' => 'fa-check-circle',
+                                        'refund_requested' => 'fa-exclamation-triangle',
+                                        'refunded' => 'fa-undo',
+                                        'refund_declined' => 'fa-times-circle',
+                                        default => 'fa-info-circle'
+                                    };
+                                @endphp
+                                <div style="font-size: 11px; color: {{ $statusColor }}; margin-top: 4px;">
+                                    <i class="fa-solid {{ $statusIcon }}"></i> Order #{{ $item->order->id }} - {{ $statusDisplay }}
                                 </div>
                             @endif
                         </td>
@@ -369,7 +394,19 @@
                                 @else
                                 <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link details"><span class="icon-circle"><i class="fa-solid fa-eye"></i></span> <span>View Details</span></a>
                                 @endif
-                                <span style="color: #856404; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Delivery</span>
+                                @if($item->order && in_array($item->order->status, ['pending_payment', 'in_transit']))
+                                    <span style="color: #856404; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-hourglass-half"></i> Awaiting Delivery</span>
+                                @elseif($item->order && $item->order->status === 'delivered')
+                                    <span style="color: #0dcaf0; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-box"></i> Delivered - Pending Confirmation</span>
+                                @elseif($item->order && $item->order->status === 'refund_requested')
+                                    <span style="color: #dc3545; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-exclamation-triangle"></i> Refund Requested</span>
+                                @elseif($item->order && $item->order->status === 'refund_declined')
+                                    <span style="color: #dc3545; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-times-circle"></i> Refund Declined</span>
+                                @endif
+                            @elseif($item->status === 'refunded')
+                                {{-- Item was refunded back to fisherman --}}
+                                <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link details"><span class="icon-circle"><i class="fa-solid fa-eye"></i></span> <span>View Details</span></a>
+                                <span style="color: #6c757d; font-size: 13px; margin-left: 10px;"><i class="fa-solid fa-undo"></i> Refunded</span>
                             @else
                                 {{-- Item received (in_stock or listed) - show details only --}}
                                 <a href="{{ route('vendor.inventory.show', $item) }}" class="action-link details"><span class="icon-circle"><i class="fa-solid fa-eye"></i></span> <span>View Details</span></a>

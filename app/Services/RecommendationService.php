@@ -113,7 +113,7 @@ class RecommendationService
         }
         $orders = CustomerOrder::query()
             ->where('buyer_id', $buyerId)
-            ->whereIn('status', [CustomerOrder::STATUS_DELIVERED, CustomerOrder::STATUS_RECEIVED])
+            ->whereIn('customer_orders.status', [CustomerOrder::STATUS_DELIVERED, CustomerOrder::STATUS_RECEIVED])
             ->join('marketplace_listings','customer_orders.listing_id','=','marketplace_listings.id')
             ->join('products','marketplace_listings.product_id','=','products.id')
             ->selectRaw('marketplace_listings.seller_id as seller_id, products.category_id as category_id, COUNT(*) as cnt')
