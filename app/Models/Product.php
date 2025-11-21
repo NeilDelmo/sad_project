@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use App\Models\User;
 use App\Models\ProductCategory;
+use App\Models\VendorOffer;
+use App\Models\Order;
 
 class Product extends Model implements AuditableConract
 {
@@ -64,6 +67,16 @@ class Product extends Model implements AuditableConract
     public function marketplaceListings()
     {
         return $this->hasMany(\App\Models\MarketplaceListing::class, 'product_id');
+    }
+
+    public function vendorOffers(): HasMany
+    {
+        return $this->hasMany(VendorOffer::class, 'product_id');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'product_id');
     }
 
     /**
@@ -126,5 +139,28 @@ class Product extends Model implements AuditableConract
             return null;
         }
         return $listing->listing_date->diffForHumans(now(), true);
+    }
+
+    public function getIsEditLockedAttribute(): bool
+    {
+        $hasActiveOffers = $this->vendorOffers
+            ? $this->vendorOffers->whereIn('status', ['pending', 'countered'])->isNotEmpty()
+            : $this->vendorOffers()->whereIn('status', ['pending', 'countered'])->exists();
+
+        $hasOngoingOrders = $this->orders
+            ? $this->orders->whereIn('status', [
+                Order::STATUS_PENDING_PAYMENT,
+                Order::STATUS_IN_TRANSIT,
+                Order::STATUS_DELIVERED,
+                Order::STATUS_REFUND_REQUESTED,
+            ])->isNotEmpty()
+            : $this->orders()->whereIn('status', [
+                Order::STATUS_PENDING_PAYMENT,
+                Order::STATUS_IN_TRANSIT,
+                Order::STATUS_DELIVERED,
+                Order::STATUS_REFUND_REQUESTED,
+            ])->exists();
+
+        return $this->available_quantity <= 0 || $hasActiveOffers || $hasOngoingOrders;
     }
 }

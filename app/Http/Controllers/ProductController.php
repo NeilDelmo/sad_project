@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
+use App\Models\Order;
 use App\Notifications\NewCatchAvailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,14 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
+    private const ACTIVE_OFFER_STATUSES = ['pending', 'countered'];
+    private const ONGOING_ORDER_STATUSES = [
+        Order::STATUS_PENDING_PAYMENT,
+        Order::STATUS_IN_TRANSIT,
+        Order::STATUS_DELIVERED,
+        Order::STATUS_REFUND_REQUESTED,
+    ];
+
     /**
      * Display a listing of the fisherman's products
      */
@@ -19,8 +28,22 @@ class ProductController extends Controller
     {
         $products = Product::where('supplier_id', Auth::id())
             ->with('category')
+            ->withCount([
+                'vendorOffers as active_offer_count' => function ($query) {
+                    $query->whereIn('status', self::ACTIVE_OFFER_STATUSES);
+                },
+                'orders as ongoing_order_count' => function ($query) {
+                    $query->whereIn('status', self::ONGOING_ORDER_STATUSES);
+                },
+            ])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $products->each(function ($product) {
+            $product->is_edit_locked = $product->available_quantity <= 0
+                || ($product->active_offer_count ?? 0) > 0
+                || ($product->ongoing_order_count ?? 0) > 0;
+        });
 
         return view('fisherman.products.index', compact('products'));
     }
@@ -108,6 +131,10 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
+        if ($response = $this->guardProductEditing($product)) {
+            return $response;
+        }
+
         // Only allow edible seafood categories
         $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
 
@@ -121,6 +148,10 @@ class ProductController extends Controller
     {
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
+
+        if ($response = $this->guardProductEditing($product)) {
+            return $response;
+        }
 
         $allowedCategoryIds = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->pluck('id')->all();
         $validated = $request->validate([
@@ -151,6 +182,36 @@ class ProductController extends Controller
 
         return redirect()->route('fisherman.products.index')
             ->with('success', 'Product updated successfully!');
+    }
+
+    private function guardProductEditing(Product $product)
+    {
+        $lockReasons = [];
+
+        if ($product->available_quantity <= 0) {
+            $lockReasons[] = 'its stock is already depleted';
+        }
+
+        $hasActiveOffers = $product->vendorOffers()
+            ->whereIn('status', self::ACTIVE_OFFER_STATUSES)
+            ->exists();
+        if ($hasActiveOffers) {
+            $lockReasons[] = 'there are active vendor offers in progress';
+        }
+
+        $hasOngoingTransactions = $product->orders()
+            ->whereIn('status', self::ONGOING_ORDER_STATUSES)
+            ->exists();
+        if ($hasOngoingTransactions) {
+            $lockReasons[] = 'there are ongoing transactions tied to this product';
+        }
+
+        if (!empty($lockReasons)) {
+            $message = 'Cannot edit this product because ' . implode(' and ', $lockReasons) . '. Please wait until all offers and transactions are finished.';
+            return redirect()->route('fisherman.products.index')->with('error', $message);
+        }
+
+        return null;
     }
 
     /**

@@ -305,6 +305,12 @@
         </div>
         @endif
 
+        @if(session('error'))
+        <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ session('error') }}
+        </div>
+        @endif
+
         <!-- Page Header -->
         <div class="page-header">
             <h1 class="page-title">My Products</h1>
@@ -359,9 +365,18 @@
                 </div>
 
                 <div class="product-actions">
-                    <a href="{{ route('fisherman.products.edit', $product->id) }}" class="btn-edit">
-                        <i class="fa-solid fa-edit"></i> Edit
-                    </a>
+                    @if($product->is_edit_locked ?? false)
+                        <button type="button" class="btn-edit" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            <i class="fa-solid fa-lock"></i> Locked
+                        </button>
+                        <small style="display:block;margin-top:6px;color:#dc3545;font-size:12px;">
+                            Editing disabled while offers/transactions are active or stock is 0.
+                        </small>
+                    @else
+                        <a href="{{ route('fisherman.products.edit', $product->id) }}" class="btn-edit">
+                            <i class="fa-solid fa-edit"></i> Edit
+                        </a>
+                    @endif
                     <form action="{{ route('fisherman.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
                         @csrf
                         @method('DELETE')
