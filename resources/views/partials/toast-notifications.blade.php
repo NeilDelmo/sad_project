@@ -191,20 +191,30 @@
             toast.className = 'toast';
             toast.onclick = () => {
                 // Mark as read when clicked
-                fetch(`/api/offers/notifications/${notificationId}/read`, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } })
-                    .then(() => {
-                        // Refresh notification badge
-                        if (window.__refreshNotifications) window.__refreshNotifications();
-                    })
-                    .catch(() => {});
-                window.location.href = link;
+                if (notificationId) {
+                    fetch(`/api/offers/notifications/${notificationId}/read`, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '' } })
+                        .then(() => {
+                            // Refresh notification badge
+                            if (window.__refreshNotifications) window.__refreshNotifications();
+                        })
+                        .catch(() => {});
+                }
+                if (link) {
+                    window.location.href = link;
+                }
             };
             
             const isOrderNotif = (title || '').toLowerCase().includes('order');
-            const icon = isOrderNotif ? 'fa-shopping-cart' : 'fa-handshake';
+            const isSuccess = (title || '').toLowerCase().includes('success');
+            const isError = (title || '').toLowerCase().includes('error');
+            
+            let icon = 'fa-handshake';
+            if (isOrderNotif) icon = 'fa-shopping-cart';
+            if (isSuccess) icon = 'fa-check-circle';
+            if (isError) icon = 'fa-exclamation-circle';
             
             toast.innerHTML = `
-                <div class="toast-icon">
+                <div class="toast-icon" style="${isSuccess ? 'background: #28a745;' : (isError ? 'background: #dc3545;' : '')}">
                     <i class="fa-solid ${icon}"></i>
                 </div>
                 <div class="toast-content">
@@ -212,7 +222,7 @@
                     <div class="toast-message">${escapeHtml(message)}</div>
                     <div class="toast-time">${escapeHtml(time)}</div>
                 </div>
-                <button class="toast-close" onclick="event.stopPropagation(); removeToast(this.parentElement, '${notificationId}')">
+                <button class="toast-close" onclick="event.stopPropagation(); removeToast(this.parentElement, '${notificationId || ''}')">
                     <i class="fa-solid fa-times"></i>
                 </button>
             `;
@@ -242,6 +252,7 @@
             }
         }
         window.removeToast = removeToast; // Make it global for onclick
+        window.showToast = showToast; // Make it global for session flashes
 
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -303,5 +314,29 @@
         } catch (e) { /* ignore */ }
     })();
 </script>
+
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            if (window.showToast) {
+                window.showToast('Success', @json(session('success')), 'Just now', null, null);
+            }
+        }, 500);
+    });
+</script>
+@endif
+
+@if(session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            if (window.showToast) {
+                window.showToast('Error', @json(session('error')), 'Just now', null, null);
+            }
+        }, 500);
+    });
+</script>
+@endif
 @endif
 @endauth
