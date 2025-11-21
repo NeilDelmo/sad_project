@@ -515,7 +515,7 @@
               </button>
             </form>
           @endif
-          @if(in_array($order->status, ['pending_payment','in_transit']))
+          @if($order->status === 'in_transit')
             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#deliverModal{{ $order->id }}">
               <i class="fa-solid fa-box-open"></i> Mark Delivered
             </button>
@@ -563,6 +563,7 @@
       </div>
     </div>
 
+        @if($order->status === 'in_transit')
         <!-- Deliver Modal -->
         <div class="modal fade" id="deliverModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
@@ -592,6 +593,7 @@
             </div>
           </div>
         </div>
+        @endif
         <!-- Refund Modal -->
         @if($order->isRefundWindowOpen())
         <div class="modal fade" id="refundModal{{ $order->id }}" tabindex="-1" aria-hidden="true">

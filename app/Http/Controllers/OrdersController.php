@@ -57,8 +57,8 @@ class OrdersController extends Controller
         if ($order->fisherman_id !== $user->id) {
             abort(403);
         }
-        if (!in_array($order->status, [Order::STATUS_IN_TRANSIT, Order::STATUS_PENDING_PAYMENT])) {
-            throw ValidationException::withMessages(['status' => 'Order cannot be marked delivered from current status.']);
+        if ($order->status !== Order::STATUS_IN_TRANSIT) {
+            throw ValidationException::withMessages(['status' => 'Order must be in transit before it can be marked delivered.']);
         }
         $data = $request->validate([
             'proof' => ['required','image','max:4096'],

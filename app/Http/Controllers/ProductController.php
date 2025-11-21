@@ -40,9 +40,20 @@ class ProductController extends Controller
             ->get();
 
         $products->each(function ($product) {
-            $product->is_edit_locked = $product->available_quantity <= 0
-                || ($product->active_offer_count ?? 0) > 0
-                || ($product->ongoing_order_count ?? 0) > 0;
+            $lockReasons = [];
+
+            if ($product->available_quantity <= 0) {
+                $lockReasons[] = 'its stock is already depleted';
+            }
+            if (($product->active_offer_count ?? 0) > 0) {
+                $lockReasons[] = 'there are active vendor offers in progress';
+            }
+            if (($product->ongoing_order_count ?? 0) > 0) {
+                $lockReasons[] = 'there are ongoing transactions tied to this product';
+            }
+
+            $product->lock_reasons = $lockReasons;
+            $product->is_edit_locked = !empty($lockReasons);
         });
 
         return view('fisherman.products.index', compact('products'));
@@ -186,6 +197,28 @@ class ProductController extends Controller
 
     private function guardProductEditing(Product $product)
     {
+        return $this->guardProductAction($product, 'edit');
+    }
+
+    private function guardProductDeletion(Product $product)
+    {
+        return $this->guardProductAction($product, 'delete');
+    }
+
+    private function guardProductAction(Product $product, string $action)
+    {
+        $lockReasons = $this->getProductLockReasons($product);
+
+        if (!empty($lockReasons)) {
+            $message = 'Cannot ' . $action . ' this product because ' . implode(' and ', $lockReasons) . '. Please wait until all offers and transactions are finished.';
+            return redirect()->route('fisherman.products.index')->with('error', $message);
+        }
+
+        return null;
+    }
+
+    private function getProductLockReasons(Product $product): array
+    {
         $lockReasons = [];
 
         if ($product->available_quantity <= 0) {
@@ -206,12 +239,7 @@ class ProductController extends Controller
             $lockReasons[] = 'there are ongoing transactions tied to this product';
         }
 
-        if (!empty($lockReasons)) {
-            $message = 'Cannot edit this product because ' . implode(' and ', $lockReasons) . '. Please wait until all offers and transactions are finished.';
-            return redirect()->route('fisherman.products.index')->with('error', $message);
-        }
-
-        return null;
+        return $lockReasons;
     }
 
     /**
@@ -221,6 +249,10 @@ class ProductController extends Controller
     {
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
+
+        if ($response = $this->guardProductDeletion($product)) {
+            return $response;
+        }
 
         // Delete image if exists
         if ($product->image_path && file_exists(public_path($product->image_path))) {

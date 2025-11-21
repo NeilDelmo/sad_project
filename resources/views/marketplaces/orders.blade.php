@@ -383,12 +383,16 @@
               <button class="btn btn-info"><i class="fa-solid fa-truck-fast"></i> In Transit</button>
             </form>
           @endif
-          @if($user && $user->id === $order->vendor_id && in_array($order->status, ['pending_payment','in_transit']))
+          @if($user && $user->id === $order->vendor_id && $order->status === 'in_transit')
             <form method="post" action="{{ route('marketplace.orders.delivered', $order) }}" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
               @csrf
               <input type="file" name="proof" accept="image/*" class="form-control form-control-sm" style="max-width: 230px;" required>
               <button class="btn btn-warning"><i class="fa-solid fa-box"></i> Mark Delivered</button>
             </form>
+          @elseif($user && $user->id === $order->vendor_id && $order->status === 'pending_payment')
+            <button class="btn btn-warning" disabled title="Mark the order as in transit before delivering.">
+              <i class="fa-solid fa-box"></i> Mark Delivered
+            </button>
           @endif
           @if($user && $user->id === $order->buyer_id && $order->status==='delivered')
             <form method="post" action="{{ route('marketplace.orders.received', $order) }}">

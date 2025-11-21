@@ -100,8 +100,8 @@ class CustomerOrderController extends Controller
     {
         $user = Auth::user();
         if ($order->vendor_id !== $user->id) abort(403);
-        if (!in_array($order->status, [CustomerOrder::STATUS_PENDING_PAYMENT, CustomerOrder::STATUS_IN_TRANSIT])) {
-            throw ValidationException::withMessages(['status' => 'Order cannot be marked delivered from current status.']);
+        if ($order->status !== CustomerOrder::STATUS_IN_TRANSIT) {
+            throw ValidationException::withMessages(['status' => 'Order must be marked in transit before it can be delivered.']);
         }
         $data = $request->validate([
             'proof' => ['required','image','max:4096'],
