@@ -42,7 +42,7 @@ class MarketplaceSeeder extends Seeder
 
         // Create product categories
         $fishCategory = ProductCategory::firstOrCreate(
-            ['name' => 'Fresh Fish'],
+            ['name' => 'Fish'],
             ['description' => 'Fresh live fish caught from local waters']
         );
 

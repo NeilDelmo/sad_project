@@ -685,7 +685,7 @@
                         <div class="alert alert-success mt-3 mb-0">
                             <i class="fas fa-check-circle"></i> 
                             This offer was accepted on {{ $offer->responded_at?->format('M d, Y g:i A') }}. 
-                            The product has been added to the vendor's inventory.
+                            An order has been created and is pending delivery.
                         </div>
                     @endif
 

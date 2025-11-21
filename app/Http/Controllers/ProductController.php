@@ -30,7 +30,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        // Only allow edible seafood categories (Fish, Shellfish)
+        // Only allow edible seafood categories
         $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
         return view('fisherman.products.create', compact('categories'));
     }
@@ -108,7 +108,7 @@ class ProductController extends Controller
         $product = Product::where('supplier_id', Auth::id())
             ->findOrFail($id);
 
-        // Only allow edible seafood categories (Fish, Shellfish)
+        // Only allow edible seafood categories
         $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
 
         return view('fisherman.products.edit', compact('product', 'categories'));

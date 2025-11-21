@@ -249,11 +249,11 @@
             return div.innerHTML;
         }
 
-        // Check for new offers once on page load after 2 seconds, then stop
-        setTimeout(() => { fetchLatestOffers(); }, 2000);
+        // Check for new offers once on page load after 1 second
+        setTimeout(() => { fetchLatestOffers(); }, 1000);
         
-        // Check again every 30 seconds (less frequent to avoid annoyance)
-        setInterval(() => { fetchLatestOffers(); }, 30000);
+        // Check again every 5 seconds for better responsiveness
+        setInterval(() => { fetchLatestOffers(); }, 5000);
 
         // Realtime: subscribe to private user channel if Echo is available
         try {

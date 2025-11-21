@@ -248,13 +248,13 @@ class VendorOfferController extends Controller
             ]);
 
             // Create vendor inventory from accepted counter offer
-            \App\Models\VendorInventory::create([
+            $inventory = \App\Models\VendorInventory::create([
                 'vendor_id' => $offer->vendor_id,
                 'product_id' => $offer->product_id,
                 'purchase_price' => $offer->fisherman_counter_price ?? $offer->offered_price,
                 'quantity' => $offer->quantity,
                 'purchased_at' => now(),
-                'status' => 'in_stock',
+                'status' => 'pending_delivery',
             ]);
 
             // Decrement product quantity
@@ -262,7 +262,7 @@ class VendorOfferController extends Controller
 
             // Create order (pending_payment)
             $unitPriceCounter = (float) ($offer->fisherman_counter_price ?? $offer->offered_price);
-            \App\Models\Order::create([
+            $order = \App\Models\Order::create([
                 'vendor_id' => $offer->vendor_id,
                 'fisherman_id' => $offer->fisherman_id,
                 'product_id' => $offer->product_id,
@@ -272,6 +272,9 @@ class VendorOfferController extends Controller
                 'total' => $unitPriceCounter * (int) $offer->quantity,
                 'status' => 'pending_payment',
             ]);
+
+            // Link inventory to order
+            $inventory->update(['order_id' => $order->id]);
 
             DB::commit();
             

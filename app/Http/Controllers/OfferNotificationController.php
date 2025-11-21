@@ -38,13 +38,14 @@ class OfferNotificationController extends Controller
     {
         $user = Auth::user();
         
-        // Get unread database notifications about offers
+        // Get unread database notifications about offers and orders
         $notifications = $user->unreadNotifications()
             ->whereIn('type', [
                 'App\Notifications\NewVendorOffer',
                 'App\Notifications\CounterVendorOffer',
                 'App\Notifications\VendorOfferAccepted',
                 'App\Notifications\VendorAcceptedCounter',
+                'App\Notifications\OrderStatusUpdated',
             ])
             ->limit(5)
             ->get();
@@ -86,7 +87,8 @@ class OfferNotificationController extends Controller
             'counter_vendor_offer' => 'Counter Offer on ' . ($data['product_name'] ?? 'Product'),
             'vendor_offer_accepted' => 'Offer Accepted!',
             'vendor_accepted_counter' => 'Counter Offer Accepted!',
-            default => 'New Offer Notification',
+            'order_status' => 'Order Update',
+            default => 'New Notification',
         };
     }
 
@@ -97,13 +99,18 @@ class OfferNotificationController extends Controller
             'counter_vendor_offer' => 'Fisherman countered at ₱' . number_format($data['counter_price'] ?? 0, 2),
             'vendor_offer_accepted' => 'Your offer was accepted by the fisherman',
             'vendor_accepted_counter' => 'Vendor accepted your counter offer',
-            default => 'You have a new offer notification',
+            'order_status' => $data['message'] ?? 'Your order status has been updated.',
+            default => 'You have a new notification',
         };
     }
 
     private function getNotificationLink($data)
     {
         $userType = Auth::user()->user_type;
+        
+        if (($data['type'] ?? '') === 'order_status') {
+            return '/orders';
+        }
         
         if ($userType === 'fisherman') {
             return '/fisherman/offers?status=pending';
