@@ -100,6 +100,12 @@
           evt.stopPropagation();
           const id = markBtn.getAttribute('data-notif-mark-one');
           if (id) markRead(id, markBtn);
+          return;
+        }
+        const openBtn = evt.target.closest('[data-notif-open]');
+        if (openBtn) {
+          const id = openBtn.getAttribute('data-notif-open');
+          if (id) markRead(id, null, { keepalive: true });
         }
       });
 
@@ -186,7 +192,7 @@
                 <div class="notif-meta">
                   <span>${escapeHtml(o.created_at || '')}</span>
                   <div class="notif-actions">
-                    <a href="${escapeAttr(o.link || routes.fallbackLink)}" class="notif-link">Open</a>
+                    <a href="${escapeAttr(o.link || routes.fallbackLink)}" class="notif-link" data-notif-open="${o.id || ''}">Open</a>
                     <button class="notif-mark" data-notif-mark-one="${o.id || ''}">Mark read</button>
                   </div>
                 </div>
@@ -211,7 +217,7 @@
         return escapeHtml(str || '');
       }
 
-      async function markRead(id, btn) {
+      async function markRead(id, btn, { keepalive = false } = {}) {
         try {
           const res = await fetch(routes.markRead(id), {
             method: 'POST',
@@ -220,9 +226,10 @@
               'Accept': 'application/json',
               'X-Requested-With': 'XMLHttpRequest'
             },
-            credentials: 'same-origin'
+            credentials: 'same-origin',
+            keepalive: keepalive
           });
-          if (res.ok) {
+          if (res.ok && btn) {
             const item = btn.closest('.notif-item');
             if (item) item.remove();
             if (!list.children.length) empty.style.display = 'block';

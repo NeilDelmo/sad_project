@@ -77,4 +77,5 @@
 </div>
 
 <div class="pager">{{ $notifications->links() }}</div>
+@include('partials.toast-notifications')
 @endsection
