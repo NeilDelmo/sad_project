@@ -22,8 +22,8 @@
             <select id="user_type" name="user_type" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
                 <option value="" disabled {{ old('user_type') ? '' : 'selected' }}>{{ __('Select a user type') }}</option>
                 <option value="fisherman" {{ old('user_type') === 'fisherman' ? 'selected' : '' }}>{{ __('Fisherman') }}</option>
+                <option value="vendor" {{ old('user_type') === 'vendor' ? 'selected' : '' }}>{{ __('Vendor') }}</option>
                 <option value="buyer" {{ old('user_type') === 'buyer' ? 'selected' : '' }}>{{ __('Buyer') }}</option>
-                <option value="supplier" {{ old('user_type') === 'supplier' ? 'selected' : '' }}>{{ __('Supplier') }}</option>
             </select>
             <x-input-error :messages="$errors->get('user_type')" class="mt-2" />
         </div>

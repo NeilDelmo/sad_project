@@ -34,9 +34,9 @@ class RegisteredUserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'phone' => ['nullable', 'string', 'max:20'],
-            // Only allow fisherman, buyer, and supplier for public registration
-            // Admin and regulator accounts must be created manually
-            'user_type' => ['required', Rule::in(['fisherman', 'buyer', 'supplier'])],
+            // Only allow fisherman, vendor, and buyer for public registration
+            // Admin accounts must be created manually
+            'user_type' => ['required', Rule::in(['fisherman', 'vendor', 'buyer'])],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
