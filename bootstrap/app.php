@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\UpdateLastSeen::class,
             \App\Http\Middleware\PreventBackHistory::class,
+            \App\Http\Middleware\CheckAccountStatus::class,
         ]);
         
             // Redirect unauthenticated users to landing page instead of login

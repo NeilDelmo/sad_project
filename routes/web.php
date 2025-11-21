@@ -9,6 +9,7 @@ use App\Http\Controllers\VendorInventoryController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\AdminRevenueController;
+use App\Http\Controllers\AdminUserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FishermanController;
@@ -78,6 +79,12 @@ Route::middleware('auth')->group(function () {
     // Admin revenue dashboard (ensure to wrap with proper admin middleware later)
     Route::get('/admin/revenue', [AdminRevenueController::class, 'index'])->name('admin.revenue.index');
     Route::get('/admin/revenue/export', [AdminRevenueController::class, 'exportCsv'])->name('admin.revenue.export');
+    
+    // Admin user management
+    Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::post('/admin/users/{id}/suspend', [AdminUserController::class, 'suspend'])->name('admin.users.suspend');
+    Route::post('/admin/users/{id}/ban', [AdminUserController::class, 'ban'])->name('admin.users.ban');
+    Route::post('/admin/users/{id}/reactivate', [AdminUserController::class, 'reactivate'])->name('admin.users.reactivate');
 });
 
 require __DIR__.'/auth.php';

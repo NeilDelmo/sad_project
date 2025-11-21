@@ -185,7 +185,7 @@
                 <button type="button" class="btn btn-modify btn-sm mb-1" onclick="toggleModifyForm('modify-{{ $offer->id }}')">
                   <i class="fas fa-edit"></i> Modify
                 </button>
-                <form method="POST" action="{{ route('offers.withdraw', $offer) }}" class="d-inline">
+                <form method="POST" action="{{ route('fisherman.offers.withdraw', $offer) }}" class="d-inline">
                   @csrf
                   <button type="submit" class="btn btn-withdraw btn-sm mb-1" onclick="return confirm('Withdraw this bid?')">
                     <i class="fas fa-undo"></i> Withdraw
@@ -210,7 +210,7 @@
           @if($offer->status === 'pending' && $offer->canModify())
           <tr id="modify-{{ $offer->id }}" class="modify-form">
             <td colspan="9">
-              <form method="POST" action="{{ route('offers.modify', $offer) }}">
+              <form method="POST" action="{{ route('fisherman.offers.modify', $offer) }}">
                 @csrf
                 <div class="row g-3">
                   <div class="col-md-3">
