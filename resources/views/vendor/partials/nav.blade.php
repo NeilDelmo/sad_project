@@ -82,7 +82,7 @@
         <i class="fa-solid fa-store"></i> Marketplace & Forum
       </a>
       <a href="{{ route('marketplace.orders.index') }}" class="nav-link {{ request()->routeIs('marketplace.orders.*') ? 'active' : '' }}">
-        <i class="fa-solid fa-shopping-cart"></i> My Orders
+        <i class="fa-solid fa-shopping-cart"></i> Marketplace Orders
       </a>
     </div>
 

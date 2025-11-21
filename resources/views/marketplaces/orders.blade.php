@@ -301,7 +301,7 @@
           @endif
           @if($order->delivered_at && $order->isRefundWindowOpen() && in_array($order->status, ['delivered','received']))
           <div>
-            <div class="label">Refund Window</div>
+            <div class="label">Refund Period</div>
             <div class="value" style="color: #dc3545; font-weight: 600;">
               <i class="fa-solid fa-clock"></i>
               <span class="refund-countdown" data-delivered="{{ $order->delivered_at->toIso8601String() }}">Calculating...</span>
@@ -400,7 +400,7 @@
             @if($order->isRefundWindowOpen())
               <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#refundModal{{ $order->id }}"><i class="fa-solid fa-rotate-left"></i> Request Refund</button>
             @else
-              <button class="btn btn-outline-secondary" disabled title="Refund window closed (3 hours after delivery)"><i class="fa-solid fa-ban"></i> Refund Window Closed</button>
+              <button class="btn btn-outline-secondary" disabled title="Refund period closed (3 hours after delivery)"><i class="fa-solid fa-ban"></i> Refund Period Closed</button>
             @endif
           @endif
           @if($user && $user->id === $order->buyer_id && $order->status === 'refund_declined')
@@ -420,7 +420,7 @@
           @endif
         </div>
 
-        @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']))
+        @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']) && $order->isRefundWindowOpen())
         <div class="modal fade" id="refundModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
@@ -487,7 +487,7 @@ function updateRefundCountdowns() {
     const hoursSinceDelivery = (now - deliveredAt) / (1000 * 60 * 60);
     
     if (hoursSinceDelivery >= 3) {
-      countdown.textContent = 'Window Closed';
+      countdown.textContent = 'Period Closed';
       countdown.style.color = '#6c757d';
       return;
     }
@@ -497,7 +497,7 @@ function updateRefundCountdowns() {
     const remainingMinutes = totalMinutes - elapsedMinutes;
     
     if (remainingMinutes <= 0) {
-      countdown.textContent = 'Window Closed';
+      countdown.textContent = 'Period Closed';
       countdown.style.color = '#6c757d';
       return;
     }
