@@ -363,28 +363,35 @@
                     <i class="fa-solid fa-clock"></i>
                     Posted {{ $product->created_at->diffForHumans() }}
                 </div>
+                @php
+                    $lockReasons = $product->lock_reasons ?? [];
+                    $isLocked = !empty($lockReasons);
+                    $lockMessage = $isLocked ? 'Locked because ' . implode(' and ', $lockReasons) . '.' : '';
+                @endphp
 
                 <div class="product-actions">
-                    @if($product->is_edit_locked ?? false)
-                        <button type="button" class="btn-edit" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    @if($isLocked)
+                        <button type="button" class="btn-edit" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{ $lockMessage }}">
                             <i class="fa-solid fa-lock"></i> Locked
                         </button>
-                        <small style="display:block;margin-top:6px;color:#dc3545;font-size:12px;">
-                            Editing disabled while offers/transactions are active or stock is 0.
-                        </small>
                     @else
                         <a href="{{ route('fisherman.products.edit', $product->id) }}" class="btn-edit">
                             <i class="fa-solid fa-edit"></i> Edit
                         </a>
                     @endif
-                    <form action="{{ route('fisherman.products.destroy', $product->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                    <form action="{{ route('fisherman.products.destroy', $product->id) }}" method="POST" style="display: inline;" @if($isLocked) onsubmit="return false;" @else onsubmit="return confirm('Are you sure you want to delete this product?');" @endif>
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-delete">
+                        <button type="submit" class="btn-delete" @if($isLocked) disabled style="opacity:0.5;cursor:not-allowed;" @endif title="{{ $isLocked ? $lockMessage . ' Deletion disabled while orders or offers are active.' : 'Delete this product' }}">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </form>
                 </div>
+                @if($isLocked)
+                    <small style="display:block;margin-top:6px;color:#dc3545;font-size:12px;">
+                        {{ $lockMessage }} Editing and deletion are disabled until everything is completed.
+                    </small>
+                @endif
             </div>
             @endforeach
         </div>
