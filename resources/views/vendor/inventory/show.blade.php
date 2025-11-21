@@ -113,4 +113,5 @@
     </div>
 </div>
 @include('partials.message-notification')
+@include('partials.toast-notifications')
 @endsection

@@ -191,6 +191,7 @@
 </script>
 
 @include('partials.message-notification')
+@include('partials.toast-notifications')
 
 </body>
 </html>

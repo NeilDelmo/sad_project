@@ -260,5 +260,6 @@
         </form>
     </div>
 @include('partials.message-notification')
+@include('partials.toast-notifications')
 </body>
 </html>

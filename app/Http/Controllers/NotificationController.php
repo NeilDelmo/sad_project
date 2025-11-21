@@ -57,12 +57,29 @@ class NotificationController extends Controller
             return response()->json(['unread_count' => 0, 'items' => []]);
         }
         $items = $user->unreadNotifications()->latest()->limit(5)->get()->map(function ($n) {
+            $data = $n->data;
+            $type = data_get($data, 'type', 'notification');
+            
+            // Determine title if missing
+            $title = data_get($data, 'title');
+            if (!$title) {
+                $title = match($type) {
+                    'new_vendor_offer' => 'New Offer Received',
+                    'counter_vendor_offer' => 'Counter Offer Received',
+                    'vendor_offer_accepted' => 'Offer Accepted',
+                    'vendor_accepted_counter' => 'Counter Offer Accepted',
+                    'order_status' => 'Order Update',
+                    'customer_order' => 'New Order',
+                    default => 'Notification'
+                };
+            }
+
             return [
                 'id' => $n->id,
-                'type' => data_get($n->data, 'type', 'notification'),
-                'title' => data_get($n->data, 'title', 'Notification'),
-                'message' => data_get($n->data, 'message'),
-                'link' => data_get($n->data, 'link', route('notifications.index')),
+                'type' => $type,
+                'title' => $title,
+                'message' => data_get($data, 'message'),
+                'link' => data_get($data, 'link', route('notifications.index')),
                 'created_at' => optional($n->created_at)->diffForHumans(),
             ];
         });

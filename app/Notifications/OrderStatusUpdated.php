@@ -24,9 +24,11 @@ class OrderStatusUpdated extends Notification
     {
         return [
             'type' => 'order_status',
+            'title' => 'Order Update',
             'order_id' => $this->order->id,
             'status' => $this->order->status,
             'message' => $this->text,
+            'link' => '/orders',
         ];
     }
 }

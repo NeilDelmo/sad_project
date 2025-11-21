@@ -310,7 +310,7 @@
 <body>
 
     <!-- Navbar -->
-    @include('vendor.partials.nav')>
+    @include('vendor.partials.nav')
 
     <div class="container-main">
         <div class="page-header">
