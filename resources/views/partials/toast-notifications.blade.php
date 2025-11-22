@@ -124,6 +124,14 @@
         const audioSrc = (containerEl?.dataset?.audioSrc) || '/audio/notify.mp3';
         const notifAudio = new Audio(audioSrc);
         notifAudio.preload = 'auto';
+        
+        // Debug: Log if audio fails to load
+        notifAudio.addEventListener('error', (e) => {
+            console.error('Notify audio failed to load:', audioSrc, e);
+        });
+        notifAudio.addEventListener('canplaythrough', () => {
+            console.log('Notify audio loaded successfully');
+        }, { once: true });
 
         function unlockAudioOnce() {
             const tryUnlock = () => {
@@ -132,9 +140,12 @@
                     notifAudio.pause();
                     notifAudio.currentTime = 0;
                     notifAudio.muted = false;
+                    console.log('Audio unlocked successfully');
                     window.removeEventListener('pointerdown', tryUnlock);
                     window.removeEventListener('keydown', tryUnlock);
-                }).catch(() => { /* ignore */ });
+                }).catch((err) => { 
+                    console.warn('Audio unlock failed:', err);
+                });
             };
             window.addEventListener('pointerdown', tryUnlock, { once: false });
             window.addEventListener('keydown', tryUnlock, { once: false });

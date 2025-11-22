@@ -37,9 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     return redirect()->route('fisherman.dashboard');
                 case 'buyer':
                     return redirect()->route('marketplace.shop');
+                case 'admin':
+                case 'regulator':
+                    return view('dashboard');
             }
         }
-        // Admin/regulator or fallback uses Breeze dashboard view
+        // Fallback for any other type
         return view('dashboard');
     })->name('dashboard');
 
