@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+if [ -f /var/www/html/.docker/root/start-container ]; then
+    /var/www/html/.docker/root/start-container "$@"
+fi
+
+# Check if a custom command was passed
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
+# Fix directory permissions for the 'sail' user
+#chown -R sail:sail /var/www/html \
+ #   /var/www/html/storage \
+  #  /var/www/html/bootstrap/cache \
+   # /var/www/html/vendor
+
+# Run any custom entrypoint scripts
+if [ -d "/var/www/html/docker/custom-entrypoint.d" ]; then
+    for entrypoint_script in /var/www/html/docker/custom-entrypoint.d/*.sh; do
+        if [ -f "$entrypoint_script" ]; then
+            bash "$entrypoint_script"
+       fi
+    done
+fi
+
+# Execute the supervisord process as the main container process
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
