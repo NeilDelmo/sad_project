@@ -1499,6 +1499,58 @@ def record_trip_outcome():
         traceback.print_exc()
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
+# Legacy compatibility alias for older frontend calls hitting /zone
+# Provides a lightweight safety + conditions summary without requiring frontend changes.
+@app.route('/zone', methods=['GET'])
+def zone_alias():
+    try:
+        lat = request.args.get('lat', type=float)
+        lon = request.args.get('lon', type=float)
+        if lat is None or lon is None:
+            return jsonify({"error": "lat and lon query parameters are required"}), 400
+
+        # Philippines bounds validation (same as core endpoints)
+        if not (5.0 <= lat <= 20.0 and 116.0 <= lon <= 127.0):
+            return jsonify({"error": "Location must be in Philippines area"}), 400
+
+        weather_result = fishing_api.get_weather_data(lat, lon)
+        if not weather_result:
+            return jsonify({"error": "Failed to fetch weather data"}), 500
+
+        onecall_data, location_name = weather_result
+        is_marine = fishing_api.is_marine_location(lat, lon)
+        features, extra_data = fishing_api.extract_features_from_weather(
+            onecall_data,
+            lat,
+            lon,
+            is_marine=is_marine
+        )
+        if not features or not extra_data:
+            return jsonify({"error": "Failed to extract weather features"}), 500
+
+        env_context = extra_data.get('environmental_context', {})
+        prediction = fishing_api.predict_safety(features, env_context)
+        if not prediction:
+            return jsonify({"error": "Failed to make safety prediction"}), 500
+
+        return jsonify({
+            "location_name": location_name,
+            "lat": lat,
+            "lon": lon,
+            "verdict": prediction["verdict"],
+            "risk_level": prediction["risk_level"],
+            "wind_speed_kph": round(features.get("wind_speed_kph", 0), 1),
+            "wave_height_m": round(features.get("wave_height_m", 0), 1),
+            "is_marine": bool(is_marine),
+            "environmental_flags": env_context.get("flags", [])
+        })
+    except ValueError as e:
+        return jsonify({"error": f"Invalid coordinates: {str(e)}"}), 400
+    except Exception as e:
+        print(f"❌ Error in /zone alias: {e}")
+        traceback.print_exc()
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
 if __name__ == '__main__':
     print("🎣 Starting Enhanced Fishing Safety API for Laravel...")
     print("✅ Laravel .env integration enabled")
