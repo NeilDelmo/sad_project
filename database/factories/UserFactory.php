@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Faker\Factory as FakerFactory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -23,11 +24,13 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Ensure a Faker instance even if the base Factory failed to initialize it
+        $faker = $this->faker ?: FakerFactory::create();
         return [
-            'username' => $this->faker->unique()->userName(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->optional()->e164PhoneNumber(),
-            'user_type' => $this->faker->randomElement(['fisherman', 'buyer', 'supplier', 'regulator', 'admin']),
+            'username' => $faker->unique()->userName(),
+            'email' => $faker->unique()->safeEmail(),
+            'phone' => $faker->optional()->e164PhoneNumber(),
+            'user_type' => $faker->randomElement(['fisherman', 'buyer', 'supplier', 'regulator', 'admin']),
             'status' => 'active',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
