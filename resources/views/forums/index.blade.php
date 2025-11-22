@@ -14,8 +14,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
 
         body {
-            background-color: #0b1d3a;
-            color: #f1f3f5;
+            background-color: #f8f9fa;
+            color: #1B5E88;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -25,7 +25,7 @@
         .navbar {
             background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
             padding: 15px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(27,94,136,0.06);
         }
 
         .nav-brand {
@@ -97,21 +97,21 @@
         }
 
         .forum-card {
-            background-color: #132d55;
-            border: 1px solid #1f3b6e;
-            color: #f1f3f5;
-            transition: all 0.3s ease;
+            background-color: #ffffff;
+            border: 1px solid #0075B5;
+            color: #1B5E88;
+            transition: all 0.25s ease;
             border-radius: 12px;
         }
         
         .forum-card:hover {
-            background-color: #1a3b70;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            background-color: #ffffff;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,117,181,0.15);
         }
         
         .text-muted {
-            color: #9fb3d2 !important;
+            color: #557a92 !important;
         }
 
         .text-secondary {
@@ -130,39 +130,48 @@
         }
 
         .welcome-section {
-            background: linear-gradient(135deg, #132d55 0%, #1a3b70 100%);
+            background: #ffffff;
             padding: 40px;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 20px rgba(27,94,136,0.04);
             margin-bottom: 30px;
-            border: 1px solid #1f3b6e;
+            border: 1px solid rgba(0,117,181,0.08);
         }
 
         .welcome-title {
             font-family: "Koulen", sans-serif;
             font-size: 48px;
-            color: #E7FAFE;
+            color: #1B5E88;
             margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .category-icon {
             font-size: 24px;
-            color: #17a2b8;
+            color: #0075B5;
         }
 
         .category-title {
-            color: #17a2b8;
+            color: #0075B5;
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 12px;
         }
 
         .category-stats {
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,117,181,0.06);
             padding: 8px 12px;
             border-radius: 6px;
             display: inline-block;
+            color: #1B5E88;
+        }
+
+        .tint-blue {
+            color: #0d6efd !important; /* primary blue */
+            background: rgba(13,110,253,0.06);
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 600;
         }
 
         @media (max-width: 768px) {
@@ -185,7 +194,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.95);
+            background-color: rgba(27,94,136,0.6);
             justify-content: center;
             align-items: center;
             animation: fadeIn 0.3s ease;
@@ -201,10 +210,10 @@
             height: 700px;
             max-width: 90vw;
             max-height: 90vh;
-            background-color: #1a3b70;
+            background-color: #3a4ea0;
             border-radius: 12px;
-            border: 3px solid #2d5a8f;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border: 2px solid #0075B5;
+            box-shadow: 0 20px 50px rgba(27,94,136,0.08);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -231,7 +240,6 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
             z-index: 10001;
             width: 50px;
             height: 50px;
@@ -295,6 +303,55 @@
         .badge {
             font-weight: 500;
             padding: 4px 10px;
+            background: rgba(0,117,181,0.08);
+            color: #1B5E88;
+        }
+
+        /* Image-background variant for forum cards */
+        .forum-card.bg-image {
+            position: relative;
+            color: #ffffff;
+            /* keep fallback color */
+            background-color: rgba(0,117,181,0.08);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(7,85,130,0.12);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .forum-card.bg-image::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.36));
+            z-index: 1;
+            pointer-events: none;
+        }
+        /* make sure card content sits above overlay */
+        .forum-card.bg-image > * { position: relative; z-index: 2; }
+
+        /* Make text inside card high-contrast white */
+        .forum-card.bg-image .category-title,
+        .forum-card.bg-image .card-title,
+        .forum-card.bg-image p,
+        .forum-card.bg-image .text-muted {
+            color: rgba(255,255,255,0.95) !important;
+        }
+
+        /* Adjust small UI pieces (badges, counts) */
+        .forum-card.bg-image .badge,
+        .forum-card.bg-image .thread-count {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Responsive tweaks if needed */
+        @media (max-width: 768px) {
+            .forum-card.bg-image { background-position: center top; }
         }
     </style>
 </head>
@@ -341,13 +398,13 @@
     <div class="forum-container">
         <div class="welcome-section">
             <div class="welcome-title">🗣️ Community Forum</div>
-            <p style="font-size: 20px; color: #E7FAFE; margin-bottom: 8px; font-weight: 500;">Connect with fellow fishermen and share your knowledge</p>
+            <p class="tint-blue" style="font-size: 20px; margin-bottom: 8px; font-weight: 500;">Connect with fellow fishermen and share your knowledge</p>
             <p style="font-size: 16px; color: #9fb3d2; margin-bottom: 0;">Join discussions, ask questions, and learn from the community</p>
         </div>
 
         <div id="forum-content">
             <div class="forum-card p-4">
-                <h3 class="mb-4" style="color: #E7FAFE; font-size: 32px; font-weight: 700;">
+                <h3 class="mb-4 tint-blue" style="font-size: 32px; font-weight: 700;">
                     <i class="bi bi-folder-open category-icon"></i> Forum Categories
                 </h3>
                 
@@ -361,7 +418,8 @@
                         @foreach($categories as $cat)
                             <div class="col-md-6 col-lg-4">
                                 <a href="{{ route('forums.category', $cat->id) }}" class="category-link">
-                                    <div class="forum-card p-4 h-100 d-flex flex-column">
+                                    <div class="forum-card p-4 h-100 d-flex flex-column bg-image"
+                                         style="background-image: url('{{ asset('images/forum-card-bg.jpg') }}');">
                                         <div class="mb-3">
                                             <h5 class="category-title d-flex align-items-center gap-2">
                                                 <i class="bi bi-folder2-open"></i> 
@@ -371,7 +429,7 @@
                                         <p class="text-muted flex-grow-1" style="font-size: 14px; line-height: 1.6;">
                                             {{ Str::limit($cat->description, 100) }}
                                         </p>
-                                        <div class="category-stats mt-2">
+                                        <div class="category-stats mt-2" style="color: rgb(101, 160, 250)">
                                             <i class="bi bi-chat-dots"></i> 
                                             <strong>{{ $cat->threads_count }}</strong> 
                                             {{ Str::plural('thread', $cat->threads_count) }}

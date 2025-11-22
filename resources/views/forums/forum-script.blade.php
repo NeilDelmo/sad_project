@@ -7,6 +7,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const csrf = document.querySelector("meta[name='csrf-token']").content;
     let uploadHandlersInitialized = false;
 
+    // Add notification function
+    function showNotification(message, type = 'info') {
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+        
+        const notification = document.createElement('div');
+        notification.className = `alert ${alertClass} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
     function initEditors() {
         if (!window.tinymce) return;
         tinymce.remove();
@@ -122,16 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             e.stopPropagation();
             uploadAreaRef.classList.remove('dragover');
-            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            const files = e.dataTransfer.files;
             if (files.length > 0) {
                 await handleFiles(files);
             }
         });
 
         fileInputRef.addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files);
-            if (files.length > 0) {
-                await handleFiles(files);
+            if (e.target.files.length > 0) {
+                await handleFiles(e.target.files);
             }
             e.target.value = '';
         });
@@ -140,82 +160,63 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isUploading) return;
             isUploading = true;
 
-            for (const file of files) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showNotification(`${file.name} is too large. Max 5MB per image.`, 'error');
-                    continue;
-                }
-
-                if (!file.type.startsWith('image/')) {
-                    showNotification(`${file.name} is not an image file.`, 'error');
-                    continue;
-                }
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith('image/')) continue;
 
                 const formData = new FormData();
                 formData.append('file', file);
 
                 try {
-                    const response = await fetch('{{ route("forums.upload-image") }}', {
+                    const response = await fetch('/forums/upload-image', {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': csrf
                         },
                         body: formData
                     });
-
-                    if (!response.ok) {
-                        throw new Error(`Upload failed: ${response.status}`);
-                    }
-
-                    const json = await response.json();
-
-                    if (json.location) {
-                        uploadedImages.push(json.location);
-                        addImagePreview(json.location);
-                        updateHiddenInput();
-                        showNotification(`${file.name} uploaded!`, 'success');
+                    const data = await response.json();
+                    if (data.location) {
+                        uploadedImages.push(data.location);
+                        addImagePreview(data.location);
                     }
                 } catch (err) {
-                    showNotification(`Upload failed: ${err.message}`, 'error');
+                    console.error('Upload failed:', err);
                 }
             }
 
+            updateHiddenInput();
             isUploading = false;
         }
 
         function addImagePreview(url) {
-            const item = document.createElement('div');
-            item.className = 'image-preview-item';
-            item.innerHTML = `
+            const previewItem = document.createElement('div');
+            previewItem.className = 'image-preview-item';
+            previewItem.innerHTML = `
                 <img src="${url}" alt="Preview">
-                <button type="button" class="image-preview-remove" data-url="${url}">×</button>
+                <button type="button" class="image-preview-remove" onclick="this.parentElement.remove(); window.updateImageUrls_${type}();">
+                    ×
+                </button>
             `;
-            previewContainer.appendChild(item);
-
-            const removeBtn = item.querySelector('.image-preview-remove');
-            removeBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const urlToRemove = e.currentTarget.dataset.url;
-                uploadedImages = uploadedImages.filter(u => u !== urlToRemove);
-                item.remove();
-                updateHiddenInput();
-                showNotification('Image removed', 'info');
-            });
+            previewContainer.appendChild(previewItem);
         }
 
         function updateHiddenInput() {
-            hiddenInput.value = JSON.stringify(uploadedImages);
+            hiddenInput.value = uploadedImages.join(',');
         }
 
         function resetUpload() {
             uploadedImages = [];
             previewContainer.innerHTML = '';
             hiddenInput.value = '';
-            isUploading = false;
         }
 
         window[`reset_${type}_upload`] = resetUpload;
+        window[`updateImageUrls_${type}`] = function() {
+            uploadedImages = Array.from(previewContainer.querySelectorAll('img'))
+                .map(img => img.src);
+            updateHiddenInput();
+        };
     }
 
     async function loadCategory(id, sort) {

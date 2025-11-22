@@ -17,16 +17,22 @@
     <!-- Optional custom forum CSS -->
     <style>
         body {
-            background-color: #121212;
-            color: #e9ecef;
+            background-color: #f8f9fa;
+            color: #1B5E88;
             font-family: "Segoe UI", system-ui, sans-serif;
         }
         a, a:hover {
             text-decoration: none;
         }
+        .navbar {
+            background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+        }
+        .navbar .navbar-brand {
+            color: #ffffff;
+        }
         .forum-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 18px rgba(27,94,136,0.06);
         }
         .rounded-circle {
             width: 45px;
