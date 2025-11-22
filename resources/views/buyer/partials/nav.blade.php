@@ -19,17 +19,19 @@
       </a>
       
       <!-- Message Icon -->
-      <a href="{{ route('messages.inbox') }}" class="nav-link position-relative">
-        <i class="fa-solid fa-envelope"></i>
-        @php
-          $unreadCount = Auth::user()->unreadMessages()->count();
-        @endphp
-        @if($unreadCount > 0)
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
-            {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-          </span>
-        @endif
-      </a>
+      @if (Route::has('messages.inbox'))
+        <a href="{{ route('messages.inbox') }}" class="nav-link position-relative">
+          <i class="fa-solid fa-envelope"></i>
+          @php
+            $unreadCount = Auth::user()->unreadMessages()->count();
+          @endphp
+          @if($unreadCount > 0)
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
+              {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+            </span>
+          @endif
+        </a>
+      @endif
 
       <!-- Notification Bell -->
       @include('partials.notification-bell')
