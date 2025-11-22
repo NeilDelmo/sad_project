@@ -1,3 +1,7 @@
+@php
+  use Illuminate\Support\Facades\Route;
+@endphp
+
 <nav class="navbar">
   <div class="container-fluid d-flex justify-content-between align-items-center">
     <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
@@ -5,40 +9,16 @@
       SeaLedger
     </a>
     <div class="nav-links">
-      <a href="{{ route('marketplace.shop') }}" class="nav-link">
-        <i class="fa-solid fa-fire"></i> Latest
-      </a>
       <a href="{{ route('marketplace.index') }}" class="nav-link">
-        <i class="fa-solid fa-store"></i> Marketplace & Forum
-      </a>
-      <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
-        <i class="fa-solid fa-receipt"></i> My Orders
+        <i class="fa-solid fa-store"></i> Marketplace
       </a>
       <a href="{{ route('forums.index') }}" class="nav-link">
         <i class="fa-solid fa-comments"></i> Forum
       </a>
-      
-      <!-- Message Icon -->
-      @if (Route::has('messages.inbox'))
-        <a href="{{ route('messages.inbox') }}" class="nav-link position-relative">
-          <i class="fa-solid fa-envelope"></i>
-          @php
-            $unreadCount = Auth::user()->unreadMessages()->count();
-          @endphp
-          @if($unreadCount > 0)
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 10px;">
-              {{ $unreadCount > 99 ? '99+' : $unreadCount }}
-            </span>
-          @endif
-        </a>
-      @endif
 
-      <!-- Notification Bell -->
-      @include('partials.notification-bell')
-
-      <form method="POST" action="{{ route('logout') }}" style="display: inline; margin-left: auto;">
+      <form method="POST" action="{{ route('logout') }}" class="nav-link logout-link">
         @csrf
-        <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
+        <button type="submit">
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
       </form>
@@ -144,5 +124,26 @@
     color: white;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .logout-link {
+    padding: 0;
+  }
+
+  .logout-link button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .logout-link button:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
   }
 </style>
