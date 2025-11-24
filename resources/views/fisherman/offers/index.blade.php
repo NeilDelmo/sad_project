@@ -744,10 +744,11 @@
                                            name="counter_price" 
                                            class="form-control form-control-custom" 
                                            step="0.01" 
-                                           min="0.01"
+                                         min="{{ number_format($offer->offered_price + 0.01, 2, '.', '') }}"
                                            value="{{ $offer->product->unit_price }}"
                                            required>
-                                    <small class="text-muted">Original asking price: ₱{{ number_format($offer->product->unit_price, 2) }}</small>
+                                     <small class="text-muted d-block">Must be higher than the vendor's offer of ₱{{ number_format($offer->offered_price, 2) }}.</small>
+                                     <small class="text-muted">Original asking price: ₱{{ number_format($offer->product->unit_price, 2) }}</small>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-counter">

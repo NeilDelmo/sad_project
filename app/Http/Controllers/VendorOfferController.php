@@ -208,10 +208,19 @@ class VendorOfferController extends Controller
             return back()->withErrors(['error' => 'This offer has expired or already been responded to.']);
         }
 
-        $request->validate([
-            'counter_price' => 'required|numeric|min:0',
-            'message' => 'nullable|string|max:500',
-        ]);
+        $request->validate(
+            [
+                'counter_price' => [
+                    'required',
+                    'numeric',
+                    'gt:' . $offer->offered_price,
+                ],
+                'message' => 'nullable|string|max:500',
+            ],
+            [
+                'counter_price.gt' => 'Counter offer must be higher than the vendor\'s offer of ₱' . number_format((float) $offer->offered_price, 2),
+            ]
+        );
 
         $offer->update([
             'status' => 'countered',
