@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class RentalController extends Controller
 {
+    /**
+     * Rental statuses that should lock inventory adjustments.
+     */
+    private const ACTIVE_RENTAL_STATUSES = ['pending', 'approved', 'active'];
     public function index()
     {
         // Get Gear category
@@ -629,6 +633,11 @@ class RentalController extends Controller
         }
 
         $products = Product::where('is_rentable', true)
+            ->withCount(['rentalItems as active_rental_items_count' => function ($query) {
+                $query->whereHas('rental', function ($rentals) {
+                    $rentals->whereIn('status', self::ACTIVE_RENTAL_STATUSES);
+                });
+            }])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -648,7 +657,9 @@ class RentalController extends Controller
             abort(404, 'Not a rental product');
         }
 
-        return view('rentals.admin.edit_product', compact('product'));
+        $inventoryLocked = $this->productHasActiveRentals($product);
+
+        return view('rentals.admin.edit_product', compact('product', 'inventoryLocked'));
     }
 
     /**
@@ -668,6 +679,25 @@ class RentalController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'equipment_status' => 'required|in:available,maintenance,retired',
         ]);
+
+        $inventoryLocked = $this->productHasActiveRentals($product);
+        if ($inventoryLocked) {
+            $lockedFields = [];
+
+            if ((int) $validated['rental_stock'] !== (int) $product->rental_stock) {
+                $lockedFields[] = 'stock level';
+            }
+
+            if ($validated['equipment_status'] !== $product->equipment_status) {
+                $lockedFields[] = 'equipment status';
+            }
+
+            if (!empty($lockedFields)) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['error' => 'Stock and equipment status cannot be changed while this item has pending or active rentals. Finish or cancel those rentals before updating these fields.']);
+            }
+        }
 
         $updates = [
             'name' => $validated['name'],
@@ -795,6 +825,18 @@ class RentalController extends Controller
             ->get();
 
         return view('rentals.admin.maintenance', compact('maintenanceEquipment', 'retiredEquipment'));
+    }
+
+    /**
+     * Determine if a rental product is currently tied to locking rentals.
+     */
+    private function productHasActiveRentals(Product $product): bool
+    {
+        return $product->rentalItems()
+            ->whereHas('rental', function ($query) {
+                $query->whereIn('status', self::ACTIVE_RENTAL_STATUSES);
+            })
+            ->exists();
     }
 
     /**

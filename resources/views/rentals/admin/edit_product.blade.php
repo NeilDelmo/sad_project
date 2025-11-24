@@ -125,6 +125,15 @@
             margin-bottom: 20px;
         }
 
+        .alert-warning {
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fdba74;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
         .current-image {
             margin-top: 10px;
             max-width: 200px;
@@ -158,6 +167,17 @@
             </div>
         @endif
 
+        @php
+            $inventoryLocked = $inventoryLocked ?? false;
+        @endphp
+
+        @if($inventoryLocked)
+            <div class="alert-warning">
+                <i class="fa-solid fa-lock"></i>
+                Stock and equipment status are locked while this product has pending/approved/active rentals. You can still update descriptive fields and pricing for future rentals.
+            </div>
+        @endif
+
         <div class="form-card">
             <form action="{{ route('rentals.admin.products.update', $product) }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -184,18 +204,28 @@
 
                     <div class="form-group">
                         <label class="form-label">Total Stock</label>
-                        <input type="number" name="rental_stock" class="form-control" required min="0" value="{{ old('rental_stock', $product->rental_stock) }}">
-                        <p style="font-size: 12px; color: #666; margin-top: 5px;">Note: Changing this affects available inventory.</p>
+                        <input type="number" name="rental_stock" class="form-control" required min="0" value="{{ old('rental_stock', $product->rental_stock) }}" {{ $inventoryLocked ? 'readonly' : '' }}>
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                            @if($inventoryLocked)
+                                Locked until current rentals are completed.
+                            @else
+                                Note: Changing this affects available inventory.
+                            @endif
+                        </p>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Status</label>
-                    <select name="equipment_status" class="form-control">
+                    <select name="equipment_status" class="form-control" {{ $inventoryLocked ? 'disabled' : '' }}>
                         <option value="available" {{ old('equipment_status', $product->equipment_status) == 'available' ? 'selected' : '' }}>Available</option>
                         <option value="maintenance" {{ old('equipment_status', $product->equipment_status) == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
                         <option value="retired" {{ old('equipment_status', $product->equipment_status) == 'retired' ? 'selected' : '' }}>Retired</option>
                     </select>
+                    @if($inventoryLocked)
+                        <input type="hidden" name="equipment_status" value="{{ old('equipment_status', $product->equipment_status) }}">
+                        <p style="font-size: 12px; color: #9a3412; margin-top: 5px;">Status locked while rentals are ongoing.</p>
+                    @endif
                 </div>
 
                 <div class="form-group">

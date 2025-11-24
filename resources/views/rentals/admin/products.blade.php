@@ -164,6 +164,25 @@
             color: #374151;
         }
 
+        .lock-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #991b1b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .lock-note {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #b45309;
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 8px 10px;
+        }
+
         .alert-success {
             background: #d1fae5;
             color: #065f46;
@@ -202,6 +221,9 @@
 
         <div class="products-grid">
             @foreach($products as $product)
+                @php
+                    $inventoryLocked = ($product->active_rental_items_count ?? 0) > 0;
+                @endphp
                 <div class="product-card">
                     @if($product->image_path)
                         <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="product-image">
@@ -217,6 +239,13 @@
                                 {{ ucfirst($product->equipment_status) }}
                             </span>
                         </div>
+
+                        @if($inventoryLocked)
+                            <div class="lock-indicator" title="Stock and status are frozen until all rentals complete.">
+                                <i class="fa-solid fa-lock"></i>
+                                Active rental in progress
+                            </div>
+                        @endif
                         
                         <div class="product-price">₱{{ number_format($product->rental_price_per_day, 2) }} <span style="font-size: 14px; color: #666; font-weight: normal;">/ day</span></div>
                         
@@ -228,6 +257,13 @@
                         <a href="{{ route('rentals.admin.products.edit', $product) }}" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;">
                             <i class="fa-solid fa-pen-to-square"></i> Edit Details
                         </a>
+
+                        @if($inventoryLocked)
+                            <div class="lock-note">
+                                <i class="fa-solid fa-circle-info"></i>
+                                Stock & status locked while rentals are pending/active.
+                            </div>
+                        @endif
                     </div>
                 </div>
             @endforeach
