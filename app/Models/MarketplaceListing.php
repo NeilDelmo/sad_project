@@ -93,7 +93,7 @@ class MarketplaceListing extends Model implements Auditable
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')->whereNull('unlisted_at');
+        return $query->where('marketplace_listings.status', 'active')->whereNull('marketplace_listings.unlisted_at');
     }
 
     /**
