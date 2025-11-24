@@ -141,6 +141,61 @@
         .empty-state h3 { color:#1B5E88; margin-bottom:12px; font-size:28px; font-weight:700; }
         .empty-state p { color:#6c757d; font-size:16px; }
 
+        .role-banner {
+            background: #fff;
+            border-left: 5px solid #f59e0b;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 18px 22px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .role-banner.vendor {
+            border-left-color: #0ea5e9;
+        }
+
+        .role-banner-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #b45309;
+        }
+
+        .role-banner.vendor .role-banner-icon {
+            background: rgba(14, 165, 233, 0.15);
+            color: #0369a1;
+        }
+
+        .role-banner-content { flex: 1; }
+        .role-banner-title { font-weight: 700; color: #1f2937; font-size: 1rem; margin-bottom: 4px; }
+        .role-banner-text { color: #4b5563; font-size: 0.92rem; margin: 0; }
+
+        .role-banner-action {
+            background: #1B5E88;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .role-banner-action:hover {
+            background: #164669;
+            color: #fff;
+        }
+
         @media (max-width: 768px) {
             .product-grid { grid-template-columns: 1fr; gap: 20px; }
             .container-custom { padding: 30px 20px; }
@@ -221,6 +276,37 @@
             <div class="page-title">Browse Marketplace</div>
             <div class="page-subtitle">Discover fresh catches and shop directly</div>
         </div>
+
+        @auth
+            @php $userType = auth()->user()->user_type ?? null; @endphp
+            @if($userType === 'fisherman')
+                <div class="role-banner">
+                    <div class="role-banner-icon">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <div class="role-banner-content">
+                        <div class="role-banner-title">Browse-Only View</div>
+                        <p class="role-banner-text">You can explore listings for price discovery, but selling still happens through your Offers tab. Create or review bids from your Fisherman dashboard.</p>
+                    </div>
+                    <a class="role-banner-action" href="{{ route('fisherman.dashboard') }}">
+                        <i class="fa-solid fa-anchor"></i> Go to Fisherman Hub
+                    </a>
+                </div>
+            @elseif($userType === 'vendor')
+                <div class="role-banner vendor">
+                    <div class="role-banner-icon">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <div class="role-banner-content">
+                        <div class="role-banner-title">Marketplace Preview</div>
+                        <p class="role-banner-text">Only buyer accounts can add to cart or checkout. Manage inventory, pricing, and customer orders from your Vendor dashboard instead.</p>
+                    </div>
+                    <a class="role-banner-action" href="{{ route('vendor.inventory.index') }}">
+                        <i class="fa-solid fa-box"></i> Manage Listings
+                    </a>
+                </div>
+            @endif
+        @endauth
 
         <!-- Search Bar -->
         <form class="filter-card" method="get" action="{{ route('marketplace.shop') }}">
