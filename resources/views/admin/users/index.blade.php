@@ -173,6 +173,7 @@
                             <option value="trust_low" {{ request('sort') == 'trust_low' ? 'selected' : '' }}>Lowest Trust</option>
                             <option value="alpha_asc" {{ request('sort') == 'alpha_asc' ? 'selected' : '' }}>Username (A-Z)</option>
                             <option value="alpha_desc" {{ request('sort') == 'alpha_desc' ? 'selected' : '' }}>Username (Z-A)</option>
+                            <option value="most_penalized" {{ request('sort') == 'most_penalized' ? 'selected' : '' }}>Most Penalized</option>
                         </select>
                     </div>
 
@@ -238,7 +239,18 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ $user->email }}
+                                <div class="flex flex-col">
+                                    <span>{{ $user->email }}</span>
+                                    @if($user->email_verified_at)
+                                        <span class="text-xs text-green-600 flex items-center gap-1">
+                                            <i class="fa-solid fa-circle-check"></i> Verified
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-400 flex items-center gap-1">
+                                            <i class="fa-regular fa-circle"></i> Unverified
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="badge
@@ -258,19 +270,23 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <span class="text-sm font-bold 
-                                        @if($user->trust_score >= 150) text-green-600
-                                        @elseif($user->trust_score >= 100) text-blue-600
-                                        @elseif($user->trust_score >= 50) text-yellow-600
-                                        @else text-red-600
-                                        @endif">
-                                        {{ $user->trust_score ?? 100 }}
-                                    </span>
-                                    <span class="ml-2 text-xs text-gray-500">
-                                        ({{ ucfirst($user->trust_tier ?? 'bronze') }})
-                                    </span>
-                                </div>
+                                @if($user->user_type !== 'admin')
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-bold 
+                                            @if($user->trust_score >= 150) text-green-600
+                                            @elseif($user->trust_score >= 100) text-blue-600
+                                            @elseif($user->trust_score >= 50) text-yellow-600
+                                            @else text-red-600
+                                            @endif">
+                                            {{ $user->trust_score ?? 100 }}
+                                        </span>
+                                        <span class="ml-2 text-xs text-gray-500">
+                                            ({{ ucfirst($user->trust_tier ?? 'bronze') }})
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-xs">N/A</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="badge

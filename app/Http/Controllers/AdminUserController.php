@@ -48,6 +48,9 @@ class AdminUserController extends Controller
             case 'alpha_desc':
                 $query->orderBy('username', 'desc');
                 break;
+            case 'most_penalized':
+                $query->withCount('infractions')->orderBy('infractions_count', 'desc');
+                break;
             case 'newest':
             default:
                 $query->orderBy('created_at', 'desc');
