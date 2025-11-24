@@ -151,7 +151,6 @@
                             <option value="fisherman" {{ request('role') == 'fisherman' ? 'selected' : '' }}>Fisherman</option>
                             <option value="vendor" {{ request('role') == 'vendor' ? 'selected' : '' }}>Vendor</option>
                             <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="regulator" {{ request('role') == 'regulator' ? 'selected' : '' }}>Regulator</option>
                         </select>
                     </div>
 
@@ -245,14 +244,14 @@
                                 <span class="badge
                                     @if($user->user_type === 'fisherman') bg-blue-50 text-blue-700 border border-blue-200
                                     @elseif($user->user_type === 'vendor') bg-gray-100 text-gray-700 border border-gray-300
-                                    @elseif($user->user_type === 'admin' || $user->user_type === 'regulator') bg-gray-800 text-white border border-gray-800
+                                    @elseif($user->user_type === 'admin') bg-gray-800 text-white border border-gray-800
                                     @else bg-gray-100 text-gray-700 border border-gray-300
                                     @endif">
                                     @if($user->user_type === 'fisherman')
                                         <i class="fa-solid fa-fish"></i>
                                     @elseif($user->user_type === 'vendor')
                                         <i class="fa-solid fa-store"></i>
-                                    @elseif($user->user_type === 'admin' || $user->user_type === 'regulator')
+                                    @elseif($user->user_type === 'admin')
                                         <i class="fa-solid fa-user-shield"></i>
                                     @endif
                                     {{ ucfirst($user->user_type) }}
@@ -290,7 +289,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($user->user_type === 'buyer' || $user->user_type === 'admin' || $user->user_type === 'regulator')
+                                @if($user->user_type === 'buyer' || $user->user_type === 'admin')
                                     <span class="text-gray-400 text-xs">N/A</span>
                                 @else
                                     <span class="badge
@@ -312,7 +311,7 @@
                                 {{ $user->created_at->format('M d, Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                @if($user->user_type !== 'admin' && $user->user_type !== 'regulator' && $user->id !== auth()->id())
+                                @if($user->user_type !== 'admin' && $user->id !== auth()->id())
                                     @if($user->account_status === 'active')
                                         <div class="flex gap-2">
                                             <form method="POST" action="{{ route('admin.users.suspend', $user->id) }}" class="inline">
