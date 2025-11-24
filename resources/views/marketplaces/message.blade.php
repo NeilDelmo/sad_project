@@ -288,6 +288,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  @php $chatFavicon = asset('images/logo.png').'?v=marketplace-chat'; @endphp
+  <link rel="icon" type="image/png" href="{{ $chatFavicon }}">
+  <link rel="shortcut icon" type="image/png" href="{{ $chatFavicon }}">
   <title>SeaLedger - Chat with {{ $conversation->buyer_id === Auth::id() ? $conversation->seller->username : $conversation->buyer->username }}</title>
   <style>
     /* General layout */

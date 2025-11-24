@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
     <title>SeaLedger - Vendor Preferences</title>
@@ -43,6 +44,33 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 35px;
+        }
+
+        .brand-header img {
+            height: 56px;
+            width: auto;
+        }
+
+        .brand-title {
+            font-family: "Koulen", sans-serif;
+            font-size: 32px;
+            color: #1B5E88;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: #6c757d;
+            letter-spacing: 0.5px;
+        }
+
         .container-custom {
             max-width: 750px;
             width: 100%;
@@ -202,6 +230,13 @@
     </a>
     
     <div class="container-custom">
+        <div class="brand-header">
+            <img src="{{ asset('images/logo.png') }}" alt="SeaLedger logo">
+            <div>
+                <p class="brand-title mb-1">SeaLedger Vendor</p>
+                <p class="brand-subtitle mb-0">Marketplace preferences center</p>
+            </div>
+        </div>
         <div class="page-title">Vendor Preferences</div>
         <p class="page-subtitle">Set your preferences so we can notify you when fishermen list matching catches.</p>
         

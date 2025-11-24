@@ -1,6 +1,13 @@
 @extends('layouts.plain')
 
 @section('content')
+<div class="flex items-center gap-3 mb-6">
+    <img src="{{ asset('images/logo.png') }}" alt="SeaLedger logo" class="h-12 w-auto">
+    <div>
+        <p class="text-xl font-black text-blue-900 mb-0">SeaLedger Vendor</p>
+        <p class="text-sm text-gray-500 mb-0">Inventory insights powered by AI</p>
+    </div>
+</div>
 <div class="min-h-screen flex items-start justify-center py-10 px-4">
     <div class="w-full max-w-4xl">
         <div class="mb-6 flex items-center justify-between">

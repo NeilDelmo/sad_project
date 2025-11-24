@@ -4,10 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vendor Offers - Fisherman Dashboard</title>
+    @php
+        $offersFavicon = asset('images/logo.png').'?v=fisherman-offers';
+    @endphp
+    <link rel="icon" type="image/png" href="{{ $offersFavicon }}">
+    <link rel="shortcut icon" type="image/png" href="{{ $offersFavicon }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Koulen&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin: 2rem auto 1rem;
+        }
+
+        .brand-header img {
+            height: 56px;
+            width: auto;
+        }
+
+        .brand-title {
+            font-family: 'Koulen', cursive;
+            font-size: 2rem;
+            color: #1B5E88;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .brand-tagline {
+            font-size: 0.95rem;
+            color: #6c757d;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
         body {
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -369,6 +402,13 @@
     @include('partials.toast-notifications')
 
     <div class="container">
+        <div class="brand-header">
+            <img src="{{ asset('images/logo.png') }}" alt="SeaLedger logo">
+            <div>
+                <p class="brand-title mb-1">SeaLedger Fishermen</p>
+                <p class="brand-tagline mb-0">Negotiate with trusted vendors</p>
+            </div>
+        </div>
         <!-- Success/Error Messages -->
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
