@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Order;
+use App\Models\CustomerOrder;
 use App\Models\MarketplaceListing;
 use App\Models\RiskPredictionLog;
 use App\Models\ForumThread;
@@ -27,10 +28,10 @@ class AdminDashboardController extends Controller
         $newUsersLastMonth = User::whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->count();
         $userGrowth = $newUsersLastMonth > 0 ? (($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100 : 100;
 
-        // Revenue
-        $totalRevenue = Order::sum('total');
-        $revenueThisMonth = Order::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('total');
-        $revenueLastMonth = Order::whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->sum('total');
+        // Revenue (From Customer Orders - Platform Fee)
+        $totalRevenue = CustomerOrder::sum('platform_fee');
+        $revenueThisMonth = CustomerOrder::whereMonth('created_at', $now->month)->whereYear('created_at', $now->year)->sum('platform_fee');
+        $revenueLastMonth = CustomerOrder::whereMonth('created_at', $lastMonth->month)->whereYear('created_at', $lastMonth->year)->sum('platform_fee');
         $revenueGrowth = $revenueLastMonth > 0 ? (($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100 : 100;
 
         // Listings
@@ -44,7 +45,7 @@ class AdminDashboardController extends Controller
         $predictionGrowth = $predictionsLastMonth > 0 ? (($predictionsThisMonth - $predictionsLastMonth) / $predictionsLastMonth) * 100 : 100;
 
         // 2. Revenue Chart Data (Last 30 Days)
-        $dailyRevenue = Order::selectRaw('DATE(created_at) as date, SUM(total) as revenue')
+        $dailyRevenue = CustomerOrder::selectRaw('DATE(created_at) as date, SUM(platform_fee) as revenue')
             ->where('created_at', '>=', now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')
@@ -63,7 +64,7 @@ class AdminDashboardController extends Controller
         // 4. Order Status Distribution (New Graph)
         // Check if status column exists, otherwise mock or skip
         try {
-            $ordersByStatus = Order::selectRaw('status, COUNT(*) as count')
+            $ordersByStatus = CustomerOrder::selectRaw('status, COUNT(*) as count')
                 ->groupBy('status')
                 ->get();
             $orderStatuses = $ordersByStatus->pluck('status')->toArray();
@@ -74,7 +75,7 @@ class AdminDashboardController extends Controller
         }
 
         // 5. Recent Activity
-        $recentOrders = Order::with('vendor')->latest()->take(5)->get();
+        $recentOrders = CustomerOrder::with('vendor')->latest()->take(5)->get();
         $recentThreads = ForumThread::with('user')->latest()->take(5)->get();
 
         // 6. Fetch Simple Analytics Data
