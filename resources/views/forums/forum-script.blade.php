@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function updateHiddenInput() {
-            hiddenInput.value = uploadedImages.join(',');
+            hiddenInput.value = JSON.stringify(uploadedImages);
         }
 
         function resetUpload() {

@@ -420,6 +420,8 @@
           @endif
         </div>
 
+      </div>
+
         @if($user && $user->id === $order->buyer_id && in_array($order->status, ['delivered','received']) && $order->isRefundWindowOpen())
         <div class="modal fade" id="refundModal{{ $order->id }}" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
@@ -459,8 +461,6 @@
           </div>
         </div>
         @endif
-
-      </div>
     @empty
       <div class="empty-state">
         <i class="fa-solid fa-box-open fa-3x" style="color:#d1d5db;"></i>
