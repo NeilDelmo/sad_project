@@ -9,6 +9,7 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Koulen&display=swap" rel="stylesheet">
@@ -19,69 +20,53 @@
     <script src="https://kit.fontawesome.com/19696dbec5.js" crossorigin="anonymous"></script>
 
     <style>
-        .title-font {
-            font-family: "Koulen", sans-serif;
-            font-weight: 400;
-            font-style: normal;
-            font-size: 42px;
-            color: #0074b3;
+        :root {
+            --primary:#0075B5;
+            --primary-dark:#004c81;
+            --text-dark:#161523;
         }
+        body { font-family:"Jost",sans-serif; background:#f3f6fb; }
+        .title-font { font-family:"Koulen",sans-serif; font-weight:400; letter-spacing:0.4px; color:var(--primary); }
+        .subhead-font { font-family:"Koulen",sans-serif; font-weight:400; color:var(--primary); }
+        .text-muted-sm { color:#6f7d8c; font-size:14px; }
 
-        /* small logo next to the "Start your journey" heading */
-        .form-hero-heading {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .hero-pane {
+            background-image:linear-gradient(135deg,rgba(0,117,181,0.88),rgba(0,65,126,0.85)),url("{{ asset('images/background.png') }}");
+            background-size:cover;
+            background-position:center;
+            color:#fff;
+            min-height:100vh;
+            position:relative;
+            overflow:hidden;
         }
+        .hero-pane::after {
+            content:"";
+            position:absolute;
+            width:280px;
+            height:280px;
+            border-radius:38% 62% 60% 40% / 45% 70% 30% 55%;
+            background:rgba(255,255,255,0.1);
+            top:-70px;
+            right:-40px;
+        }
+        .hero-content { position:relative; z-index:1; padding:3.5rem 3rem; }
+        .hero-badge { display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.85rem; border-radius:999px; border:1px solid rgba(255,255,255,0.4); font-size:13px; background:rgba(255,255,255,0.12); }
+        .hero-bullets { list-style:none; padding:0; margin:1.5rem 0 0; }
+        .hero-bullets li { display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem; font-size:15px; }
 
-        .form-hero-logo {
-            width: 48px;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-            background: #82a5ff;
-            padding: 6px;
-        }
-
-        .subhead-font {
-            font-family: "Koulen", sans-serif;
-            font-weight: 400;
-            font-style: normal;
-            font-size: 22px;
-            color: #0074b3;
-        }
-
-        .text-font {
-            font-family: "Jost", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 400;
-            font-style: normal;
-            font-size: 15px;
-            color: #161523;
-        }
+        .form-pane { min-height:100vh; background:linear-gradient(180deg,#fafdff 0%,#f3f6fb 100%); }
+        .form-card { width:100%; max-width:520px; background:rgba(255,255,255,0.96); border:1px solid rgba(0,0,0,0.04); box-shadow:0 25px 45px rgba(15,30,45,0.09); border-radius:32px; padding:2.5rem 2.25rem; }
+        .form-hero-heading { display:flex; align-items:center; gap:12px; }
+        .form-hero-logo { width:52px; height:52px; border-radius:16px; background:linear-gradient(160deg,#e6f4ff,#c9e6ff); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 22px rgba(0,0,0,0.1); }
+        .text-font { font-size:15px; color:var(--text-dark); }
 
         .btn-container {
-            display: flex;
-            align-items: center;
-            padding: 0.35rem 0.75rem;
-            background-color: #0074b3;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            position: relative;
+            display:flex; align-items:center; justify-content:center; position:relative; width:100%; padding:0.65rem 1.25rem;
+            border-radius:999px; border:none; background:linear-gradient(135deg,var(--primary) 0%, var(--primary-dark) 100%);
+            color:#fff; font-weight:600; letter-spacing:0.3px; transition:transform 180ms ease, box-shadow 180ms ease;
         }
-
-        /* left background image */
-        .bg {
-            background-image: url("{{ asset('images/background.png') }}");
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-        .bg::before { content:""; position:absolute; inset:0; background:rgba(0,71,128,0.35); }
+        .btn-container:hover { box-shadow:0 15px 30px rgba(0,70,120,0.25); }
+        .btn-container:active { transform:translateY(1px); }
 
         /* logo */
         .bg .logo {
@@ -106,26 +91,8 @@
             font-size: 20px;
         }
 
-        .text {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #c3e4e9;
-            white-space: nowrap;
-        }
-
-        /* login fish icon */
         .login-icon {
-            width: 36px;
-            height: 36px;
-            background-color: #c3e4e9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            border: 2px solid #0074b3;
-            margin-left: auto;
-            flex: 0 0 auto;
+            width: 38px; height: 38px; background-color: rgba(255,255,255,0.95); display:flex; align-items:center; justify-content:center; border-radius:50%; border: none; margin-left:auto; color:var(--primary);
         }
 
         /* login icon animation */
@@ -212,17 +179,18 @@
         }
 
 
-        /* form input */
         .form-control {
-            box-shadow: none !important;
-            outline: none;
-            transition: border-color 220ms ease;
+            border-radius:999px;
+            box-shadow:none !important;
+            outline:none;
+            transition:border-color 180ms ease, box-shadow 180ms ease;
+            border:1px solid #d8dde6;
+            padding:0.6rem 1rem;
         }
 
         .form-control:focus {
-            box-shadow: none !important;
-            outline: none;
-            border-color: #457492 !important;
+            border-color: var(--primary) !important;
+            box-shadow:0 0 0 3px rgba(0,117,181,0.15) !important;
         }
 
 
@@ -314,19 +282,28 @@
         <div class="row g-0 min-vh-100">
 
             <!-- Left BG Column -->
-            <div class="col-12 col-md-6 bg d-flex align-items-center justify-content-center">
-                <div class="logo" aria-hidden="true">
-                    <i class="fa-solid fa-fish-fins"></i>
+            <div class="col-12 col-md-6 hero-pane d-flex align-items-center">
+                <div class="hero-content w-100">
+                    <div class="hero-badge"><i class="fa-solid fa-compass"></i> Create your SeaLedger ID</div>
+                    <h1 class="title-font display-5 text-white mt-3 mb-2">Set up your account.</h1>
+                    <p class="text-white-50" style="max-width:420px;">Register once to share listings, receive orders, and access the same dashboard tools as everyone else.</p>
+                    <ul class="hero-bullets">
+                        <li><i class="fa-solid fa-life-ring"></i> Fill in basic profile details</li>
+                        <li><i class="fa-solid fa-box"></i> Post catches or rental offers</li>
+                        <li><i class="fa-solid fa-bell"></i> Get notified when someone reaches out</li>
+                    </ul>
                 </div>
             </div>
 
             <!-- Right Form Column -->
-            <div class="col-12 col-md-6 d-flex align-items-center justify-content-center">
-                <div style="max-width:520px; width:95%;">
-                    <div class="card shadow-sm p-4">
+            <div class="col-12 col-md-6 form-pane d-flex align-items-center justify-content-center">
+                <div class="form-card">
                         <div class="form-hero-heading mb-3">
                             <img src="{{ asset('images/logo.png') }}" alt="SeaLedger logo" class="form-hero-logo" />
-                            <h3 class="mb-0 title-font">Start your journey.</h3>
+                        <div>
+                            <h3 class="mb-1 title-font" style="font-size:32px;">Start your journey.</h3>
+                            <p class="text-muted-sm mb-0">Create your marketplace credentials.</p>
+                        </div>
                         </div>
 
                         <form method="POST" action="{{ route('register') }}">
