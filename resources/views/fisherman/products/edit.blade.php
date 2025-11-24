@@ -334,7 +334,8 @@
                             required>
                         <option value="">Select a category</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" 
+                            <option value="{{ $category->id }}"
+                                    data-category-name="{{ $category->name }}"
                                 {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
@@ -497,6 +498,9 @@
     </div>
 
     <script>
+        const categorySelect = document.getElementById('category_id');
+        const fishTypeSelect = document.getElementById('fish_type');
+
         function previewImage(input) {
             const preview = document.getElementById('preview');
             const previewContainer = document.getElementById('imagePreview');
@@ -514,6 +518,42 @@
                 previewContainer.style.display = 'none';
             }
         }
+
+        function enforceFishTypeLock() {
+            if (!categorySelect || !fishTypeSelect) { return; }
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const options = Array.from(fishTypeSelect.options);
+
+            if (!selectedOption || !selectedOption.value) {
+                options.forEach(option => {
+                    option.disabled = false;
+                    option.hidden = false;
+                });
+                return;
+            }
+
+            const categoryName = (selectedOption.dataset.categoryName || selectedOption.text || '').toLowerCase();
+            const isShellfishCategory = categoryName.includes('shellfish');
+
+            options.forEach(option => {
+                const isShellfishOption = option.value === 'Shellfish';
+                const shouldDisable = isShellfishCategory ? !isShellfishOption : isShellfishOption;
+                option.disabled = shouldDisable;
+                option.hidden = shouldDisable;
+            });
+
+            if (isShellfishCategory) {
+                fishTypeSelect.value = 'Shellfish';
+            } else if (fishTypeSelect.value === 'Shellfish' || !fishTypeSelect.value) {
+                const firstAllowed = options.find(option => !option.disabled);
+                if (firstAllowed) {
+                    fishTypeSelect.value = firstAllowed.value;
+                }
+            }
+        }
+
+        categorySelect?.addEventListener('change', enforceFishTypeLock);
+        enforceFishTypeLock();
     </script>
 
     @include('partials.message-notification')

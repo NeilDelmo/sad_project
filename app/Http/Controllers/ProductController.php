@@ -10,6 +10,7 @@ use App\Notifications\NewCatchAvailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -86,6 +87,7 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 
+        $validated = $this->enforceFishTypeForCategory($validated);
         $validated['supplier_id'] = Auth::id();
 
         // Handle image upload
@@ -176,6 +178,8 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 
+        $validated = $this->enforceFishTypeForCategory($validated);
+
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
@@ -193,6 +197,26 @@ class ProductController extends Controller
 
         return redirect()->route('fisherman.products.index')
             ->with('success', 'Product updated successfully!');
+    }
+
+    private function enforceFishTypeForCategory(array $validated): array
+    {
+        $category = ProductCategory::find($validated['category_id'] ?? null);
+        $categoryName = $category?->name ?? '';
+        $isShellfishCategory = strcasecmp($categoryName, 'Shellfish') === 0;
+
+        if ($isShellfishCategory) {
+            $validated['fish_type'] = 'Shellfish';
+            return $validated;
+        }
+
+        if (($validated['fish_type'] ?? null) === 'Shellfish') {
+            throw ValidationException::withMessages([
+                'fish_type' => 'Shellfish type is only allowed when the category is set to Shellfish.',
+            ]);
+        }
+
+        return $validated;
     }
 
     private function guardProductEditing(Product $product)

@@ -351,7 +351,9 @@
                             required>
                         <option value="">Select a category...</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}"
+                                    data-category-name="{{ $category->name }}"
+                                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
@@ -519,6 +521,9 @@
     </div>
 
     <script>
+        const categorySelect = document.getElementById('category_id');
+        const fishTypeSelect = document.getElementById('fish_type');
+
         // Category decay multipliers from config
         const categoryDecayMultipliers = {
             'Shellfish': 0.5,
@@ -536,28 +541,27 @@
             'Salted Fish': 3.0
         };
 
-        // Update freshness duration when category changes
-        document.getElementById('category_id').addEventListener('change', function() {
-            const categoryName = this.options[this.selectedIndex].text;
+        function updateFreshnessDurations() {
+            if (!categorySelect) { return; }
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) { return; }
+
+            const categoryName = selectedOption.dataset.categoryName || selectedOption.text;
             const multiplier = categoryDecayMultipliers[categoryName] || 1.0;
-            
-            // Very Fresh durations (base: 6h->Fresh, 12h->Good, 24h->Spoiled)
+
             const veryFreshToSpoiled = Math.round(24 * multiplier);
             document.getElementById('very-fresh-duration').textContent = `Stays fresh ~${veryFreshToSpoiled}h`;
-            
-            // Fresh durations (base: 8h->Good, 18h->Spoiled)
+
             const freshToSpoiled = Math.round(18 * multiplier);
             document.getElementById('fresh-duration').textContent = `Stays fresh ~${freshToSpoiled}h`;
-            
-            // Good durations (base: 12h->Spoiled)
+
             const goodToSpoiled = Math.round(12 * multiplier);
             document.getElementById('good-duration').textContent = `Stays fresh ~${goodToSpoiled}h`;
-            
-            // Show info box
+
             const infoBox = document.getElementById('freshness-decay-info');
             const infoText = document.getElementById('category-freshness-text');
             infoBox.style.display = 'block';
-            
+
             if (multiplier < 1.0) {
                 infoText.innerHTML = `<strong>${categoryName}</strong> spoils faster than average fish`;
             } else if (multiplier > 1.0) {
@@ -565,7 +569,51 @@
             } else {
                 infoText.innerHTML = `<strong>${categoryName}</strong> has standard freshness duration`;
             }
-        });
+        }
+
+        function syncFishTypeOptions() {
+            if (!categorySelect || !fishTypeSelect) { return; }
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const options = Array.from(fishTypeSelect.options);
+
+            if (!selectedOption || !selectedOption.value) {
+                options.forEach(option => {
+                    option.disabled = false;
+                    option.hidden = false;
+                });
+                return;
+            }
+
+            const categoryName = (selectedOption.dataset.categoryName || selectedOption.text || '').toLowerCase();
+            const isShellfishCategory = categoryName.includes('shellfish');
+
+            options.forEach(option => {
+                const isShellfishOption = option.value === 'Shellfish';
+                const shouldDisable = isShellfishCategory ? !isShellfishOption : isShellfishOption;
+                option.disabled = shouldDisable;
+                option.hidden = shouldDisable;
+            });
+
+            if (isShellfishCategory) {
+                fishTypeSelect.value = 'Shellfish';
+            } else if (fishTypeSelect.value === 'Shellfish' || !fishTypeSelect.value) {
+                const firstAllowed = options.find(option => !option.disabled);
+                if (firstAllowed) {
+                    fishTypeSelect.value = firstAllowed.value;
+                }
+            }
+        }
+
+        if (categorySelect) {
+            categorySelect.addEventListener('change', () => {
+                updateFreshnessDurations();
+                syncFishTypeOptions();
+            });
+
+            // Initialize when the page loads (handles old() selections too)
+            updateFreshnessDurations();
+            syncFishTypeOptions();
+        }
 
         function previewImage(input) {
             const preview = document.getElementById('preview');
