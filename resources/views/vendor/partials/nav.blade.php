@@ -1,4 +1,12 @@
 <style>
+  .navbar {
+    background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+    padding: 15px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    margin: 0;
+  }
+
   .navbar .nav-layout {
     width: 100%;
     max-width: 100%;
