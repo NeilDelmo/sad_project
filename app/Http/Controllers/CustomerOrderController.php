@@ -221,9 +221,15 @@ class CustomerOrderController extends Controller
             throw ValidationException::withMessages(['status' => 'Only requested refunds can be declined.']);
         }
         $data = $request->validate(['notes' => ['nullable','string','max:500']]);
+        
+        $newNotes = $order->refund_notes;
+        if (!empty($data['notes'])) {
+            $newNotes .= "\n\n[Vendor Rejection Reason]: " . $data['notes'];
+        }
+
         $order->update([
             'status' => CustomerOrder::STATUS_REFUND_DECLINED,
-            'refund_notes' => $data['notes'] ?? $order->refund_notes,
+            'refund_notes' => $newNotes,
             'refund_at' => now(),
         ]);
         // No revenue reversal; order not refunded.

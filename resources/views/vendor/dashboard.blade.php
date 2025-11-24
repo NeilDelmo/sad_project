@@ -723,10 +723,7 @@
                         @csrf
                         <button type="submit" class="btn btn-sm" style="background:#16a34a; color:#fff; border:none; padding:8px 12px; border-radius:6px;">Accept Counter</button>
                     </form>
-                    <form method="POST" action="{{ route('vendor.offers.decline-counter', $offer) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-sm" style="background:#dc2626; color:#fff; border:none; padding:8px 12px; border-radius:6px;">Reject</button>
-                    </form>
+                    <button type="button" class="btn btn-sm" style="background:#dc2626; color:#fff; border:none; padding:8px 12px; border-radius:6px;" onclick="showDeclineCounterModal({{ $offer->id }})">Reject</button>
                 </div>
             </div>
             @endforeach
@@ -736,6 +733,37 @@
     </div>
 
     <!-- Toasts handled by shared partial via vendor.nav -->
+
+    <!-- Decline Counter Modal -->
+    <div id="declineCounterModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <h2 style="color: #dc3545; margin-bottom: 20px;">
+                <i class="fa-solid fa-times-circle"></i> Decline Counter Offer
+            </h2>
+            
+            <form id="declineCounterForm" method="POST">
+                @csrf
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Reason for Rejection:</label>
+                    <textarea name="message" rows="4" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-family: inherit;"
+                        placeholder="Please explain why you are declining this counter offer...">Counter offer rejected. Price is too high.</textarea>
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        <i class="fa-solid fa-info-circle"></i> This note will be sent to the fisherman.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary-custom" style="background: #dc2626; border: none;">
+                        <i class="fa-solid fa-times"></i> Confirm Rejection
+                    </button>
+                    <button type="button" class="btn btn-secondary-custom" onclick="closeDeclineCounterModal()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Receipt Modal -->
     <div id="receiptModal" class="receipt-modal">
@@ -782,6 +810,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
+        function showDeclineCounterModal(offerId) {
+            const modal = document.getElementById('declineCounterModal');
+            const form = document.getElementById('declineCounterForm');
+            form.action = `/offers/${offerId}/decline-counter`;
+            modal.style.display = 'flex';
+        }
+        
+        function closeDeclineCounterModal() {
+            document.getElementById('declineCounterModal').style.display = 'none';
+        }
+
         function showReceipt(data) {
             document.getElementById('receiptId').textContent = '#' + data.id;
             document.getElementById('receiptDate').textContent = data.date;
@@ -916,5 +955,8 @@
     </script>
     
 
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+    <!-- 100% privacy-first analytics -->
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>

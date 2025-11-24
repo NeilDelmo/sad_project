@@ -364,7 +364,7 @@ class RentalController extends Controller
     /**
      * Admin: Reject a rental request
      */
-    public function reject(Rental $rental)
+    public function reject(Request $request, Rental $rental)
     {
         // Only admin can reject
         if (!auth()->user()->isAdmin()) {
@@ -375,10 +375,15 @@ class RentalController extends Controller
             return back()->withErrors(['error' => 'Only pending rentals can be rejected.']);
         }
 
+        $validated = $request->validate([
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
         $rental->update([
             'status' => 'rejected',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
+            'admin_notes' => $validated['admin_notes'] ?? null,
         ]);
 
         // Send notification to user

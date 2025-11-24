@@ -413,10 +413,9 @@
               @csrf
               <button class="btn btn-outline-success"><i class="fa-solid fa-thumbs-up"></i> Approve</button>
             </form>
-            <form method="post" action="{{ route('marketplace.orders.refund.decline', $order) }}">
-              @csrf
-              <button class="btn btn-outline-danger"><i class="fa-solid fa-thumbs-down"></i> Decline</button>
-            </form>
+            <button class="btn btn-outline-danger" onclick="showDeclineRefundModal({{ $order->id }})">
+                <i class="fa-solid fa-thumbs-down"></i> Decline
+            </button>
           @endif
         </div>
 
@@ -539,5 +538,39 @@ updateRefundCountdowns();
 setInterval(updateRefundCountdowns, 60000);
 </script>
     <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
+
+    <!-- Decline Refund Modal -->
+    <div id="declineRefundModal" class="modal fade" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Decline Refund Request</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="declineRefundForm" method="post">
+            @csrf
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Reason for Rejection</label>
+                <textarea name="notes" class="form-control" rows="3" required placeholder="Explain why you are declining this refund..."></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-danger">Confirm Decline</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    function showDeclineRefundModal(orderId) {
+      const form = document.getElementById('declineRefundForm');
+      form.action = `/marketplace/orders/${orderId}/refund/decline`;
+      const modal = new bootstrap.Modal(document.getElementById('declineRefundModal'));
+      modal.show();
+    }
+    </script>
 </body>
 </html>

@@ -456,13 +456,10 @@
                                     Approve Rental
                                 </button>
                             </form>
-                            <form action="{{ route('rentals.reject', $rental) }}" method="POST" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-reject" onclick="return confirm('Reject this rental request?')">
-                                    <i class="fa-solid fa-times"></i>
-                                    Reject Rental
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-reject" onclick="showRejectModal({{ $rental->id }})">
+                                <i class="fa-solid fa-times"></i>
+                                Reject Rental
+                            </button>
                         </div>
                     @endif
 
@@ -502,6 +499,37 @@
                 <p style="color: #666;">There are currently no rental requests to manage.</p>
             </div>
         @endif
+    </div>
+
+    <!-- Reject Rental Modal -->
+    <div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <h2 style="color: #dc3545; margin-bottom: 20px;">
+                <i class="fa-solid fa-times-circle"></i> Reject Rental Request
+            </h2>
+            
+            <form id="rejectForm" method="POST">
+                @csrf
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Reason for Rejection:</label>
+                    <textarea name="admin_notes" rows="4" required
+                        style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-family: inherit;"
+                        placeholder="Please explain why this request is being rejected...">Rental request rejected due to unavailability.</textarea>
+                    <p style="margin-top: 8px; color: #666; font-size: 14px;">
+                        <i class="fa-solid fa-info-circle"></i> This note will be sent to the fisherman.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-reject">
+                        <i class="fa-solid fa-times"></i> Confirm Rejection
+                    </button>
+                    <button type="button" class="btn btn-approve" style="background: #6c757d;" onclick="closeRejectModal()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Return Equipment Modal -->
@@ -650,6 +678,17 @@
         
         function closeReturnModal() {
             document.getElementById('returnModal').style.display = 'none';
+        }
+
+        function showRejectModal(rentalId) {
+            const modal = document.getElementById('rejectModal');
+            const form = document.getElementById('rejectForm');
+            form.action = `/rentals/${rentalId}/reject`;
+            modal.style.display = 'flex';
+        }
+        
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
         }
     </script>
     <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
