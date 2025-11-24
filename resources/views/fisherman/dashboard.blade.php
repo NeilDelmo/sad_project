@@ -600,8 +600,9 @@
                 <div class="stat-label">Accepted Offers</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">
                     <i class="fa-solid fa-toolbox"></i>
+                    @php $unitPrice = $offer->fisherman_counter_price ?? $offer->offered_price; @endphp
+                    <div class="product-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($unitPrice * $offer->quantity, 2) }}</div>
                 </div>
                 <div class="stat-number">{{ $activeRentalsCount ?? 0 }}</div>
                 <div class="stat-label">Active Rentals</div>
@@ -701,14 +702,15 @@
                     </div>
                 </div>
                 <div style="display: flex; align-items: center;">
-                    <div class="product-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+                    @php $unitPrice = $offer->fisherman_counter_price ?? $offer->offered_price; @endphp
+                    <div class="product-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($unitPrice * $offer->quantity, 2) }}</div>
                     <button class="btn-view-details" onclick="showReceipt({{ json_encode([
                         'id' => $offer->id,
                         'product' => $offer->product->name ?? 'Product',
                         'vendor' => $offer->vendor->username ?? $offer->vendor->email,
                         'quantity' => $offer->quantity,
-                        'unit_price' => $offer->offered_price,
-                        'total' => $offer->offered_price * $offer->quantity,
+                        'unit_price' => $unitPrice,
+                        'total' => $unitPrice * $offer->quantity,
                         'date' => $offer->updated_at->format('F d, Y h:i A'),
                         'status' => $offer->status,
                     ]) }})">
