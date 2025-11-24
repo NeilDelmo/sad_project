@@ -39,4 +39,6 @@ return [
         'api_key' => env('BREVO_API_KEY'),
     ],
 
+    'python_path' => env('PYTHON_PATH', 'python3'),
+
 ];

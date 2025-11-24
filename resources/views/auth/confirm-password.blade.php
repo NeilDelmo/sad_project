@@ -25,6 +25,12 @@
         #togglePassword{background:transparent;border:0;padding:0;}
         #togglePasswordIcon{color:#ced4da;transition:color 220ms ease;}
         .position-relative input.form-control:focus+button #togglePasswordIcon{color:#457492;}
+
+        /* Hide browser default password toggle */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
     </style>
 </head>
 <body class="d-flex min-vh-100 align-items-center justify-content-center py-4">

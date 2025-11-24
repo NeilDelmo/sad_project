@@ -119,7 +119,7 @@ $predictionsThisMonth = \App\Models\RiskPredictionLog::whereMonth('created_at', 
         <!-- Quick Actions -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 <a href="#" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
                     <div class="p-3 bg-blue-100 rounded-full mb-2">
                         <i class="fas fa-users text-blue-600 text-xl"></i>
@@ -150,21 +150,31 @@ $predictionsThisMonth = \App\Models\RiskPredictionLog::whereMonth('created_at', 
                     </div>
                     <span class="text-sm font-medium text-gray-700">Forum</span>
                 </a>
+                <a href="https://dashboard.simpleanalytics.com" target="_blank" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
+                    <div class="p-3 bg-red-100 rounded-full mb-2">
+                        <i class="fas fa-chart-pie text-red-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm font-medium text-gray-700">Web Analytics</span>
+                </a>
             </div>
         </div>
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- Revenue Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Overview (Last 30 Days)</h3>
-                <canvas id="revenueChart" height="200"></canvas>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Revenue Overview (Last 14 Days)</h3>
+                <div class="relative h-72">
+                    <canvas id="revenueChart"></canvas>
+                </div>
             </div>
 
             <!-- User Distribution -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">User Distribution</h3>
-                <canvas id="userChart" height="200"></canvas>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">User Distribution</h3>
+                <div class="relative h-72">
+                    <canvas id="userChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -220,7 +230,7 @@ $predictionsThisMonth = \App\Models\RiskPredictionLog::whereMonth('created_at', 
 // Revenue Chart
 @php
 $dailyRevenue = \App\Models\Order::selectRaw('DATE(created_at) as date, SUM(total) as revenue')
-    ->where('created_at', '>=', now()->subDays(30))
+    ->where('created_at', '>=', now()->subDays(14))
     ->groupBy('date')
     ->orderBy('date')
     ->get();
@@ -236,6 +246,10 @@ $userCounts = $usersByType->pluck('count')->toArray();
 @endphp
 
 const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const gradient = revenueCtx.createLinearGradient(0, 0, 0, 300);
+gradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
+gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
 new Chart(revenueCtx, {
     type: 'line',
     data: {
@@ -244,19 +258,53 @@ new Chart(revenueCtx, {
             label: 'Daily Revenue (₱)',
             data: @json($revenues),
             borderColor: 'rgb(34, 197, 94)',
-            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            backgroundColor: gradient,
             tension: 0.4,
-            fill: true
+            fill: true,
+            pointBackgroundColor: 'rgb(34, 197, 94)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { display: false }
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: { size: 13 },
+                bodyFont: { size: 13 },
+                cornerRadius: 8,
+                displayColors: false
+            }
         },
         scales: {
-            y: { beginAtZero: true }
+            y: {
+                beginAtZero: true,
+                grid: {
+                    borderDash: [2, 4],
+                    color: '#f3f4f6',
+                    drawBorder: false
+                },
+                ticks: {
+                    font: { size: 11 },
+                    color: '#9ca3af'
+                }
+            },
+            x: {
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
+                ticks: {
+                    font: { size: 11 },
+                    color: '#9ca3af'
+                }
+            }
         }
     }
 });

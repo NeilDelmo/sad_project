@@ -77,6 +77,17 @@
         @media (max-width: 575.98px) {
             .form-card { padding:1.75rem; }
         }
+
+        #togglePassword:focus-visible {
+            outline: 2px solid rgba(69, 116, 146, 0.18);
+            outline-offset: 3px;
+        }
+
+        /* Hide browser default password toggle */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
     </style>
 </head>
 <body class="m-0">

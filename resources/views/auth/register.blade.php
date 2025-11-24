@@ -273,6 +273,12 @@
             transform: translateY(-50%) !important;
             padding: 0 !important;
         }
+
+        /* Hide browser default password toggle */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
     </style>
 </head>
 
@@ -386,7 +392,7 @@
 
                             <!-- Register Button -->
                             <button type="submit" class="btn-container rounded-pill my-3 w-100">
-                                <span class="text text-center subhead-font">Register</span>
+                                <span class="text text-center subhead-font" style="color:#95beff;">Register</span>
                                 <span class="login-icon"><i class="fa-solid fa-fish-fins"></i></span>
                             </button>
 
