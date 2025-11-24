@@ -22,6 +22,8 @@ use App\Models\User;
 
 use App\Http\Controllers\VerificationController;
 
+use App\Http\Controllers\AdminDashboardController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -47,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     return redirect()->route('marketplace.shop');
                 case 'admin':
                 case 'regulator':
-                    return view('dashboard');
+                    return app(AdminDashboardController::class)->index();
             }
         }
         // Fallback for any other type
@@ -99,6 +101,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/users/{id}/penalty', [AdminUserController::class, 'penalty'])->name('admin.users.penalty');
     Route::post('/admin/users/{id}/approve-verification', [AdminUserController::class, 'approveVerification'])->name('admin.users.approve-verification');
     Route::post('/admin/users/{id}/reject-verification', [AdminUserController::class, 'rejectVerification'])->name('admin.users.reject-verification');
+
+    // Admin System Reports
+    Route::get('/admin/system-reports', [\App\Http\Controllers\AdminReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/admin/system-reports/generate', [\App\Http\Controllers\AdminReportController::class, 'generate'])->name('admin.reports.generate');
+
 });
 
 require __DIR__.'/auth.php';
@@ -122,13 +129,15 @@ Route::get('/test-profile', function () {
     return response()->json($profile);
 });
 
-// Marketplace routes (public - no authentication required)
+// Marketplace routes (public - no authentication required, but restricted for admins)
+Route::middleware(['not.admin'])->group(function () {
+    Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
+    Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
+    // Marketplace Recommendations API (JSON)
+    Route::get('/api/recommendations', [MarketplaceController::class, 'recommendations'])->name('api.recommendations');
+});
 
-Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
-Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
-// Marketplace Recommendations API (JSON)
-Route::get('/api/recommendations', [MarketplaceController::class, 'recommendations'])->name('api.recommendations');
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'not.admin'])->group(function () {
     Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])->name('marketplace.buy');
     Route::get('/marketplace/orders', [CustomerOrderController::class, 'index'])->name('marketplace.orders.index');
     Route::post('/marketplace/orders/{order}/in-transit', [CustomerOrderController::class, 'markInTransit'])->name('marketplace.orders.intransit');
@@ -206,7 +215,7 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
 });
 
 // Forum routes (requires authentication)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'not.admin'])->group(function () {
     Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
     Route::get('/forums/category/{id}', [ForumController::class, 'showCategory'])->name('forums.category');
     Route::get('/forums/thread/{id}', [ForumController::class, 'showThread'])->name('forums.thread');

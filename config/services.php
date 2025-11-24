@@ -41,4 +41,9 @@ return [
 
     'python_path' => env('PYTHON_PATH', 'python3'),
 
+    'simple_analytics' => [
+        'website' => env('SIMPLE_ANALYTICS_WEBSITE'),
+        'api_key' => env('SIMPLE_ANALYTICS_API_KEY'),
+    ],
+
 ];

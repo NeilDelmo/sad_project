@@ -121,7 +121,10 @@
         <i class="fa-solid fa-wrench"></i> Maintenance
       </a>
       <a href="{{ route('rentals.admin.reports') }}" class="nav-link {{ request()->routeIs('rentals.admin.reports') ? 'active' : '' }}">
-        <i class="fa-solid fa-flag"></i> Reports
+        <i class="fa-solid fa-flag"></i> Issues
+      </a>
+      <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+        <i class="fa-solid fa-file-invoice"></i> System Reports
       </a>
       <a href="{{ route('admin.revenue.index') }}" class="nav-link {{ request()->routeIs('admin.revenue.*') ? 'active' : '' }}">
         <i class="fa-solid fa-chart-line"></i> Revenue
