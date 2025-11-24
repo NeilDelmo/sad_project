@@ -1,5 +1,5 @@
 @extends('errors::minimal')
 
-@section('title', 'Access Denied')
+@section('title', __('Forbidden'))
 @section('code', '403')
-@section('message', 'You need elevated access to view this area.')
+@section('message', __($exception->getMessage() ?: 'Forbidden'))
