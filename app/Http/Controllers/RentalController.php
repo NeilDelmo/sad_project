@@ -592,7 +592,13 @@ class RentalController extends Controller
                     if ($damageCount > 0) {
                         $damageFee += ($item->price_per_day * 10) * $damageCount * 0.5; // estimate full price as 10x daily
                     }
+
                     // Lost fee: 100% of item price per lost unit
+                    $lostCount = (int)($item->lost_count ?? 0);
+                    if ($lostCount > 0) {
+                        $lostFee += ($item->price_per_day * 10) * $lostCount;
+                    }
+                }
 
                 if ($waiveDamage) {
                     $damageFee = 0;
@@ -600,9 +606,6 @@ class RentalController extends Controller
                 if ($waiveLost) {
                     $lostFee = 0;
                 }
-                    $lostCount = (int)($item->lost_count ?? 0);
-                    if ($lostCount > 0) {
-                        $lostFee += ($item->price_per_day * 10) * $lostCount;
 
                 $waiveNotes = [];
                 if ($waiveDamage) { $waiveNotes[] = 'damage fees waived'; }
@@ -614,13 +617,12 @@ class RentalController extends Controller
                         $waiveNoteText .= ' (Reason: ' . $waiveReason . ')';
                     }
                 }
+
                 $adminNotes = $rental->admin_notes ?? '';
                 if ($waiveNoteText) {
                     $adminNotes = $adminNotes ? $adminNotes . "\n\n" . $waiveNoteText : $waiveNoteText;
                 }
-                    }
-                $rental->update([
-                
+
                 $totalCharges = $rental->total_price + $lateFee + $damageFee + $lostFee;
                 $amountDue = max(0, $totalCharges - ($rental->deposit_paid ?? 0));
                 
