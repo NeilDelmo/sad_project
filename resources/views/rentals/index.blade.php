@@ -177,7 +177,9 @@
                     </a>
                     <a href="{{ route('rentals.myrentals') }}" class="nav-link"><i class="fa-solid fa-clipboard-list"></i> My Rentals</a>
                     <a href="{{ route('rentals.myreports') }}" class="nav-link"><i class="fa-solid fa-flag"></i> My Reports</a>
-                    <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    @if(Auth::user()->user_type !== 'buyer')
+                        <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                    @endif
                     <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                         @csrf
                         <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;">
