@@ -264,7 +264,7 @@ class RentalController extends Controller
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $idx => $photo) {
                 $name = 'issue_' . $rental->id . '_' . time() . '_' . $idx . '.' . $photo->getClientOriginalExtension();
-                $stored = $photo->storeAs('rental_issues', $name, 'public');
+                $stored = $photo->storeAs('images/rental_issues', $name, 'public');
                 if ($stored) { $photos[] = $stored; }
             }
         }
@@ -520,7 +520,7 @@ class RentalController extends Controller
                     $files = $request->file("items.{$rentalItem->id}.photos");
                     foreach ($files as $idx => $photo) {
                         $photoName = 'damage_' . $rental->id . '_' . $rentalItem->id . '_' . time() . '_' . $idx . '.' . $photo->getClientOriginalExtension();
-                        $stored = $photo->storeAs('rental_damage', $photoName, 'public');
+                        $stored = $photo->storeAs('images/rental_damage', $photoName, 'public');
                         if ($stored) {
                             \App\Models\RentalItemPhoto::create([
                                 'rental_item_id' => $rentalItem->id,
@@ -678,7 +678,7 @@ class RentalController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            $updates['image_path'] = $request->file('image')->store('products', 'public');
+            $updates['image_path'] = $request->file('image')->store('images/rentals', 'public');
         }
 
         $product->update($updates);
@@ -718,7 +718,7 @@ class RentalController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
+            $imagePath = $request->file('image')->store('images/rentals', 'public');
         }
 
         Product::create([

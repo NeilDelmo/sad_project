@@ -285,7 +285,7 @@ class ForumController extends Controller
 
         $file = $request->file('file');
         $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('forum-images', $filename, 'public');
+        $path = $file->storeAs('images/forum', $filename, 'public');
 
         return response()->json([
             'location' => Storage::url($path),

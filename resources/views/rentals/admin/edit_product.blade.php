@@ -200,13 +200,11 @@
 
                 <div class="form-group">
                     <label class="form-label">Product Image</label>
-                    @if($product->image_path)
-                        <div style="margin-bottom: 10px;">
-                            <p style="font-size: 14px; color: #666;">Current Image:</p>
-                            <img src="{{ asset('storage/' . $product->image_path) }}" alt="Current Image" class="current-image">
-                        </div>
-                    @endif
-                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <div id="current-image-container" style="margin-bottom: 10px; {{ $product->image_path ? '' : 'display: none;' }}">
+                        <p style="font-size: 14px; color: #666;">Current/Preview Image:</p>
+                        <img id="image-preview" src="{{ $product->image_path ? asset('storage/' . $product->image_path) : '#' }}" alt="Product Image" class="current-image">
+                    </div>
+                    <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this)">
                     <p style="font-size: 12px; color: #666; margin-top: 5px;">Leave empty to keep current image. Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB.</p>
                 </div>
 
@@ -218,5 +216,23 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function previewImage(input) {
+            const container = document.getElementById('current-image-container');
+            const preview = document.getElementById('image-preview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 </body>
 </html>

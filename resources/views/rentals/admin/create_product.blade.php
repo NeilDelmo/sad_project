@@ -182,8 +182,13 @@
 
                 <div class="form-group">
                     <label class="form-label">Product Image</label>
-                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <input type="file" name="image" class="form-control" accept="image/*" onchange="previewImage(this)">
                     <p style="font-size: 12px; color: #666; margin-top: 5px;">Supported formats: JPEG, PNG, JPG, GIF. Max size: 2MB.</p>
+                    
+                    <div id="image-preview-container" style="margin-top: 10px; display: none;">
+                        <p style="font-size: 14px; color: #666;">Image Preview:</p>
+                        <img id="image-preview" src="#" alt="Image Preview" style="max-width: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
                 </div>
 
                 <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
@@ -194,5 +199,25 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function previewImage(input) {
+            const container = document.getElementById('image-preview-container');
+            const preview = document.getElementById('image-preview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

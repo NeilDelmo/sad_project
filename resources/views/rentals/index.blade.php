@@ -202,7 +202,7 @@
                 @foreach($gearItems as $gear)
                     <div class="gear-card">
                         @if($gear->image_path)
-                            <img src="{{ asset($gear->image_path) }}" alt="{{ $gear->name }}" class="gear-image">
+                            <img src="{{ asset('storage/' . $gear->image_path) }}" alt="{{ $gear->name }}" class="gear-image">
                         @else
                             <div class="gear-image" style="display: flex; align-items: center; justify-content: center; font-size: 48px;">
                                 🛠️
