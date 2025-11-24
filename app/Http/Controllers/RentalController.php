@@ -242,6 +242,16 @@ class RentalController extends Controller
         return view('rentals.myrentals', compact('rentals'));
     }
 
+    public function myReports()
+    {
+        $reports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
+            ->with(['rental.rentalItems.product'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('rentals.myreports', compact('reports'));
+    }
+
     public function reportForm(Rental $rental)
     {
         if ($rental->user_id !== auth()->id()) {

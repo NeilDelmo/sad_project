@@ -337,6 +337,7 @@
             <div class="d-flex align-items-center" style="gap:8px;">
                 <a href="{{ route('rentals.index') }}" class="nav-link"><i class="fa-solid fa-toolbox"></i> Gear Rentals</a>
                 <a href="{{ route('rentals.myrentals') }}" class="nav-link active"><i class="fa-solid fa-clipboard-list"></i> My Rentals</a>
+                <a href="{{ route('rentals.myreports') }}" class="nav-link"><i class="fa-solid fa-flag"></i> My Reports</a>
                 <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
             </div>
         </div>
