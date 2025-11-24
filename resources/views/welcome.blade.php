@@ -636,7 +636,10 @@
 
             <div class="col-12 col-md-6 order-md-2">
                 <div class="h-100 position-relative overflow-hidden img-card">
-                    <img src="{{ asset('images/fish.jpg') }}" class="img-fit" alt="Zone Navigator">
+                    <video class="img-fit" autoplay loop muted playsinline>
+                        <source src="{{ asset('images/zone-nav.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
             </div>
         </div>

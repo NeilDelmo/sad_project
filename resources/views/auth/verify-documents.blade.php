@@ -95,27 +95,29 @@
                         </form>
                     </div>
                 </div>
-            @elseif($user->verification_status === 'rejected')
-                <div class="text-center mb-6">
-                    <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                        <i class="fa-solid fa-xmark text-2xl text-red-600"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-red-800">Verification Rejected</h3>
-                    <p class="text-sm text-red-600 mt-1">Please upload a valid document.</p>
-                </div>
             @else
                 <div class="mb-6">
-                    <div class="flex items-start gap-4 mb-6">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <i class="fa-solid fa-id-card"></i>
+                    @if($user->verification_status === 'rejected')
+                        <div class="text-center mb-6">
+                            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                                <i class="fa-solid fa-xmark text-2xl text-red-600"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-red-800">Verification Rejected</h3>
+                            <p class="text-sm text-red-600 mt-1">Please upload a valid document.</p>
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Identity Verification</h3>
-                            <p class="text-sm text-gray-600 mt-1">
-                                As a {{ ucfirst($user->user_type) }}, we need to verify your identity before you can start.
-                            </p>
+                    @else
+                        <div class="flex items-start gap-4 mb-6">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                <i class="fa-solid fa-id-card"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Identity Verification</h3>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    As a {{ ucfirst($user->user_type) }}, we need to verify your identity before you can start.
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     <form action="{{ route('verification.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
