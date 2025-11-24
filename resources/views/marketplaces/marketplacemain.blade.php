@@ -164,6 +164,13 @@
                         <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
                             <i class="fa-solid fa-fire"></i> Latest
                         </a>
+                        <a href="{{ route('marketplace.cart.index') }}" class="nav-link">
+                            <i class="fa-solid fa-shopping-cart"></i> Cart
+                            @php $cartCount = array_sum(session('marketplace_cart', [])); @endphp
+                            @if($cartCount > 0)
+                                <span class="badge bg-danger rounded-pill" style="font-size: 10px; vertical-align: top;">{{ $cartCount }}</span>
+                            @endif
+                        </a>
                         <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                             @csrf
                             <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
@@ -456,8 +463,9 @@
                 @else
                     <div class="card-actions">
                         @php $hasListingSeller = isset($listing->seller_id) && $listing->seller_id; @endphp
-                        <form action="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">
+                        <form method="POST" style="margin: 0; display:flex; gap:8px; align-items:center;">
                             @csrf
+                            <input type="hidden" name="listing_id" value="{{ $listing->id }}">
                             <div class="input-group qty-group">
                                 <button class="btn btn-outline-secondary" type="button" onclick="decQty(this)">-</button>
                                 <input type="number" name="quantity" min="1" @if(isset($stock) && $stock !== null) max="{{ $stock }}" @endif value="1" class="form-control qty-input" @if(isset($stock) && $stock === 0) disabled @endif>
@@ -465,7 +473,8 @@
                                 <button class="btn btn-outline-secondary" type="button" onclick="incQty(this)">+</button>
                             </div>
                             @if($userType === 'buyer')
-                                <button type="submit" class="buy-btn" @if(isset($stock) && $stock === 0) disabled style="opacity:.6; cursor:not-allowed;" @endif><i class="fa-solid fa-cart-shopping"></i> Buy</button>
+                                <button type="submit" formaction="{{ route('marketplace.cart.add') }}" class="btn btn-outline-primary" title="Add to Cart" @if(isset($stock) && $stock === 0) disabled @endif><i class="fa-solid fa-cart-plus"></i></button>
+                                <button type="submit" formaction="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" class="buy-btn" @if(isset($stock) && $stock === 0) disabled style="opacity:.6; cursor:not-allowed;" @endif>Buy Now</button>
                             @else
                                 <button type="button" class="buy-btn" disabled title="Only buyers can purchase" style="opacity:.6; cursor:not-allowed;"><i class="fa-solid fa-cart-shopping"></i> Buy</button>
                             @endif

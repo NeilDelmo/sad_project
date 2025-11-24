@@ -147,6 +147,14 @@ Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
     Route::post('/marketplace/orders/{order}/refund-request', [CustomerOrderController::class, 'requestRefund'])->name('marketplace.orders.refund.request');
     Route::post('/marketplace/orders/{order}/refund-approve', [CustomerOrderController::class, 'approveRefund'])->name('marketplace.orders.refund.approve');
     Route::post('/marketplace/orders/{order}/refund-decline', [CustomerOrderController::class, 'declineRefund'])->name('marketplace.orders.refund.decline');
+
+    // Marketplace Cart
+    Route::get('/marketplace/cart', [App\Http\Controllers\MarketplaceCartController::class, 'index'])->name('marketplace.cart.index');
+    Route::post('/marketplace/cart/add', [App\Http\Controllers\MarketplaceCartController::class, 'add'])->name('marketplace.cart.add');
+    Route::post('/marketplace/cart/update', [App\Http\Controllers\MarketplaceCartController::class, 'update'])->name('marketplace.cart.update');
+    Route::post('/marketplace/cart/remove', [App\Http\Controllers\MarketplaceCartController::class, 'remove'])->name('marketplace.cart.remove');
+    Route::post('/marketplace/cart/clear', [App\Http\Controllers\MarketplaceCartController::class, 'clear'])->name('marketplace.cart.clear');
+    Route::post('/marketplace/checkout', [App\Http\Controllers\MarketplaceCartController::class, 'checkout'])->name('marketplace.checkout');
 });
 
 // Messaging routes (requires authentication) - DISABLED
