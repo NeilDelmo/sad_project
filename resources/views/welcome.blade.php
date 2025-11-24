@@ -688,7 +688,10 @@
 
             <div class="col-12 col-md-6 order-md-2">
                 <div class="h-100 position-relative overflow-hidden img-card">
-                    <img src="{{ asset('images/fish.jpg') }}" class="img-fit" alt="SeaConnect">
+                    <video class="img-fit" autoplay loop muted playsinline style="object-fit: contain;">
+                        <source src="{{ asset('images/SEACONNECT.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
             </div>
 
