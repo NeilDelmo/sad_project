@@ -13,8 +13,17 @@ use Illuminate\Validation\ValidationException;
 
 class MarketplaceCartController extends Controller
 {
+    private function ensureBuyer(): void
+    {
+        $user = Auth::user();
+        if (!$user || $user->user_type !== 'buyer') {
+            abort(403, 'Only buyers can manage carts.');
+        }
+    }
+
     public function index()
     {
+        $this->ensureBuyer();
         $cart = session()->get('marketplace_cart', []);
         $cartItems = [];
         $total = 0;
@@ -55,6 +64,7 @@ class MarketplaceCartController extends Controller
 
     public function add(Request $request)
     {
+        $this->ensureBuyer();
         $request->validate([
             'listing_id' => 'required|exists:marketplace_listings,id',
             'quantity' => 'required|integer|min:1',
@@ -101,6 +111,7 @@ class MarketplaceCartController extends Controller
 
     public function update(Request $request)
     {
+        $this->ensureBuyer();
         $request->validate([
             'listing_id' => 'required|exists:marketplace_listings,id',
             'quantity' => 'required|integer|min:1',
@@ -135,6 +146,7 @@ class MarketplaceCartController extends Controller
 
     public function remove(Request $request)
     {
+        $this->ensureBuyer();
         $request->validate([
             'listing_id' => 'required',
         ]);
@@ -151,12 +163,14 @@ class MarketplaceCartController extends Controller
 
     public function clear()
     {
+        $this->ensureBuyer();
         session()->forget('marketplace_cart');
         return back()->with('success', 'Cart cleared.');
     }
 
     public function checkout(Request $request)
     {
+        $this->ensureBuyer();
         $user = Auth::user();
         if (!$user) abort(401);
 

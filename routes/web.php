@@ -139,7 +139,9 @@ Route::middleware(['not.admin'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
-    Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])->name('marketplace.buy');
+    Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])
+        ->middleware('buyer.only')
+        ->name('marketplace.buy');
     Route::get('/marketplace/orders', [CustomerOrderController::class, 'index'])->name('marketplace.orders.index');
     Route::post('/marketplace/orders/{order}/in-transit', [CustomerOrderController::class, 'markInTransit'])->name('marketplace.orders.intransit');
     Route::post('/marketplace/orders/{order}/delivered', [CustomerOrderController::class, 'vendorDelivered'])->name('marketplace.orders.delivered');
@@ -149,12 +151,14 @@ Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
     Route::post('/marketplace/orders/{order}/refund-decline', [CustomerOrderController::class, 'declineRefund'])->name('marketplace.orders.refund.decline');
 
     // Marketplace Cart
-    Route::get('/marketplace/cart', [App\Http\Controllers\MarketplaceCartController::class, 'index'])->name('marketplace.cart.index');
-    Route::post('/marketplace/cart/add', [App\Http\Controllers\MarketplaceCartController::class, 'add'])->name('marketplace.cart.add');
-    Route::post('/marketplace/cart/update', [App\Http\Controllers\MarketplaceCartController::class, 'update'])->name('marketplace.cart.update');
-    Route::post('/marketplace/cart/remove', [App\Http\Controllers\MarketplaceCartController::class, 'remove'])->name('marketplace.cart.remove');
-    Route::post('/marketplace/cart/clear', [App\Http\Controllers\MarketplaceCartController::class, 'clear'])->name('marketplace.cart.clear');
-    Route::post('/marketplace/checkout', [App\Http\Controllers\MarketplaceCartController::class, 'checkout'])->name('marketplace.checkout');
+    Route::middleware('buyer.only')->group(function () {
+        Route::get('/marketplace/cart', [App\Http\Controllers\MarketplaceCartController::class, 'index'])->name('marketplace.cart.index');
+        Route::post('/marketplace/cart/add', [App\Http\Controllers\MarketplaceCartController::class, 'add'])->name('marketplace.cart.add');
+        Route::post('/marketplace/cart/update', [App\Http\Controllers\MarketplaceCartController::class, 'update'])->name('marketplace.cart.update');
+        Route::post('/marketplace/cart/remove', [App\Http\Controllers\MarketplaceCartController::class, 'remove'])->name('marketplace.cart.remove');
+        Route::post('/marketplace/cart/clear', [App\Http\Controllers\MarketplaceCartController::class, 'clear'])->name('marketplace.cart.clear');
+        Route::post('/marketplace/checkout', [App\Http\Controllers\MarketplaceCartController::class, 'checkout'])->name('marketplace.checkout');
+    });
 });
 
 // Messaging routes (requires authentication) - DISABLED

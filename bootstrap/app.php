@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'vendor.onboarded' => \App\Http\Middleware\EnsureVendorOnboarded::class,
             'verified' => \App\Http\Middleware\EnsureUserIsVerified::class,
             'not.admin' => \App\Http\Middleware\EnsureNotAdmin::class,
+            'buyer.only' => \App\Http\Middleware\EnsureBuyer::class,
         ]);
 
         // Add this line to apply UpdateLastSeen to web routes:

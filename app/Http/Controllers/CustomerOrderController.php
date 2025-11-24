@@ -36,6 +36,9 @@ class CustomerOrderController extends Controller
     {
         $user = Auth::user();
         if (!$user) abort(401);
+        if ($user->user_type !== 'buyer') {
+            abort(403, 'Only buyers can place orders.');
+        }
         if ($user->id === $listing->seller_id) {
             throw ValidationException::withMessages(['quantity' => 'You cannot purchase your own listing.']);
         }
