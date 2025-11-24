@@ -29,7 +29,32 @@ class AdminUserController extends Controller
             $query->where('account_status', $status);
         }
 
-        $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+        // Sorting
+        $sort = $request->get('sort', 'newest');
+        
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'trust_high':
+                $query->orderBy('trust_score', 'desc');
+                break;
+            case 'trust_low':
+                $query->orderBy('trust_score', 'asc');
+                break;
+            case 'alpha_asc':
+                $query->orderBy('username', 'asc');
+                break;
+            case 'alpha_desc':
+                $query->orderBy('username', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $users = $query->paginate(20)->withQueryString();
         
         // Simple analytics
         $totalUsers = User::count();
@@ -103,7 +128,10 @@ class AdminUserController extends Controller
             $validated['details']
         );
 
-        return redirect()->back()->with('success', 'Penalty applied successfully.');
+        // Refresh user to get updated score
+        $user->refresh();
+
+        return redirect()->back()->with('success', "Penalty applied successfully. New Trust Score: {$user->trust_score} ({$user->trust_tier}).");
     }
 
     public function approveVerification($id)

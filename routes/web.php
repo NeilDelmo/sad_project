@@ -30,7 +30,8 @@ Route::get('/', function () {
 
 // Verification Routes
 Route::middleware(['auth'])->group(function () {
-    Route::get('/verification/notice', [VerificationController::class, 'notice'])->name('verification.notice');
+    // Renamed to avoid conflict with auth.php's verification.notice (email)
+    Route::get('/verification/documents', [VerificationController::class, 'notice'])->name('verification.documents');
     Route::post('/verification/upload', [VerificationController::class, 'upload'])->name('verification.upload');
 });
 

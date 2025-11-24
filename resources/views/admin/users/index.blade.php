@@ -165,6 +165,18 @@
                         </select>
                     </div>
 
+                    <div class="w-full md:w-48">
+                        <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                        <select name="sort" id="sort" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3">
+                            <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                            <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest First</option>
+                            <option value="trust_high" {{ request('sort') == 'trust_high' ? 'selected' : '' }}>Highest Trust</option>
+                            <option value="trust_low" {{ request('sort') == 'trust_low' ? 'selected' : '' }}>Lowest Trust</option>
+                            <option value="alpha_asc" {{ request('sort') == 'alpha_asc' ? 'selected' : '' }}>Username (A-Z)</option>
+                            <option value="alpha_desc" {{ request('sort') == 'alpha_desc' ? 'selected' : '' }}>Username (Z-A)</option>
+                        </select>
+                    </div>
+
                     <div class="flex gap-2">
                         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-sm font-medium">
                             <i class="fa-solid fa-filter mr-1"></i> Filter
@@ -194,6 +206,9 @@
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Type
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Trust Score
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Status
@@ -242,6 +257,21 @@
                                     @endif
                                     {{ ucfirst($user->user_type) }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-bold 
+                                        @if($user->trust_score >= 150) text-green-600
+                                        @elseif($user->trust_score >= 100) text-blue-600
+                                        @elseif($user->trust_score >= 50) text-yellow-600
+                                        @else text-red-600
+                                        @endif">
+                                        {{ $user->trust_score ?? 100 }}
+                                    </span>
+                                    <span class="ml-2 text-xs text-gray-500">
+                                        ({{ ucfirst($user->trust_tier ?? 'bronze') }})
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="badge

@@ -31,6 +31,9 @@
         rel="stylesheet"
         />
 
+        <!-- AOS Animation CSS -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
         <!-- fontawesome kit -->
         <script
         src="https://kit.fontawesome.com/19696dbec5.js"
@@ -283,6 +286,22 @@
                 box-shadow: 0 8px 20px rgba(13, 110, 253, 0.18);
             }
 
+            @keyframes pulse-blue {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(0, 116, 179, 0.7);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(0, 116, 179, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(0, 116, 179, 0);
+                }
+            }
+
+            .btn-pulse {
+                animation: pulse-blue 2s infinite;
+            }
+
             /* button style */
             .btn-style {
                 --btn-bg: #0074b3;
@@ -497,35 +516,35 @@
         <!-- title card -->
         <div class="card title-card d-flex flex-column text-center p-3 mb-4 mx-auto">
             <!-- top brand: logo + SEALEDGER (does not affect hero text layout) -->
-            <div class="hero-brand-top">
+            <div class="hero-brand-top" data-aos="fade-down">
                 <img src="{{ asset('images/logo.png') }}" alt="SeaLedger logo" class="hero-logo-top" />
                 <div class="hero-brand-text">SEALEDGER</div>
             </div>
-            <div class="container title-font lh-1 mb-2">
+            <div class="container title-font lh-1 mb-2" data-aos="fade-up">
             <span>Fish smart.<br /></span>
             <span>Fish safe.<br /></span>
             <span>Fish as one.<br /></span>
             </div>
 
-            <p class="text-font">Your personal integrated maritime assistant.</p>
+            <p class="text-font" data-aos="fade-up" data-aos-delay="100">Your personal integrated maritime assistant.</p>
 
             {{-- Hero form --}}
             @guest
-                <div class="d-flex mt-3 justify-content-center gap-2">
+                <div class="d-flex mt-3 justify-content-center gap-2" data-aos="zoom-in" data-aos-delay="200">
                     @if (Route::has('login'))
-                        <a href="{{ route('login') }}" class="btn btn-style btn-hero">Login</a>
+                        <a href="{{ route('login') }}" class="btn btn-style btn-hero btn-pulse">Login</a>
                     @endif
 
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-style btn-hero">Register</a>
+                        <a href="{{ route('register') }}" class="btn btn-style btn-hero btn-pulse">Register</a>
                     @endif
                 </div>
             @else
-                <div class="d-flex mt-3 justify-content-center">
+                <div class="d-flex mt-3 justify-content-center" data-aos="zoom-in" data-aos-delay="200">
                     @if(Auth::user()->user_type === 'buyer')
-                        <a href="{{ route('marketplace.index') }}" class="btn btn-style btn-hero">Go to Marketplace</a>
+                        <a href="{{ route('marketplace.index') }}" class="btn btn-style btn-hero btn-pulse">Go to Marketplace</a>
                     @else
-                        <a href="{{ url('/dashboard') }}" class="btn btn-style btn-hero">Go to Dashboard</a>
+                        <a href="{{ url('/dashboard') }}" class="btn btn-style btn-hero btn-pulse">Go to Dashboard</a>
                     @endif
                 </div>
             @endguest
@@ -533,7 +552,7 @@
     </div>
 
     <!-- content 1 -->
-    <div class="card content-card d-flex flex-column text-start p-3 mx-auto mt-5">
+    <div class="card content-card d-flex flex-column text-start p-3 mx-auto mt-5" data-aos="fade-right">
         <div class="row g-3">
             <div class="col-12 col-md-6">
             <div class="p-3 h-100 d-flex flex-column justify-content-center align-items-center text-center">
@@ -556,7 +575,7 @@
     <!-- end of content 1 card -->
 
     <!-- content 2 -->
-    <div class="card content-card text-start p-3 mx-auto mt-5">
+    <div class="card content-card text-start p-3 mx-auto mt-5" data-aos="fade-left">
         <div class="row g-3">
             <div class="col-12 col-md-6">
             <div class="border h-100 position-relative overflow-hidden img-card">
@@ -579,7 +598,7 @@
     <!-- end of content 2 card -->
 
     <!-- content 3 -->
-    <div class="card content-card text-start p-3 mx-auto mt-5">
+    <div class="card content-card text-start p-3 mx-auto mt-5" data-aos="fade-right">
         <div class="row g-3">
 
             <div class="col-12 col-md-6">
@@ -605,15 +624,15 @@
 
     <!-- market card -->
     <div class="card content-card auto-height text-center p-3 mx-auto mt-5">
-    <span class="subhead-font">Marketplace</span>
-    <p class="desc-font mb-3">
+    <span class="subhead-font" data-aos="fade-up">Marketplace</span>
+    <p class="desc-font mb-3" data-aos="fade-up" data-aos-delay="100">
         From fresh fishes to quality gears, we've got it all.
     </p>
 
     <div class="row g-3">
 
         <!-- Gear -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="200">
         <div class="market-card">
             <div class="border rounded-top top-box">
             <img src="{{ asset('images/gear.jpg') }}" alt="Gear" class="top-box-img" />
@@ -628,7 +647,7 @@
         </div>
 
         <!-- Fish -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="300">
         <div class="market-card">
             <div class="border rounded-top top-box">
             <img src="{{ asset('images/fish.jpg') }}" alt="Fish" class="top-box-img" />
@@ -643,7 +662,7 @@
         </div>
 
         <!-- Rent -->
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="400">
         <div class="market-card">
             <div class="border rounded-top top-box">
             <img src="{{ asset('images/trade.jpg') }}" alt="Rent" class="top-box-img" />
@@ -692,5 +711,14 @@
     </footer>
     <!-- end footer -->
 
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    </script>
     </body>
 </html>

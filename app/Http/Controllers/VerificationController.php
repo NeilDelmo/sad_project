@@ -11,6 +11,11 @@ class VerificationController extends Controller
     {
         $user = auth()->user();
         
+        // Ensure email is verified first
+        if (!$user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         if ($user->verification_status === 'approved') {
             return redirect()->route('dashboard');
         }
@@ -40,6 +45,6 @@ class VerificationController extends Controller
             ]);
         }
 
-        return redirect()->route('verification.notice')->with('success', 'Document uploaded successfully. Please wait for admin approval.');
+        return redirect()->route('verification.documents')->with('success', 'Document uploaded successfully. Please wait for admin approval.');
     }
 }

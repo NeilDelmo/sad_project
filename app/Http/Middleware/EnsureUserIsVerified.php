@@ -26,16 +26,31 @@ class EnsureUserIsVerified
             return $next($request);
         }
 
+        // 1. Check Email Verification First
+        if (!$user->hasVerifiedEmail()) {
+            // If accessing verification routes, allow it
+            if ($request->routeIs('verification.notice') || 
+                $request->routeIs('verification.verify') || 
+                $request->routeIs('verification.send') || 
+                $request->routeIs('logout')) {
+                return $next($request);
+            }
+            return redirect()->route('verification.notice');
+        }
+
+        // 2. Check Document Verification
         if ($user->verification_status === 'approved') {
             return $next($request);
         }
 
-        // If not approved, redirect to verification notice/upload page
+        // If not approved, redirect to document upload page
         // But allow access to the verification routes themselves to avoid infinite loop
-        if ($request->routeIs('verification.*') || $request->routeIs('logout')) {
+        if ($request->routeIs('verification.documents') || 
+            $request->routeIs('verification.upload') || 
+            $request->routeIs('logout')) {
             return $next($request);
         }
 
-        return redirect()->route('verification.notice');
+        return redirect()->route('verification.documents');
     }
 }
