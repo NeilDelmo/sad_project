@@ -1,78 +1,15 @@
-<style>
-  .navbar {
-    background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
-    padding: 15px 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    width: 100%;
-    margin: 0;
-  }
-
-  .navbar .nav-layout {
-    width: 100%;
-    max-width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: nowrap;
-  }
-
-  .navbar .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: nowrap;
-    white-space: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .navbar .nav-links::-webkit-scrollbar {
-    display: none;
-  }
-
-  .navbar .nav-link {
-    white-space: nowrap;
-  }
-
-  .nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .nav-logo {
-    height: 40px;
-    width: auto;
-  }
-
-  .nav-logo {
-    height: 40px;
-    width: auto;
-  }
-
-  .navbar .nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    margin-left: 12px;
-  }
-</style>
-
 <nav class="navbar">
-  <div class="nav-layout">
-    <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration:none;">
-      <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
-      SeaLedger
-    </a>
-    @if(Auth::check() && Auth::user()->user_type === 'vendor')
-      <div style="margin-left:8px;">
-        @include('components.trust-badge', ['score'=>Auth::user()->trust_score,'tier'=>Auth::user()->trust_tier,'compact'=>false])
-      </div>
-    @endif
-    
+  <div class="container-fluid">
+    <div class="nav-left-group">
+        <a class="nav-brand" href="{{ route('vendor.dashboard') }}" style="text-decoration: none;">
+            <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
+            SeaLedger
+        </a>
+        @if(Auth::check() && Auth::user()->user_type === 'vendor')
+            @include('components.trust-badge', ['score'=>Auth::user()->trust_score,'tier'=>Auth::user()->trust_tier,'compact'=>false])
+        @endif
+    </div>
+
     <div class="nav-links">
       <a href="{{ route('vendor.dashboard') }}" class="nav-link {{ request()->routeIs('vendor.dashboard') ? 'active' : '' }}">
         <i class="fa-solid fa-gauge-high"></i> Dashboard
@@ -93,18 +30,152 @@
         <i class="fa-solid fa-shopping-cart"></i> Marketplace Orders
       </a>
     </div>
-
-    <div class="nav-actions">
-      @include('partials.notification-bell')
-      <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+      
+    <div class="nav-right-actions">
+        @include('partials.notification-bell')
+        <form method="POST" action="{{ route('logout') }}" class="nav-link logout-link" style="padding:0; margin-left: 8px;">
         @csrf
-        <button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer;">
-          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        <button type="submit">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
         </button>
-      </form>
+        </form>
     </div>
   </div>
 </nav>
+
+<style>
+  .navbar {
+    background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%);
+    padding: 18px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    margin-bottom: 0;
+  }
+
+  .navbar .container-fluid {
+    width: 100%;
+    max-width: 1400px;
+    padding: 0 20px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px;
+    flex-wrap: nowrap;
+    margin: 0 auto;
+  }
+
+  .nav-left-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-right-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-brand {
+    flex-shrink: 0;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: "Koulen", sans-serif;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo {
+    height: 40px;
+    width: auto;
+  }
+
+  .nav-links {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: white;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .nav-link:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+  }
+
+  .nav-link:hover::before {
+    transform: translateX(0);
+  }
+
+  .nav-link.active {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .logout-link {
+    padding: 0;
+  }
+
+  .logout-link button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .logout-link button:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+  }
+</style>
 
 <script>
   // Force reload when page is restored from back/forward cache
