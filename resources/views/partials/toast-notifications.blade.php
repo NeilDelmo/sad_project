@@ -349,5 +349,19 @@
     });
 </script>
 @endif
+
+@if($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            if (window.showToast) {
+                @foreach($errors->all() as $error)
+                    window.showToast('Error', @json($error), 'Just now', null, null);
+                @endforeach
+            }
+        }, 500);
+    });
+</script>
+@endif
 @endif
 @endauth

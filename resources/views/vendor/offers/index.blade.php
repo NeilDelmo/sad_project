@@ -260,6 +260,5 @@
       form.classList.toggle('show');
     }
   </script>
-  @include('partials.toast-notifications')
 </body>
 </html>

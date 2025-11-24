@@ -90,62 +90,6 @@
             background: rgba(255, 255, 255, 0.15);
         }
         .nav-link:hover::before {
-
-                    @php
-                        $pricingLog = $offer->latestPricingLog;
-                    @endphp
-
-                    @if($pricingLog)
-                        @php
-                            $signals = $pricingLog->signals ?? [];
-                            $demandScore = $signals['demand']['score'] ?? null;
-                            $recentOrders = $signals['demand']['recent_retail_orders'] ?? null;
-                            $supplyPressure = $signals['supply']['pressure'] ?? null;
-                            $supplyCopy = $supplyPressure ? ($supplyPressure < 0.95 ? 'Tight supply' : ($supplyPressure > 1.15 ? 'Plenty of catch' : 'Balanced')) : null;
-                            $acceptanceRate = isset($signals['wholesale']['acceptance_rate']) ? round($signals['wholesale']['acceptance_rate'] * 100, 1) : null;
-                            $retailMedian = $signals['retail']['median'] ?? null;
-                        @endphp
-                        <div class="pricing-insights">
-                            <h6>
-                                <i class="fas fa-lightbulb"></i>
-                                Why this price?
-                            </h6>
-                            <div class="insight-grid">
-                                <div class="insight-item">
-                                    <div class="insight-label">Demand Pulse</div>
-                                    <div class="insight-value">{{ $demandScore ? number_format($demandScore, 2) . '×' : 'n/a' }}</div>
-                                    <div class="insight-note">{{ $recentOrders ? $recentOrders . ' retail orders (24h)' : 'Low recent retail data' }}</div>
-                                </div>
-                                <div class="insight-item">
-                                    <div class="insight-label">Supply Pressure</div>
-                                    <div class="insight-value">{{ $supplyPressure ? number_format($supplyPressure, 2) . '×' : 'n/a' }}</div>
-                                    <div class="insight-note">{{ $supplyCopy ?? 'Awaiting supply metrics' }}</div>
-                                </div>
-                                <div class="insight-item">
-                                    <div class="insight-label">Wholesale Acceptance</div>
-                                    <div class="insight-value">{{ $acceptanceRate !== null ? $acceptanceRate . '%' : 'n/a' }}</div>
-                                    <div class="insight-note">{{ $acceptanceRate !== null ? 'Accepted wholesale bids last week' : 'No recent wholesale clearing' }}</div>
-                                </div>
-                                <div class="insight-item">
-                                    <div class="insight-label">Retail Median</div>
-                                    <div class="insight-value">{{ $retailMedian ? '₱' . number_format($retailMedian, 2) : 'n/a' }}</div>
-                                    <div class="insight-note">Recent consumer sales nearby category</div>
-                                </div>
-                            </div>
-                            <div class="insight-meta">
-                                <span class="badge bg-{{ $pricingLog->used_fallback ? 'warning' : 'success' }} text-dark" style="font-size: 0.7rem;">
-                                    {{ $pricingLog->used_fallback ? 'Heuristic fallback' : 'ML prediction' }}
-                                </span>
-                                @if($pricingLog->runtime_ms)
-                                    <span>Runtime: {{ $pricingLog->runtime_ms }}ms</span>
-                                @endif
-                                @if(!empty($pricingLog->extra['base_price']))
-                                    <span>Base price input: ₱{{ number_format($pricingLog->extra['base_price'], 2) }}</span>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-
             transform: translateX(0);
         }
         .nav-link.active {
@@ -521,28 +465,6 @@
                 <p class="brand-tagline mb-0">Negotiate with trusted vendors</p>
             </div>
         </div>
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <i class="fas fa-check-circle"></i> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('error') || $errors->any())
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <i class="fas fa-exclamation-circle"></i> 
-                @if(session('error'))
-                    {{ session('error') }}
-                @endif
-                @if($errors->any())
-                    @foreach($errors->all() as $error)
-                        {{ $error }}
-                    @endforeach
-                @endif
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
 
         <div class="page-header">
             <h1><i class="fas fa-handshake"></i> Vendor Offers</h1>
@@ -746,6 +668,61 @@
                                 @endif
                             </div>
                             @endif
+                        </div>
+                    @endif
+
+                    @php
+                        $pricingLog = $offer->latestPricingLog;
+                    @endphp
+
+                    @if($pricingLog)
+                        @php
+                            $signals = $pricingLog->signals ?? [];
+                            $demandScore = $signals['demand']['score'] ?? null;
+                            $recentOrders = $signals['demand']['recent_retail_orders'] ?? null;
+                            $supplyPressure = $signals['supply']['pressure'] ?? null;
+                            $supplyCopy = $supplyPressure ? ($supplyPressure < 0.95 ? 'Tight supply' : ($supplyPressure > 1.15 ? 'Plenty of catch' : 'Balanced')) : null;
+                            $acceptanceRate = isset($signals['wholesale']['acceptance_rate']) ? round($signals['wholesale']['acceptance_rate'] * 100, 1) : null;
+                            $retailMedian = $signals['retail']['median'] ?? null;
+                        @endphp
+                        <div class="pricing-insights">
+                            <h6>
+                                <i class="fas fa-lightbulb"></i>
+                                Why this price?
+                            </h6>
+                            <div class="insight-grid">
+                                <div class="insight-item">
+                                    <div class="insight-label">Demand Pulse</div>
+                                    <div class="insight-value">{{ $demandScore ? number_format($demandScore, 2) . '×' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $recentOrders ? $recentOrders . ' retail orders (24h)' : 'Low recent retail data' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Supply Pressure</div>
+                                    <div class="insight-value">{{ $supplyPressure ? number_format($supplyPressure, 2) . '×' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $supplyCopy ?? 'Awaiting supply metrics' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Wholesale Acceptance</div>
+                                    <div class="insight-value">{{ $acceptanceRate !== null ? $acceptanceRate . '%' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $acceptanceRate !== null ? 'Accepted wholesale bids last week' : 'No recent wholesale clearing' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Retail Median</div>
+                                    <div class="insight-value">{{ $retailMedian ? '₱' . number_format($retailMedian, 2) : 'n/a' }}</div>
+                                    <div class="insight-note">Recent consumer sales nearby category</div>
+                                </div>
+                            </div>
+                            <div class="insight-meta">
+                                <span class="badge bg-{{ $pricingLog->used_fallback ? 'warning' : 'success' }} text-dark" style="font-size: 0.7rem;">
+                                    {{ $pricingLog->used_fallback ? 'Heuristic fallback' : 'ML prediction' }}
+                                </span>
+                                @if($pricingLog->runtime_ms)
+                                    <span>Runtime: {{ $pricingLog->runtime_ms }}ms</span>
+                                @endif
+                                @if(!empty($pricingLog->extra['base_price']))
+                                    <span>Base price input: ₱{{ number_format($pricingLog->extra['base_price'], 2) }}</span>
+                                @endif
+                            </div>
                         </div>
                     @endif
 

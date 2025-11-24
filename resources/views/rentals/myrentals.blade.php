@@ -296,12 +296,6 @@
             <p>Track your gear rental requests and active rentals</p>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
         @if($rentals->count() > 0)
             @foreach($rentals as $rental)
                 <div class="rental-card">
@@ -423,5 +417,6 @@
             </div>
         @endif
     </div>
+    @include('partials.toast-notifications')
 </body>
 </html>

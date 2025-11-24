@@ -161,21 +161,6 @@
             <p>Review your items and submit your rental request</p>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if ($errors->any())
-            <div class="alert alert-error">
-                <strong>Error!</strong>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <div class="form-container">
             @if(count($cartItems) > 0)
                 <form action="{{ route('rentals.cart.clear') }}" method="POST" style="display: inline;">
@@ -301,5 +286,6 @@
             returnDateInput.addEventListener('change', calculateSummary);
         }
     </script>
+    @include('partials.toast-notifications')
 </body>
 </html>

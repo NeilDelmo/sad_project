@@ -172,7 +172,6 @@
 </head>
 <body>
 
-@include('partials.toast-notifications')
 @include('partials.message-notification')
 
 <!-- Navbar - show vendor/fisherman navbar if logged in as vendor/fisherman -->
@@ -202,16 +201,13 @@
       </div>
     </div>
   </nav>
+  @include('partials.toast-notifications')
 @endauth
 
 <div class="container-custom">
   <div class="mb-3">
     <h1 class="page-title mb-0">Marketplace Orders</h1>
   </div>
-
-  @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-  @endif
 
   @php
     $currentStatus = request('status');

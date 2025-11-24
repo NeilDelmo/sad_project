@@ -474,9 +474,6 @@
     <div class="dashboard-shell">
 
         <div class="dashboard-container">
-        @if(session('success'))
-            <div class="alert-success">{{ session('success') }}</div>
-        @endif
 
         <!-- Welcome Section -->
         <div class="welcome-section">

@@ -147,3 +147,5 @@
     background: rgba(255, 255, 255, 0.15);
   }
 </style>
+
+@include('partials.toast-notifications')

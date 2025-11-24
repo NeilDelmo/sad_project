@@ -448,21 +448,6 @@
     @include('vendor.partials.nav')
 
     <div class="container-custom">
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
-        @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-exclamation"></i> {{ $errors->first() }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
         <div class="page-header">
             <div class="page-title">Bid on Fresh Catches</div>
             <div class="page-subtitle">See current bids, bidder counts, and place your bid</div>

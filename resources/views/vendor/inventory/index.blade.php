@@ -317,12 +317,6 @@
             <h1 class="page-title">Vendor Inventory</h1>
         </div>
 
-        @if(session('success'))
-        <div class="alert-success">
-            {{ session('success') }}
-        </div>
-        @endif
-
         @if($inventory->count() > 0)
         <div class="inventory-table">
             <table>
@@ -440,6 +434,7 @@
     </div>
 
 @include('partials.message-notification')
+@include('partials.toast-notifications')
 
 </body>
 </html>

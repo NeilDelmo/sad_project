@@ -473,16 +473,6 @@
                 </p>
             </div>
 
-            @if($errors->any())
-            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <ul style="margin: 0; padding-left: 20px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
             <div class="form-actions">
                 <button type="submit" class="btn-primary-custom" style="flex: 1;">
                     Create Listing
@@ -511,5 +501,6 @@
     </div>
 </div>
 @include('partials.message-notification')
+@include('partials.toast-notifications')
 </body>
 </html>

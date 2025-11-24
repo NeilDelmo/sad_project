@@ -322,7 +322,6 @@
 @php $user = Auth::user(); @endphp
 @if($user && $user->user_type === 'fisherman')
   @include('fisherman.partials.nav')
-  @include('partials.toast-notifications')
 @elseif($user && $user->user_type === 'vendor')
   @include('vendor.partials.nav')
 @endif
@@ -355,10 +354,6 @@
       @endforeach
     </div>
   </div>
-
-  @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-  @endif
 
   @foreach($orders as $order)
     @php 
