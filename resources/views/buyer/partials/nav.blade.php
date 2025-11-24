@@ -97,6 +97,7 @@
     cursor: pointer;
     font-family: Arial, sans-serif;
     position: relative;
+    overflow: hidden;
   }
 
   .nav-link::before {
