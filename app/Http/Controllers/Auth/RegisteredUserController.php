@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'username' => ['required', 'string', 'max:255', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'regex:/^9[0-9]{9}$/', 'size:10'],
             // Only allow fisherman, vendor, and buyer for public registration
             // Admin accounts must be created manually
             'user_type' => ['required', Rule::in(['fisherman', 'vendor', 'buyer'])],

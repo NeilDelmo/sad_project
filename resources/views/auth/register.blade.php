@@ -71,15 +71,17 @@
             position: relative;
         }
 
-        /* background image */
+        /* left background image */
         .bg {
-            background-image: url('{{ asset('images/login.jpg') }}');
+            background-image: url("{{ asset('images/background.png') }}");
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
             min-height: 100vh;
             position: relative;
+            overflow: hidden;
         }
+        .bg::before { content:""; position:absolute; inset:0; background:rgba(0,71,128,0.35); }
 
         /* logo */
         .bg .logo {
@@ -347,7 +349,7 @@
                                             <span class="input-group-text phone-prefix text-font">+63</span>
                                             <input id="phone" name="phone" type="tel"
                                                 class="form-control phone-input text-font" placeholder="9123456789"
-                                                value="{{ old('phone') }}" inputmode="tel" pattern="[0-9]{7,11}">
+                                                value="{{ old('phone') }}" inputmode="numeric" pattern="9[0-9]{9}" maxlength="10" minlength="10">
                                         </div>
                                         @error('phone') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                                     </div>

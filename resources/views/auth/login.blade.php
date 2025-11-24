@@ -20,7 +20,8 @@
         .text-font { font-family: "Jost", sans-serif; font-size:15px; color:#161523; }
 
         /* page layout */
-        .bg { background-image: url('{{ asset('images/login.jpg') }}'); background-size:cover; background-position:center; min-height:100vh; position:relative; }
+        .bg { background-image: url("{{ asset('images/background.png') }}"); background-size:cover; background-position:center; min-height:100vh; position:relative; overflow:hidden; }
+        .bg::before { content:""; position:absolute; inset:0; background:rgba(0,71,128,0.35); }
         .bg .logo { position:absolute; top:1rem; left:1rem; width:56px; height:56px; border-radius:50%; background-color:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.18); z-index:30; }
         .bg .logo i { color:#0074b3; font-size:20px; }
 
