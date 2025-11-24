@@ -85,5 +85,6 @@
         bindToggle('toggleConfirmPassword','password_confirmation','toggleConfirmPasswordIcon');
     })();
     </script>
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>

@@ -578,5 +578,6 @@ new Chart(orderStatusCtx, {
     });
 @endif
 </script>
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>

@@ -530,3 +530,4 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Category search initialized');
 });
 </script>
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>

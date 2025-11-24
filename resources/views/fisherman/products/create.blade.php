@@ -576,5 +576,6 @@
     </script>
 
     @include('partials.message-notification')
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>

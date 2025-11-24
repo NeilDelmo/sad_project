@@ -46,5 +46,6 @@
             <button type="submit" class="btn-secondary"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Log Out</button>
         </form>
     </div>
+<script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>
