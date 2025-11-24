@@ -46,6 +46,7 @@ class OfferNotificationController extends Controller
                 'App\Notifications\VendorOfferAccepted',
                 'App\Notifications\VendorAcceptedCounter',
                 'App\Notifications\OrderStatusUpdated',
+                'App\Notifications\CustomerOrderStatusUpdated',
             ])
             ->limit(5)
             ->get();
@@ -88,6 +89,7 @@ class OfferNotificationController extends Controller
             'vendor_offer_accepted' => 'Offer Accepted!',
             'vendor_accepted_counter' => 'Counter Offer Accepted!',
             'order_status' => 'Order Update',
+            'customer_order_status' => 'Marketplace Order Update',
             default => 'New Notification',
         };
     }
@@ -100,6 +102,7 @@ class OfferNotificationController extends Controller
             'vendor_offer_accepted' => 'Your offer was accepted by the fisherman',
             'vendor_accepted_counter' => 'Vendor accepted your counter offer',
             'order_status' => $data['message'] ?? 'Your order status has been updated.',
+            'customer_order_status' => $data['message'] ?? 'Your marketplace order has been updated.',
             default => 'You have a new notification',
         };
     }
@@ -110,6 +113,10 @@ class OfferNotificationController extends Controller
         
         if (($data['type'] ?? '') === 'order_status') {
             return '/orders';
+        }
+
+        if (($data['type'] ?? '') === 'customer_order_status') {
+            return '/marketplace/orders';
         }
         
         if ($userType === 'fisherman') {
