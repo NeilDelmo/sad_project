@@ -98,9 +98,18 @@
                     </h1>
                     <p class="text-gray-600 text-sm mt-1">Manage user accounts and permissions</p>
                 </div>
-                <div class="text-sm">
+                <div class="flex gap-2 text-sm">
                     <span class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg font-semibold border border-blue-200">
-                        <i class="fa-solid fa-user-group"></i> {{ $users->total() }} Total Users
+                        <i class="fa-solid fa-user-group"></i> {{ $totalUsers }} Total
+                    </span>
+                    <span class="px-3 py-2 bg-green-50 text-green-700 rounded-lg font-semibold border border-green-200">
+                        <i class="fa-solid fa-circle-check"></i> {{ $activeUsers }} Active
+                    </span>
+                    <span class="px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg font-semibold border border-yellow-200">
+                        <i class="fa-solid fa-pause-circle"></i> {{ $suspendedUsers }} Suspended
+                    </span>
+                    <span class="px-3 py-2 bg-red-50 text-red-700 rounded-lg font-semibold border border-red-200">
+                        <i class="fa-solid fa-ban"></i> {{ $bannedUsers }} Banned
                     </span>
                 </div>
             </div>
@@ -217,6 +226,9 @@
                                                     <i class="fa-solid fa-ban"></i> Ban
                                                 </button>
                                             </form>
+                                            <button type="button" class="btn btn-ban" style="border-color: #f59e0b; color: #b45309;" onclick="openPenaltyModal('{{ $user->id }}', '{{ $user->username }}')">
+                                                <i class="fa-solid fa-gavel"></i> Penalty
+                                            </button>
                                         </div>
                                     @else
                                         <form method="POST" action="{{ route('admin.users.reactivate', $user->id) }}" class="inline">
@@ -244,5 +256,85 @@
             </div>
         </div>
     </div>
+
+    <!-- Penalty Modal -->
+    <div id="penaltyModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 50;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                    <i class="fa-solid fa-gavel text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2" id="modalTitle">Apply Penalty</h3>
+                <div class="mt-2 px-7 py-3">
+                    <form id="penaltyForm" method="POST" action="">
+                        @csrf
+                        <div class="mb-4 text-left">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="reason">
+                                Reason
+                            </label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="reason" name="reason" type="text" placeholder="e.g. Rude behavior" required>
+                        </div>
+                        <div class="mb-4 text-left">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="severity">
+                                Severity
+                            </label>
+                            <select class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="severity" name="severity">
+                                <option value="low">Low (-5 pts)</option>
+                                <option value="medium" selected>Medium (-15 pts)</option>
+                                <option value="high">High (-30 pts)</option>
+                                <option value="critical">Critical (-50 pts)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4 text-left">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="details">
+                                Details (Optional)
+                            </label>
+                            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="details" name="details" rows="3"></textarea>
+                        </div>
+                        <div class="items-center px-4 py-3">
+                            <button id="ok-btn" type="submit" class="px-4 py-2 bg-yellow-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300">
+                                Apply Penalty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="closePenaltyModal()" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openPenaltyModal(userId, username) {
+            const modal = document.getElementById('penaltyModal');
+            const form = document.getElementById('penaltyForm');
+            const title = document.getElementById('modalTitle');
+            
+            // Set form action
+            form.action = `/admin/users/${userId}/penalty`;
+            
+            // Set title
+            title.textContent = `Apply Penalty to ${username}`;
+            
+            // Show modal
+            modal.classList.remove('hidden');
+        }
+
+        function closePenaltyModal() {
+            const modal = document.getElementById('penaltyModal');
+            modal.classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('penaltyModal');
+            if (event.target == modal) {
+                closePenaltyModal();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -11,6 +11,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('offers:expire')->hourly();
         $schedule->command('products:expire')->daily();
+        $schedule->command('fish:freshness-update')->hourly();
         $schedule->command('rentals:cancel-expired')->everyFiveMinutes();
         // Dynamic pricing recalculation for active listings every hour
         $schedule->command('pricing:update-listings --only-active')->hourly();

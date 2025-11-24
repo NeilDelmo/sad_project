@@ -12,6 +12,8 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\FishermanProfile;
 use App\Models\VendorPreference;
+use App\Models\TrustTransaction;
+use App\Models\UserInfraction;
 
 class User extends Authenticatable implements AuditableConract, MustVerifyEmail
 {
@@ -107,6 +109,47 @@ class User extends Authenticatable implements AuditableConract, MustVerifyEmail
     public function trustTransactions()
     {
         return $this->hasMany(TrustTransaction::class);
+    }
+
+    public function infractions()
+    {
+        return $this->hasMany(UserInfraction::class);
+    }
+
+    public function applyPenalty(string $reason, string $severity = 'medium', ?User $admin = null, ?string $details = null): void
+    {
+        \DB::transaction(function () use ($reason, $severity, $admin, $details) {
+            // 1. Create Infraction
+            $this->infractions()->create([
+                'verified_by' => $admin?->id,
+                'verified_at' => now(),
+                'reason' => $reason,
+                'severity' => $severity,
+                'details' => $details,
+            ]);
+
+            // 2. Deduct Trust Score
+            $deduction = match ($severity) {
+                'low' => -5,
+                'medium' => -15,
+                'high' => -30,
+                'critical' => -50,
+                default => -10,
+            };
+            $this->adjustTrustScore($deduction, 'penalty', null, $reason, $details);
+
+            // 3. Check for Suspension (3 Strikes Rule)
+            // Count verified infractions in the last 6 months
+            $recentInfractions = $this->infractions()
+                ->whereNotNull('verified_at')
+                ->where('created_at', '>=', now()->subMonths(6))
+                ->count();
+
+            if ($recentInfractions >= 3) {
+                $this->update(['status' => 'suspended']);
+                // Ideally send an email notification here
+            }
+        });
     }
 
     public function adjustTrustScore(int $amount, string $type, ?Model $reference = null, ?string $reason = null, ?string $adminNotes = null): void

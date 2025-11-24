@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/users/{id}/suspend', [AdminUserController::class, 'suspend'])->name('admin.users.suspend');
     Route::post('/admin/users/{id}/ban', [AdminUserController::class, 'ban'])->name('admin.users.ban');
     Route::post('/admin/users/{id}/reactivate', [AdminUserController::class, 'reactivate'])->name('admin.users.reactivate');
+    Route::post('/admin/users/{id}/penalty', [AdminUserController::class, 'penalty'])->name('admin.users.penalty');
 });
 
 require __DIR__.'/auth.php';
