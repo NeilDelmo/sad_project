@@ -142,6 +142,17 @@ class OrdersController extends Controller
             'refund_proof_path' => $proof,
         ]);
 
+        $inventory = \App\Models\VendorInventory::where('order_id', $order->id)->first();
+        if ($inventory) {
+            $inventory->update(['status' => 'refund_pending']);
+            \App\Models\MarketplaceListing::where('vendor_inventory_id', $inventory->id)
+                ->where('status', 'active')
+                ->update([
+                    'status' => 'inactive',
+                    'unlisted_at' => now(),
+                ]);
+        }
+
         $this->notifyAndMessage($order, "Refund requested for Order #{$order->id} (Reason: {$data['reason']}).");
 
         return back()->with('success', 'Refund requested. Fisherman will review your request.');
@@ -201,6 +212,12 @@ class OrdersController extends Controller
             'refund_notes' => $data['notes'] ?? $order->refund_notes,
             'refund_at' => now(),
         ]);
+
+        $inventory = \App\Models\VendorInventory::where('order_id', $order->id)->first();
+        if ($inventory && $inventory->status === 'refund_pending') {
+            $inventory->update(['status' => 'in_stock']);
+        }
+
         $this->notifyAndMessage($order, "Refund declined for Order #{$order->id}.");
         return back()->with('success', 'Refund declined.');
     }

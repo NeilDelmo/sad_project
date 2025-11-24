@@ -600,9 +600,8 @@
                 <div class="stat-label">Accepted Offers</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon">
                     <i class="fa-solid fa-toolbox"></i>
-                    @php $unitPrice = $offer->fisherman_counter_price ?? $offer->offered_price; @endphp
-                    <div class="product-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($unitPrice * $offer->quantity, 2) }}</div>
                 </div>
                 <div class="stat-number">{{ $activeRentalsCount ?? 0 }}</div>
                 <div class="stat-label">Active Rentals</div>

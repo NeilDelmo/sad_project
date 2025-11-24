@@ -41,7 +41,7 @@ class VendorInventoryController extends Controller
             $query->where('status', 'listed');
         }
 
-        $inventory = $query->orderByRaw("FIELD(status, 'pending_delivery', 'in_stock', 'listed')")
+        $inventory = $query->orderByRaw("FIELD(status, 'pending_delivery', 'refund_pending', 'in_stock', 'listed', 'refunded')")
             ->orderBy('purchased_at', 'desc')
             ->paginate(20);
 
@@ -119,6 +119,10 @@ class VendorInventoryController extends Controller
             return back()->withErrors(['error' => 'Cannot list this product yet. The fisherman must deliver the order first.']);
         }
 
+        if ($inventory->status === 'refund_pending') {
+            return back()->withErrors(['error' => 'This inventory is under refund review and cannot be listed until resolved.']);
+        }
+
         if ($inventory->status !== 'in_stock') {
             return back()->withErrors(['error' => 'This inventory item is not available for listing.']);
         }
@@ -181,6 +185,10 @@ class VendorInventoryController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1|max:' . $inventory->quantity,
         ]);
+
+        if ($inventory->status === 'refund_pending') {
+            return back()->withErrors(['error' => 'This inventory is under refund review and cannot be listed until resolved.']);
+        }
 
         if ($inventory->status !== 'in_stock') {
             return back()->withErrors(['error' => 'This inventory item is not available for listing.']);
