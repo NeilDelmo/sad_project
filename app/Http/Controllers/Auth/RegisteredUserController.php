@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'user_type' => $request->user_type,
             'status' => 'active',
+            'verification_status' => ($request->user_type === 'buyer') ? 'approved' : 'unverified',
             'password' => Hash::make($request->password),
         ]);
 
@@ -53,6 +54,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        if ($request->user_type === 'buyer') {
+            return redirect(route('dashboard', absolute: false));
+        }
+
+        return redirect()->route('verification.notice');
     }
 }

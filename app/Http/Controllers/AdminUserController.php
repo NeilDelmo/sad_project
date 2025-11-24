@@ -7,9 +7,29 @@ use App\Models\User;
 
 class AdminUserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('created_at', 'desc')->paginate(20);
+        $query = User::query();
+
+        // Search filter
+        if ($search = $request->get('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Role filter
+        if ($role = $request->get('role')) {
+            $query->where('user_type', $role);
+        }
+
+        // Status filter
+        if ($status = $request->get('status')) {
+            $query->where('account_status', $status);
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
         
         // Simple analytics
         $totalUsers = User::count();
@@ -84,5 +104,25 @@ class AdminUserController extends Controller
         );
 
         return redirect()->back()->with('success', 'Penalty applied successfully.');
+    }
+
+    public function approveVerification($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['verification_status' => 'approved']);
+        
+        // Optional: Send email notification
+        
+        return redirect()->back()->with('success', 'User verification approved.');
+    }
+
+    public function rejectVerification($id)
+    {
+        $user = User::findOrFail($id);
+        $user->update(['verification_status' => 'rejected']);
+        
+        // Optional: Send email notification with reason
+        
+        return redirect()->back()->with('success', 'User verification rejected.');
     }
 }

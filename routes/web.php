@@ -20,8 +20,16 @@ use App\Http\Controllers\MLAnalyticsController;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 
+use App\Http\Controllers\VerificationController;
+
 Route::get('/', function () {
     return view('welcome');
+});
+
+// Verification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/verification/notice', [VerificationController::class, 'notice'])->name('verification.notice');
+    Route::post('/verification/upload', [VerificationController::class, 'upload'])->name('verification.upload');
 });
 
 // Fishing safety map (restricted; auth required). Public access removed.
@@ -89,6 +97,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/users/{id}/ban', [AdminUserController::class, 'ban'])->name('admin.users.ban');
     Route::post('/admin/users/{id}/reactivate', [AdminUserController::class, 'reactivate'])->name('admin.users.reactivate');
     Route::post('/admin/users/{id}/penalty', [AdminUserController::class, 'penalty'])->name('admin.users.penalty');
+    Route::post('/admin/users/{id}/approve-verification', [AdminUserController::class, 'approveVerification'])->name('admin.users.approve-verification');
+    Route::post('/admin/users/{id}/reject-verification', [AdminUserController::class, 'rejectVerification'])->name('admin.users.reject-verification');
 });
 
 require __DIR__.'/auth.php';

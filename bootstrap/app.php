@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Route middleware aliases
         $middleware->alias([
             'vendor.onboarded' => \App\Http\Middleware\EnsureVendorOnboarded::class,
+            'verified' => \App\Http\Middleware\EnsureUserIsVerified::class,
         ]);
 
         // Add this line to apply UpdateLastSeen to web routes:

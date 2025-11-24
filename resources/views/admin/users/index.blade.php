@@ -129,6 +129,55 @@
                 </div>
             @endif
 
+            <!-- Filters -->
+            <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                            </div>
+                            <input type="text" name="search" id="search" value="{{ request('search') }}" 
+                                class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border" 
+                                placeholder="Username or Email">
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <select name="role" id="role" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3">
+                            <option value="">All Roles</option>
+                            <option value="fisherman" {{ request('role') == 'fisherman' ? 'selected' : '' }}>Fisherman</option>
+                            <option value="vendor" {{ request('role') == 'vendor' ? 'selected' : '' }}>Vendor</option>
+                            <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="regulator" {{ request('role') == 'regulator' ? 'selected' : '' }}>Regulator</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full md:w-48">
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border px-3">
+                            <option value="">All Statuses</option>
+                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="suspended" {{ request('status') == 'suspended' ? 'selected' : '' }}>Suspended</option>
+                            <option value="banned" {{ request('status') == 'banned' ? 'selected' : '' }}>Banned</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-sm font-medium">
+                            <i class="fa-solid fa-filter mr-1"></i> Filter
+                        </button>
+                        @if(request()->hasAny(['search', 'role', 'status']))
+                            <a href="{{ route('admin.users.index') }}" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-sm font-medium">
+                                Clear
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             <!-- Table -->
             <div class="overflow-x-auto rounded-lg border border-gray-200">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -148,6 +197,9 @@
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Verification
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                 Registered
@@ -207,6 +259,25 @@
                                     {{ ucfirst($user->account_status) }}
                                 </span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($user->user_type === 'buyer' || $user->user_type === 'admin' || $user->user_type === 'regulator')
+                                    <span class="text-gray-400 text-xs">N/A</span>
+                                @else
+                                    <span class="badge
+                                        @if($user->verification_status === 'approved') bg-green-50 text-green-700 border border-green-200
+                                        @elseif($user->verification_status === 'pending') bg-yellow-50 text-yellow-700 border border-yellow-200
+                                        @elseif($user->verification_status === 'rejected') bg-red-50 text-red-700 border border-red-200
+                                        @else bg-gray-100 text-gray-600 border border-gray-200
+                                        @endif">
+                                        {{ ucfirst($user->verification_status) }}
+                                    </span>
+                                    @if($user->verification_document)
+                                        <a href="{{ Storage::url($user->verification_document) }}" target="_blank" class="text-blue-600 hover:text-blue-800 ml-2" title="View Document">
+                                            <i class="fa-solid fa-file-lines"></i>
+                                        </a>
+                                    @endif
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ $user->created_at->format('M d, Y') }}
                             </td>
@@ -237,6 +308,23 @@
                                                 <i class="fa-solid fa-circle-check"></i> Reactivate
                                             </button>
                                         </form>
+                                    @endif
+
+                                    @if($user->verification_status === 'pending')
+                                        <div class="mt-2 flex gap-2">
+                                            <form method="POST" action="{{ route('admin.users.approve-verification', $user->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold hover:bg-green-200" onclick="return confirm('Approve verification for {{ $user->username }}?')">
+                                                    <i class="fa-solid fa-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.users.reject-verification', $user->id) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold hover:bg-red-200" onclick="return confirm('Reject verification for {{ $user->username }}?')">
+                                                    <i class="fa-solid fa-xmark"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
                                     @endif
                                 @else
                                     <span class="text-gray-400 text-xs">

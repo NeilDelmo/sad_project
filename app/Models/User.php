@@ -32,6 +32,9 @@ class User extends Authenticatable implements AuditableConract, MustVerifyEmail
         'phone',
         'user_type',
         'status',
+        'account_status',
+        'verification_status',
+        'verification_document',
         'email_verified_at',
         'last_seen_at',
         'is_active',
@@ -146,7 +149,7 @@ class User extends Authenticatable implements AuditableConract, MustVerifyEmail
                 ->count();
 
             if ($recentInfractions >= 3) {
-                $this->update(['status' => 'suspended']);
+                $this->update(['account_status' => 'suspended']);
                 // Ideally send an email notification here
             }
         });
