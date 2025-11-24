@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AppVerifyCsrfToken::class
         );
 
+        $middleware->trustProxies(at: '*');
+
         // Route middleware aliases
         $middleware->alias([
             'vendor.onboarded' => \App\Http\Middleware\EnsureVendorOnboarded::class,
