@@ -68,7 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // (moved below to auth-only group)
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Notifications API for navbar polling (auth only, not email-verified)
     Route::get('/api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
     Route::get('/api/notifications/latest', [NotificationController::class, 'latest'])->name('api.notifications.latest');
@@ -138,7 +138,7 @@ Route::middleware(['not.admin'])->group(function () {
     Route::get('/api/recommendations', [MarketplaceController::class, 'recommendations'])->name('api.recommendations');
 });
 
-Route::middleware(['auth', 'not.admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
     Route::post('/marketplace/listings/{listing}/buy', [CustomerOrderController::class, 'purchase'])->name('marketplace.buy');
     Route::get('/marketplace/orders', [CustomerOrderController::class, 'index'])->name('marketplace.orders.index');
     Route::post('/marketplace/orders/{order}/in-transit', [CustomerOrderController::class, 'markInTransit'])->name('marketplace.orders.intransit');
@@ -161,7 +161,7 @@ Route::middleware(['auth', 'not.admin'])->group(function () {
 // });
 
 // Offer Notification API (requires authentication)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/offers/pending-count', [\App\Http\Controllers\OfferNotificationController::class, 'getPendingCount']);
     Route::get('/api/offers/latest', [\App\Http\Controllers\OfferNotificationController::class, 'getLatestOffers']);
     Route::post('/api/offers/notifications/{id}/read', [\App\Http\Controllers\OfferNotificationController::class, 'markAsRead']);
@@ -169,7 +169,7 @@ Route::middleware('auth')->group(function () {
 
 // Fisherman routes (requires authentication + fisherman role)
 
-Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('fisherman')->name('fisherman.')->group(function () {
     // Fisherman Dashboard (will include safety navigation/ML features later)
     Route::get('/dashboard', [FishermanController::class, 'dashboard'])->name('dashboard');
     
@@ -188,7 +188,7 @@ Route::middleware(['auth'])->prefix('fisherman')->name('fisherman.')->group(func
 });
 
 // Vendor routes (requires authentication)
-Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.')->group(function () {
+Route::middleware(['auth', 'verified', 'vendor.onboarded'])->prefix('vendor')->name('vendor.')->group(function () {
     Route::get('/onboarding', [VendorOnboardingController::class, 'show'])->withoutMiddleware('vendor.onboarded')->name('onboarding');
     Route::post('/onboarding', [VendorOnboardingController::class, 'store'])->withoutMiddleware('vendor.onboarded')->name('onboarding.store');
 
@@ -216,7 +216,7 @@ Route::middleware(['auth', 'vendor.onboarded'])->prefix('vendor')->name('vendor.
 });
 
 // Forum routes (requires authentication)
-Route::middleware(['auth', 'not.admin'])->group(function () {
+Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
     Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
     Route::get('/forums/category/{id}', [ForumController::class, 'showCategory'])->name('forums.category');
     Route::get('/forums/thread/{id}', [ForumController::class, 'showThread'])->name('forums.thread');
@@ -231,7 +231,7 @@ Route::middleware(['auth', 'not.admin'])->group(function () {
 Route::get('/rentals', [RentalController::class, 'index'])->name('rentals.index');
 Route::get('/rentals/{product}', [RentalController::class, 'show'])->whereNumber('product')->name('rentals.show');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/rentals/create', [RentalController::class, 'create'])->name('rentals.create');
     Route::post('/rentals', [RentalController::class, 'store'])->name('rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'myRentals'])->name('rentals.myrentals');

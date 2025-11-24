@@ -39,14 +39,9 @@ class AuthenticatedSessionController extends Controller
      */
     protected function redirectPath($user): string
     {
-        return match($user->user_type) {
-            'admin' => route('dashboard', absolute: false),           // Admin needs dashboard for management
-            'regulator' => route('dashboard', absolute: false),       // Regulator needs dashboard for oversight
-            'vendor' => route('vendor.dashboard', absolute: false),    // Vendor-specific dashboard (inventory + browse)
-            'fisherman' => route('fisherman.dashboard', absolute: false), // Fisherman dashboard (products + safety nav/ML)
-            'buyer' => route('marketplace.shop', absolute: false),    // Buyer goes to marketplace to buy
-            default => route('marketplace.shop', absolute: false),    // Default to marketplace
-        };
+        // Always redirect to dashboard first to ensure 'verified' middleware runs.
+        // The /dashboard route will then handle the role-based redirection.
+        return route('dashboard', absolute: false);
     }
 
     /**
