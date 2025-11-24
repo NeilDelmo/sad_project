@@ -1,7 +1,3 @@
-@php
-  use Illuminate\Support\Facades\Route;
-@endphp
-
 <nav class="navbar">
   <div class="container-fluid d-flex justify-content-between align-items-center">
     <a class="nav-brand" href="{{ route('marketplace.index') }}" style="text-decoration: none;">
@@ -11,6 +7,12 @@
     <div class="nav-links">
       <a href="{{ route('marketplace.index') }}" class="nav-link">
         <i class="fa-solid fa-store"></i> Marketplace
+      </a>
+      <a href="{{ route('marketplace.cart.index') }}" class="nav-link">
+        <i class="fa-solid fa-cart-shopping"></i> Cart
+      </a>
+      <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+        <i class="fa-solid fa-receipt"></i> Orders
       </a>
       <a href="{{ route('forums.index') }}" class="nav-link">
         <i class="fa-solid fa-comments"></i> Forum

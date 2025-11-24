@@ -164,6 +164,14 @@
                         <a href="{{ route('marketplace.shop') }}" class="nav-link {{ (!isset($filter) || $filter == 'all') ? 'active' : '' }}">
                             <i class="fa-solid fa-fire"></i> Latest
                         </a>
+                        @if(auth()->user()->user_type === 'vendor')
+                            <a href="{{ route('marketplace.orders.index') }}" class="nav-link">
+                                <i class="fa-solid fa-list-check"></i> My Listed Orders
+                            </a>
+                            <a href="{{ route('vendor.inventory.index') }}" class="nav-link">
+                                <i class="fa-solid fa-box"></i> My Listings
+                            </a>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                             @csrf
                             <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
@@ -472,7 +480,7 @@
                                     <button class="btn btn-outline-secondary" type="button" onclick="incQty(this)">+</button>
                                 </div>
                                 <button type="submit" formaction="{{ route('marketplace.cart.add') }}" class="btn btn-outline-primary" title="Add to Cart" @if(isset($stock) && $stock === 0) disabled @endif><i class="fa-solid fa-cart-plus"></i></button>
-                                <button type="submit" formaction="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" class="buy-btn" @if(isset($stock) && $stock === 0) disabled style="opacity:.6; cursor:not-allowed;" @endif>Buy Now</button>
+                                <button type="submit" formaction="{{ route('marketplace.buy', ['listing' => $listing->id]) }}" class="buy-btn buy-now-btn" data-product="{{ $product->name ?? 'this listing' }}" @if(isset($stock) && $stock === 0) disabled style="opacity:.6; cursor:not-allowed;" @endif>Buy Now</button>
                             </form>
                         </div>
                     @else
@@ -544,6 +552,24 @@
                 setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1500);
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Guard accidental checkouts by forcing a confirmation prompt.
+            const buttons = document.querySelectorAll('.buy-now-btn');
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function (event) {
+                    const parentForm = btn.closest('form');
+                    const qtyInput = parentForm ? parentForm.querySelector('input[name="quantity"]') : null;
+                    const qty = qtyInput ? qtyInput.value : '1';
+                    const product = btn.dataset.product || 'this listing';
+                    const confirmed = window.confirm(`Proceed with buying ${qty} unit(s) of ${product}? This will place the order immediately.`);
+                    if (!confirmed) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                });
+            });
+        });
 
         // Organization contact copy function
         function copyOrgContact(element) {

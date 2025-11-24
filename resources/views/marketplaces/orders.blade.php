@@ -547,7 +547,7 @@ setInterval(updateRefundCountdowns, 60000);
             <h5 class="modal-title">Decline Refund Request</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form id="declineRefundForm" method="post">
+          <form id="declineRefundForm" method="post" data-route-template="{{ route('marketplace.orders.refund.decline', ['order' => '__ORDER__']) }}">
             @csrf
             <div class="modal-body">
               <div class="mb-3">
@@ -567,7 +567,8 @@ setInterval(updateRefundCountdowns, 60000);
     <script>
     function showDeclineRefundModal(orderId) {
       const form = document.getElementById('declineRefundForm');
-      form.action = `/marketplace/orders/${orderId}/refund/decline`;
+      const template = form?.dataset?.routeTemplate || '';
+      form.action = template ? template.replace('__ORDER__', orderId) : '';
       const modal = new bootstrap.Modal(document.getElementById('declineRefundModal'));
       modal.show();
     }
