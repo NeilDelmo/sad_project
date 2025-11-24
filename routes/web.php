@@ -130,8 +130,8 @@ Route::get('/test-profile', function () {
     return response()->json($profile);
 });
 
-// Marketplace routes (public - no authentication required, but restricted for admins)
-Route::middleware(['not.admin'])->group(function () {
+// Marketplace routes (must be authenticated + verified, still blocked for admins)
+Route::middleware(['auth', 'verified', 'not.admin'])->group(function () {
     Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
     Route::get('/marketplace/shop', [MarketplaceController::class, 'shop'])->name('marketplace.shop');
     // Marketplace Recommendations API (JSON)
