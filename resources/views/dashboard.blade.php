@@ -49,8 +49,8 @@
 // Calculate dashboard statistics
 $totalUsers = \App\Models\User::count();
 $newUsersThisMonth = \App\Models\User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count();
-$totalRevenue = \App\Models\Order::sum('total_price');
-$revenueThisMonth = \App\Models\Order::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_price');
+$totalRevenue = \App\Models\Order::sum('total');
+$revenueThisMonth = \App\Models\Order::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total');
 $activeListings = \App\Models\MarketplaceListing::where('status', 'approved')->count();
 $totalListings = \App\Models\MarketplaceListing::count();
 $totalPredictions = \App\Models\RiskPredictionLog::count();
@@ -183,7 +183,7 @@ $predictionsThisMonth = \App\Models\RiskPredictionLog::whereMonth('created_at', 
                             <p class="text-sm font-medium text-gray-900">{{ $order->user->name ?? 'Unknown' }}</p>
                             <p class="text-xs text-gray-500">{{ $order->created_at->diffForHumans() }}</p>
                         </div>
-                        <span class="text-sm font-semibold text-gray-900">₱{{ number_format($order->total_price, 2) }}</span>
+                        <span class="text-sm font-semibold text-gray-900">₱{{ number_format($order->total, 2) }}</span>
                     </div>
                     @empty
                     <p class="text-sm text-gray-500">No recent orders</p>
@@ -219,7 +219,7 @@ $predictionsThisMonth = \App\Models\RiskPredictionLog::whereMonth('created_at', 
 <script>
 // Revenue Chart
 @php
-$dailyRevenue = \App\Models\Order::selectRaw('DATE(created_at) as date, SUM(total_price) as revenue')
+$dailyRevenue = \App\Models\Order::selectRaw('DATE(created_at) as date, SUM(total) as revenue')
     ->where('created_at', '>=', now()->subDays(30))
     ->groupBy('date')
     ->orderBy('date')
@@ -228,10 +228,10 @@ $dailyRevenue = \App\Models\Order::selectRaw('DATE(created_at) as date, SUM(tota
 $dates = $dailyRevenue->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))->toArray();
 $revenues = $dailyRevenue->pluck('revenue')->toArray();
 
-$usersByType = \App\Models\User::selectRaw('account_type, COUNT(*) as count')
-    ->groupBy('account_type')
+$usersByType = \App\Models\User::selectRaw('user_type, COUNT(*) as count')
+    ->groupBy('user_type')
     ->get();
-$userTypes = $usersByType->pluck('account_type')->toArray();
+$userTypes = $usersByType->pluck('user_type')->toArray();
 $userCounts = $usersByType->pluck('count')->toArray();
 @endphp
 
