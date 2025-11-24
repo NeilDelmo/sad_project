@@ -148,7 +148,7 @@
         <!-- Quick Actions -->
         <div class="bg-white rounded-lg shadow p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 <a href="{{ route('admin.users.index') }}" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
                     <div class="p-3 bg-blue-100 rounded-full mb-2">
                         <i class="fas fa-users text-blue-600 text-xl"></i>
@@ -161,23 +161,11 @@
                     </div>
                     <span class="text-sm font-medium text-gray-700">Revenue</span>
                 </a>
-                <a href="{{ route('marketplace.index') }}" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
-                    <div class="p-3 bg-purple-100 rounded-full mb-2">
-                        <i class="fas fa-store text-purple-600 text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-gray-700">Marketplace</span>
-                </a>
                 <a href="{{ route('rentals.admin.index') }}" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
                     <div class="p-3 bg-orange-100 rounded-full mb-2">
                         <i class="fas fa-ship text-orange-600 text-xl"></i>
                     </div>
                     <span class="text-sm font-medium text-gray-700">Rentals</span>
-                </a>
-                <a href="{{ route('forums.index') }}" class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition">
-                    <div class="p-3 bg-indigo-100 rounded-full mb-2">
-                        <i class="fas fa-comments text-indigo-600 text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-gray-700">Forum</span>
                 </a>
             </div>
         </div>
