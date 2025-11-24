@@ -68,8 +68,15 @@ class NotificationController extends Controller
                     'counter_vendor_offer' => 'Counter Offer Received',
                     'vendor_offer_accepted' => 'Offer Accepted',
                     'vendor_accepted_counter' => 'Counter Offer Accepted',
+                    'vendor_offer_rejected' => 'Offer Rejected',
+                    'offer_expired' => 'Offer Expired',
+                    'bidding_closed' => 'Bidding Closed',
                     'order_status' => 'Order Update',
-                    'customer_order' => 'New Order',
+                    'customer_order', 'customer_order_status' => 'New Order',
+                    'rental_approved' => 'Rental Approved',
+                    'rental_rejected' => 'Rental Rejected',
+                    'rental_issue_reported' => 'Rental Issue',
+                    'return_processed' => 'Return Processed',
                     default => 'Notification'
                 };
             }
@@ -78,7 +85,7 @@ class NotificationController extends Controller
                 'id' => $n->id,
                 'type' => $type,
                 'title' => $title,
-                'message' => data_get($data, 'message'),
+                'message' => data_get($data, 'message') ?? 'No details available.',
                 'link' => data_get($data, 'link', route('notifications.index')),
                 'created_at' => optional($n->created_at)->diffForHumans(),
             ];

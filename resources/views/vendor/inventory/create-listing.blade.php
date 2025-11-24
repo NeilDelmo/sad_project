@@ -313,7 +313,7 @@
                 ← Back to Inventory
             </a>
             <h1 style="font-size: 1.875rem; font-weight: 700; color: #1B5E88;">Create Marketplace Listing</h1>
-            <p style="color: #666; margin-top: 0.5rem;">AI-powered dynamic pricing for optimal market performance</p>
+            <p style="color: #666; margin-top: 0.5rem;">Dynamic pricing for optimal market performance</p>
         </div>
 
         <!-- Product Info Card -->
@@ -426,7 +426,7 @@
         @endphp
 
         <div class="insight-card">
-            <h3>Why this AI price?</h3>
+            <h3>Why this price?</h3>
             <div class="insight-grid" style="margin-bottom: 1rem;">
                 <div class="insight-pill">
                     <div class="label">Buyer Interest</div>
@@ -450,13 +450,13 @@
                 </div>
             </div>
             <ul style="margin: 0; padding-left: 1.25rem; color: #475569; font-size: 0.95rem;">
-                <li>The model suggested a <strong>{{ number_format(($pricingResult['market_multiplier'] ?? 1.0) * 100 - 100, 1) }}%</strong> adjustment to your base because demand &minus; supply {{ isset($signals['demand']['score'], $signals['supply']['pressure']) ? ($signals['demand']['score'] > $signals['supply']['pressure'] ? 'is heating up.' : 'is cooling down.') : 'is balanced.' }}</li>
+                <li>The system suggested a <strong>{{ number_format(($pricingResult['market_multiplier'] ?? 1.0) * 100 - 100, 1) }}%</strong> adjustment to your base because demand &minus; supply {{ isset($signals['demand']['score'], $signals['supply']['pressure']) ? ($signals['demand']['score'] > $signals['supply']['pressure'] ? 'is heating up.' : 'is cooling down.') : 'is balanced.' }}</li>
                 <li>Your portfolio factor ({{ number_format($pricingResult['portfolio_factor'] ?? 1, 3) }}×) nudged the final recommendation to reward consistency.</li>
                 @if($priceBand)
                     <li>Confidence {{ round(($pricingResult['confidence'] ?? 0) * 100, 1) }}% → aim between ₱{{ number_format($priceBand['low'], 2) }} and ₱{{ number_format($priceBand['high'], 2) }} per kg.</li>
                 @endif
                 @if($pricingResult['fallback'] ?? false)
-                    <li><strong>Note:</strong> Using standard market rates (AI offline).</li>
+                    <li><strong>Note:</strong> Using standard market rates (System offline).</li>
                 @endif
             </ul>
         </div>
@@ -474,7 +474,7 @@
                     <span style="margin-left: 10px; color: #666;">per kg</span>
                 </div>
                 <p style="font-size: 13px; color: #666; margin-top: 10px;">
-                    This AI-optimized price maximizes your profit while remaining competitive in the market.
+                    This market-optimized price maximizes your profit while remaining competitive in the market.
                 </p>
             </div>
 

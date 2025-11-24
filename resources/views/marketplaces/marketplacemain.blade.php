@@ -332,7 +332,7 @@
         <div class="product-grid">
             @foreach($recommendations['sellers'] as $seller)
             <div class="product-card">
-                <div class="product-name" style="margin-bottom:6px;">{{ $seller->name ?? ('Seller #'.$seller->id) }}</div>
+                <div class="product-name" style="margin-bottom:6px;">{{ $seller->username ?? ('Seller #'.$seller->id) }}</div>
                 @if(!empty($seller->phone))
                 <div class="contact-row" style="margin:0 0 12px 0;">
                     <span class="contact-phone">📞 {{ $seller->phone }}</span>
@@ -499,28 +499,16 @@
                 @endif
             </div>
             <div class="product-name">{{ $product->name }}</div>
+            @php $seller = $listing->seller ?? $product->supplier; @endphp
+            <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">
+                <i class="fa-solid fa-user-tag" style="color: #0075B5; margin-right: 4px;"></i>
+                {{ $seller->username ?? 'Unknown Seller' }}
+            </div>
             <div class="product-price">
                 <span class="price-label">Price</span>
                 <br>
                 <span style="font-size: 1.3rem; font-weight: 700; color: #0075B5;">₱{{ number_format($listing->final_price ?? $product->unit_price, 2) }}</span>
                 <span style="font-size: 0.9rem; color: #666;">/{{ $uom }}</span>
-                
-                @if(isset($listing->base_price) && $listing->base_price > 0 && isset($listing->ml_multiplier))
-                    @php
-                        $rawPrice = $listing->base_price;
-                        $optimizedPrice = $listing->final_price;
-                        $savings = $rawPrice - $optimizedPrice;
-                        $savingsPercent = ($savings / $rawPrice) * 100;
-                    @endphp
-                    @if(abs($savingsPercent) > 3)
-                    <div style="margin-top: 4px; font-size: 0.75rem; color: #666;">
-                        <span style="text-decoration: line-through; color: #999;">₱{{ number_format($rawPrice, 2) }}</span>
-                        @if($savings > 0)
-                            <span style="color: #10b981; font-weight: 600; margin-left: 4px;">Save ₱{{ number_format($savings, 2) }}</span>
-                        @endif
-                    </div>
-                    @endif
-                @endif
             </div>
             <div class="product-details">
                 <div class="product-detail-row">
