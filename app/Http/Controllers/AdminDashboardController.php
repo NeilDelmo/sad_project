@@ -74,7 +74,7 @@ class AdminDashboardController extends Controller
         }
 
         // 5. Recent Activity
-        $recentOrders = Order::with('user')->latest()->take(5)->get();
+        $recentOrders = Order::with('vendor')->latest()->take(5)->get();
         $recentThreads = ForumThread::with('user')->latest()->take(5)->get();
 
         // 6. Fetch Simple Analytics Data

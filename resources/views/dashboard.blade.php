@@ -265,7 +265,7 @@
                     @forelse($recentOrders as $order)
                     <div class="flex items-center justify-between border-b border-gray-100 pb-2">
                         <div>
-                            <p class="text-sm font-medium text-gray-900">{{ $order->user->name ?? 'Unknown' }}</p>
+                            <p class="text-sm font-medium text-gray-900">{{ $order->vendor->name ?? 'Unknown' }}</p>
                             <p class="text-xs text-gray-500">{{ $order->created_at->diffForHumans() }}</p>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">₱{{ number_format($order->total, 2) }}</span>
