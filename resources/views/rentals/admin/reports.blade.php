@@ -10,12 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Koulen&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background-color: #f8f9fa; min-height: 100vh; }
-        .navbar { background: linear-gradient(135deg, #1B5E88 0%, #0075B5 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .navbar-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .nav-brand { color: white; font-size: 28px; font-weight: bold; font-family: "Koulen", sans-serif; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); text-decoration: none; display: flex; align-items: center; gap: 10px; }
-        .nav-logo { height: 40px; width: auto; }
-        .nav-link { color: rgba(255, 255, 255, 0.9); text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 16px; font-weight: 500; transition: all 0.3s ease; }
-        .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.15); }
+
         .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
         .page-header { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
         .page-title { font-family: "Koulen", sans-serif; font-size: 48px; color: #1B5E88; margin-bottom: 10px; }
@@ -69,25 +64,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a class="nav-brand" href="{{ route('dashboard') }}">
-                <img src="{{ asset('images/logo.png') }}" alt="SeaLedger Logo" class="nav-logo">
-                SeaLedger
-            </a>
-            <div>
-                <a href="{{ route('rentals.admin.index') }}" class="nav-link"><i class="fa-solid fa-toolbox"></i> Rentals</a>
-                <a href="{{ route('rentals.admin.reports') }}" class="nav-link"><i class="fa-solid fa-flag"></i> Reports</a>
-                <a href="{{ route('dashboard') }}" class="nav-link"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    @include('admin.partials.nav')
 
     <div class="container">
         <div class="page-header">

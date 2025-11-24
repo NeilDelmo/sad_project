@@ -129,12 +129,6 @@
       <a href="{{ route('admin.revenue.index') }}" class="nav-link {{ request()->routeIs('admin.revenue.*') ? 'active' : '' }}">
         <i class="fa-solid fa-chart-line"></i> Revenue
       </a>
-      <a href="{{ route('admin.ml.analytics') }}" class="nav-link {{ request()->routeIs('admin.ml.analytics') ? 'active' : '' }}">
-        <i class="fa-solid fa-brain"></i> ML Analytics
-      </a>
-      <a href="https://dashboard.simpleanalytics.com" target="_blank" class="nav-link">
-        <i class="fa-solid fa-chart-simple"></i> Web Analytics
-      </a>
       <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
         <i class="fa-solid fa-users"></i> Users
       </a>
