@@ -360,7 +360,9 @@
     <!-- REST OF YOUR PAGE: 100% UNCHANGED -->
     <div class="d-flex flex-column align-items-center center-div light-blue">
         <div>
-            <span class="font-subtitle">{{ Auth::check() ? Auth::user()->name : 'Guest' }}, ready for today's catch?</span>
+            <span class="font-subtitle">
+                {{ Auth::check() ? (Auth::user()->username ?? Auth::user()->name ?? Auth::user()->email) : 'Guest' }}, ready for today's catch?
+            </span>
             <span class="font-title">SeaLedger</span>
             <div class="d-flex gap-3 justify-content-center mt-2">
                 <a href="{{ route('marketplace.shop') }}" class="btn btn-text btn-size rounded-pill light-blue" style="background-color: #0075B5;">Marketplace</a>
