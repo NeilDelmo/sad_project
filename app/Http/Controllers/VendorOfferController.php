@@ -52,8 +52,10 @@ class VendorOfferController extends Controller
             'message' => 'nullable|string|max:500',
         ]);
 
-        // Calculate fair market price for fisherman's reference
-        $fairPricing = $this->fishermanPricing->calculateFairPrice($product);
+        // Calculate fair market price for fisherman's reference (log after offer is created)
+        $fairPricing = $this->fishermanPricing->calculateFairPrice($product, null, [
+            'skip_logging' => true,
+        ]);
         $suggestedPrice = $fairPricing['suggested_price'] ?? null;
         $mlConfidence = $fairPricing['confidence'] ?? null;
 
@@ -68,6 +70,11 @@ class VendorOfferController extends Controller
             'expires_at' => now()->addDays(3),
             'suggested_price_fisherman' => $suggestedPrice,
             'ml_confidence_fisherman' => $mlConfidence,
+        ]);
+
+        $this->fishermanPricing->logPredictionSnapshot($product, $fairPricing, [
+            'offer_id' => $offer->id,
+            'log_context' => 'fisherman_offer',
         ]);
 
         // Messaging removed; notification sent below
@@ -88,7 +95,7 @@ class VendorOfferController extends Controller
     {
         $status = $request->input('status', 'pending');
 
-        $query = VendorOffer::with(['vendor', 'product', 'product.category'])
+        $query = VendorOffer::with(['vendor', 'product', 'product.category', 'latestPricingLog'])
             ->where('fisherman_id', Auth::id());
 
         // Filter by status if specified

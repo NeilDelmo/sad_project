@@ -260,6 +260,47 @@
             gap: 15px;
             margin-top: 25px;
         }
+
+        .insight-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.08);
+            margin-bottom: 20px;
+        }
+
+        .insight-card h3 {
+            margin-bottom: 0.75rem;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1B5E88;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .insight-pill {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+
+        .insight-pill .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.04em;
+        }
+
+        .insight-pill .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
     </style>
 </head>
 <body>
@@ -372,6 +413,47 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        @php
+            $signals = $pricingResult['signals'] ?? [];
+            $priceBand = $pricingResult['price_range'] ?? null;
+        @endphp
+
+        <div class="insight-card">
+            <h3>Why this AI price?</h3>
+            <div class="insight-grid" style="margin-bottom: 1rem;">
+                <div class="insight-pill">
+                    <div class="label">Demand pulse</div>
+                    <div class="value">{{ isset($signals['demand']['score']) ? number_format($signals['demand']['score'], 2) . '×' : 'n/a' }}</div>
+                    <div style="font-size: 0.8rem; color: #475569;">{{ $signals['demand']['recent_retail_orders'] ?? 0 }} retail orders (24h)</div>
+                </div>
+                <div class="insight-pill">
+                    <div class="label">Supply pressure</div>
+                    <div class="value">{{ isset($signals['supply']['pressure']) ? number_format($signals['supply']['pressure'], 2) . '×' : 'n/a' }}</div>
+                    <div style="font-size: 0.8rem; color: #475569;">{{ $signals['supply']['total_supply'] ?? '—' }} kg observed</div>
+                </div>
+                <div class="insight-pill">
+                    <div class="label">Wholesale acceptance</div>
+                    <div class="value">{{ isset($signals['wholesale']['acceptance_rate']) ? number_format($signals['wholesale']['acceptance_rate'] * 100, 1) . '%' : 'n/a' }}</div>
+                    <div style="font-size: 0.8rem; color: #475569;">Cleared bids last 7 days</div>
+                </div>
+                <div class="insight-pill">
+                    <div class="label">Retail median</div>
+                    <div class="value">{{ isset($signals['retail']['median']) ? '₱' . number_format($signals['retail']['median'], 2) : 'n/a' }}</div>
+                    <div style="font-size: 0.8rem; color: #475569;">Latest marketplace sales</div>
+                </div>
+            </div>
+            <ul style="margin: 0; padding-left: 1.25rem; color: #475569; font-size: 0.95rem;">
+                <li>The model suggested a <strong>{{ number_format(($pricingResult['market_multiplier'] ?? 1.0) * 100 - 100, 1) }}%</strong> adjustment to your base because demand &minus; supply {{ isset($signals['demand']['score'], $signals['supply']['pressure']) ? ($signals['demand']['score'] > $signals['supply']['pressure'] ? 'is heating up.' : 'is cooling down.') : 'is balanced.' }}</li>
+                <li>Your portfolio factor ({{ number_format($pricingResult['portfolio_factor'] ?? 1, 3) }}×) nudged the final recommendation to reward consistency.</li>
+                @if($priceBand)
+                    <li>Confidence {{ round(($pricingResult['confidence'] ?? 0) * 100, 1) }}% → aim between ₱{{ number_format($priceBand['low'], 2) }} and ₱{{ number_format($priceBand['high'], 2) }} per kg.</li>
+                @endif
+                @if($pricingResult['fallback'] ?? false)
+                    <li><strong>Heads up:</strong> signals-only fallback was used (model offline). Check comps before publishing.</li>
+                @endif
+            </ul>
         </div>
 
         <!-- Listing Form -->

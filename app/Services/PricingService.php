@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -11,77 +10,102 @@ use Illuminate\Support\Facades\Log;
 
 class PricingService
 {
-    /**
-     * Path to the Python pricing prediction script (Docker path)
-     */
-    private const PYTHON_SCRIPT = '/var/www/html/python/predict_price.py';
-    private const PYTHON_CMD = '/var/www/html/python/venv/bin/python3';
-    
-    /**
-     * Calculate dynamic price for a product using ML model.
-     *
-     * @param Product $product The product to price
-     * @param User|null $vendor The vendor listing the product (optional)
-     * @return array ['base_price', 'multiplier', 'final_price', 'confidence']
-     */
-    public function calculateDynamicPrice(Product $product, ?User $vendor = null): array
-    {
-        // Extract features for ML model
-        $features = $this->extractPricingFeatures($product, $vendor);
-        
-        // Call Python ML model
-        $mlResult = $this->callPricingModel($features);
-        
-        // Calculate final price
-        $basePrice = $product->unit_price;
-        $multiplier = $mlResult['multiplier'] ?? 1.0;
-        // New: Adjust by vendor portfolio (overall products) factor
-        $portfolioFactor = $vendor ? $this->calculateVendorPortfolioFactor($vendor) : 1.0;
-        $finalPrice = round($basePrice * $multiplier * $portfolioFactor, 2);
-        
-        return [
-            'base_price' => $basePrice,
-            'multiplier' => $multiplier,
-            'final_price' => $finalPrice,
-            'confidence' => $mlResult['confidence'] ?? 0.85,
-            'features' => $features,
-            'portfolio_factor' => $portfolioFactor,
-        ];
+    public function __construct(
+        private MarketSignalService $marketSignals,
+        private PricingPredictionLogger $predictionLogger,
+    ) {
     }
-    
-    /**
-     * Extract features required by the pricing ML model.
-     *
-     * @param Product $product
-     * @param User|null $vendor
-     * @return array
-     */
-    private function extractPricingFeatures(Product $product, ?User $vendor = null): array
+
+    public function calculateDynamicPrice(Product $product, ?User $vendor = null, array $options = []): array
     {
-        // Freshness score (0-100, based on created_at timestamp)
-        $hoursOld = Carbon::parse($product->created_at)->diffInHours(Carbon::now());
-        $freshnessScore = max(0, 100 - ($hoursOld * 2)); // Decays 2 points per hour
-        
-        // Demand factor (calculate from recent marketplace activity)
-        $demandFactor = $this->calculateDemandFactor($product);
-        
-        // Vendor rating (1-5, default 3.5 if no vendor)
-        $vendorRating = $vendor ? $this->getVendorRating($vendor) : 3.5;
-        
-        // Time of day (0-23)
-        $timeOfDay = (int) Carbon::now()->format('H');
-        
-        $featureSet = [
-            'freshness_score' => round($freshnessScore, 2),
-            'available_quantity' => $product->available_quantity ?? 10,
-            'demand_factor' => $demandFactor,
-            'seasonality_factor' => $product->seasonality_factor ?? 1.0,
-            'time_of_day' => $timeOfDay,
-            'vendor_rating' => $vendorRating,
-            'category_id' => $product->category_id ?? 1,
+        $product->loadMissing('category');
+        $signals = $this->marketSignals->forProduct($product);
+        $features = $this->extractPricingFeatures($product, $vendor, $signals);
+        $basePrice = $options['base_price'] ?? $this->deriveBasePrice($product, $signals);
+        $portfolioFactor = $vendor ? $this->calculateVendorPortfolioFactor($vendor) : 1.0;
+
+        $startedAt = microtime(true);
+        $prediction = $this->callPricingModel($features);
+        $runtimeMs = (int) ((microtime(true) - $startedAt) * 1000);
+
+        if (!$prediction || !isset($prediction['multiplier'])) {
+            $result = $this->buildFallbackPricing($basePrice, $portfolioFactor, $signals, $features, $runtimeMs);
+            if (!($options['skip_logging'] ?? false)) {
+                $this->logPredictionResult($product, $result, $options);
+            }
+            return $result;
+        }
+
+        $modelMultiplier = (float) $prediction['multiplier'];
+        $confidence = $prediction['confidence'] ?? 0.85;
+        $marketMultiplier = $this->adjustMultiplierForMarket($modelMultiplier, $signals);
+        $effectiveMultiplier = $marketMultiplier * $portfolioFactor;
+        $marketPrice = round($basePrice * $marketMultiplier, 2);
+        $finalPrice = round($basePrice * $effectiveMultiplier, 2);
+
+        $result = [
+            'base_price' => round($basePrice, 2),
+            'model_multiplier' => round($modelMultiplier, 3),
+            'market_multiplier' => round($marketMultiplier, 3),
+            'effective_multiplier' => round($effectiveMultiplier, 3),
+            'portfolio_factor' => round($portfolioFactor, 3),
+            'market_price' => $marketPrice,
+            'final_price' => $finalPrice,
+            'confidence' => round($confidence, 4),
+            'signals' => $signals,
+            'features' => $features,
+            'price_range' => [
+                'low' => round($finalPrice * 0.96, 2),
+                'fair' => $finalPrice,
+                'high' => round($finalPrice * 1.08, 2),
+            ],
+            'fallback' => false,
+            'runtime_ms' => $runtimeMs,
         ];
 
-        // Optional: expose vendor portfolio signals in features for transparency/logging
+        $result['log_payload'] = [
+            'features' => $features,
+            'signals' => $signals,
+            'multiplier' => $result['effective_multiplier'],
+            'confidence' => $result['confidence'],
+            'used_fallback' => false,
+            'runtime_ms' => $runtimeMs,
+            'extra' => [
+                'base_price' => $basePrice,
+                'market_price' => $marketPrice,
+                'portfolio_factor' => $portfolioFactor,
+            ],
+        ];
+
+        if (!($options['skip_logging'] ?? false)) {
+            $this->logPredictionResult($product, $result, $options);
+        }
+
+        return $result;
+    }
+
+    private function extractPricingFeatures(Product $product, ?User $vendor = null, array $signals = []): array
+    {
+        $now = Carbon::now();
+        $createdAt = $product->created_at ? Carbon::parse($product->created_at) : $now;
+        $hoursOld = $createdAt->diffInHours($now);
+        $freshnessScore = max(0, 100 - ($hoursOld * 2));
+
+        $demandFactor = round((float) ($signals['demand']['score'] ?? 1.0), 3);
+        $seasonality = in_array($now->month, [3, 4, 5, 11, 12], true) ? 1.2 : 1.0;
+        $availableQuantity = max(1, (int) ($product->available_quantity ?? $product->quantity ?? 10));
+        $vendorRating = $vendor ? $this->getVendorRating($vendor) : 4.0;
+
+        $featureSet = [
+            'freshness_score' => $freshnessScore,
+            'available_quantity' => $availableQuantity,
+            'demand_factor' => $demandFactor,
+            'seasonality_factor' => $seasonality,
+            'time_of_day' => $now->hour,
+            'vendor_rating' => $vendorRating,
+            'category_id' => (int) ($product->category_id ?? 1),
+        ];
+
         if ($vendor) {
             $featureSet['vendor_total_items'] = $this->getVendorTotalInventoryItems($vendor);
             $featureSet['vendor_total_quantity'] = $this->getVendorTotalInventoryQuantity($vendor);
@@ -89,57 +113,14 @@ class PricingService
 
         return $featureSet;
     }
-    
-    /**
-     * Calculate demand factor based on recent marketplace activity.
-     *
-     * @param Product $product
-     * @return float Demand factor (0.3 to 2.0)
-     */
-    private function calculateDemandFactor(Product $product): float
-    {
-        // Count active listings for this product category in last 24 hours
-        $categoryListings = DB::table('marketplace_listings')
-            ->join('products', 'marketplace_listings.product_id', '=', 'products.id')
-            ->where('products.category_id', $product->category_id)
-            ->where('marketplace_listings.status', 'active')
-            ->where('marketplace_listings.listing_date', '>=', Carbon::now()->subHours(24))
-            ->count();
-        
-        // Simple demand heuristic: fewer listings = higher demand
-        // Normalize to 0.3-2.0 range
-        if ($categoryListings == 0) {
-            return 1.5; // High demand (no competition)
-        } elseif ($categoryListings < 5) {
-            return 1.2;
-        } elseif ($categoryListings < 15) {
-            return 1.0;
-        } else {
-            return 0.7; // Low demand (high competition)
-        }
-    }
-    
-    /**
-     * Get vendor rating (placeholder - implement with actual review system).
-     *
-     * @param User $vendor
-     * @return float Rating 1.0-5.0
-     */
+
     private function getVendorRating(User $vendor): float
     {
-        // TODO: Implement actual vendor rating from reviews/transactions
-        // For now, return a default value
         return 4.0;
     }
 
-    /**
-     * Compute a portfolio factor (0.97 - 1.03) based on vendor's overall products.
-     * More items stocked -> slight discount (economies of scale);
-     * fewer items -> slight premium.
-     */
     private function calculateVendorPortfolioFactor(User $vendor): float
     {
-        // Aggregate inventory across all items the vendor currently holds
         $totals = DB::table('vendor_inventory')
             ->selectRaw('COUNT(*) as items, COALESCE(SUM(quantity),0) as qty')
             ->where('vendor_id', $vendor->id)
@@ -149,12 +130,10 @@ class PricingService
         $items = (int) ($totals->items ?? 0);
         $qty = (int) ($totals->qty ?? 0);
 
-        // Derive a simple factor from portfolio size (items) and volume (qty)
-        // Bound impact tightly to avoid surprises in price swings
         $itemAdj = 0.0;
-        if ($items >= 50) $itemAdj = -0.03; // discount
+        if ($items >= 50) $itemAdj = -0.03;
         elseif ($items >= 20) $itemAdj = -0.015;
-        elseif ($items <= 3) $itemAdj = 0.02; // premium for small portfolio
+        elseif ($items <= 3) $itemAdj = 0.02;
 
         $qtyAdj = 0.0;
         if ($qty >= 1000) $qtyAdj = -0.02;
@@ -180,51 +159,155 @@ class PricingService
             ->whereIn('status', ['in_stock', 'listed'])
             ->sum('quantity') ?? 0);
     }
-    
-    /**
-     * Call the Python ML model to predict price multiplier.
-     *
-     * @param array $features
-     * @return array ['multiplier', 'confidence']
-     */
-    private function callPricingModel(array $features): array
+
+    private function callPricingModel(array $features): ?array
     {
-        // Prepare command with feature values
+        $pythonPath = config('services.python_path', 'python3');
+        $scriptPath = base_path('python/predict_price.py');
+
+        if (!file_exists($scriptPath)) {
+            Log::warning('PricingService: predict_price.py not found');
+            return null;
+        }
+
         $command = sprintf(
-            '%s %s %s %d %s %s %d %s %d 2>&1',
-            self::PYTHON_CMD,
-            escapeshellarg(self::PYTHON_SCRIPT),
+            '%s %s %s %s %s %s %s %s %s 2>&1',
+            escapeshellcmd($pythonPath),
+            escapeshellarg($scriptPath),
             escapeshellarg($features['freshness_score']),
-            (int) $features['available_quantity'],
+            escapeshellarg($features['available_quantity']),
             escapeshellarg($features['demand_factor']),
             escapeshellarg($features['seasonality_factor']),
-            (int) $features['time_of_day'],
+            escapeshellarg($features['time_of_day']),
             escapeshellarg($features['vendor_rating']),
-            (int) $features['category_id']
+            escapeshellarg($features['category_id'])
         );
-        
-        exec($command, $output, $returnCode);
-        
-        if ($returnCode !== 0) {
-            Log::warning('Pricing model execution failed', [
-                'command' => $command,
+
+        $output = shell_exec($command);
+
+        if (!$output) {
+            return null;
+        }
+
+        $result = json_decode(trim($output), true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($result['multiplier'])) {
+            Log::warning('PricingService: Invalid ML response', [
                 'output' => $output,
-                'return_code' => $returnCode,
+                'error' => json_last_error_msg(),
             ]);
-            
-            // Fallback to default multiplier
-            return ['multiplier' => 1.0, 'confidence' => 0.0];
+            return null;
         }
-        
-        // Get the last line (JSON result) - warnings may appear in earlier lines
-        $jsonOutput = end($output);
-        $result = json_decode($jsonOutput, true);
-        
-        if (!$result || !isset($result['multiplier'])) {
-            Log::warning('Invalid pricing model output', ['output' => $output, 'json' => $jsonOutput]);
-            return ['multiplier' => 1.0, 'confidence' => 0.0];
-        }
-        
+
         return $result;
+    }
+
+    private function adjustMultiplierForMarket(float $modelMultiplier, array $signals): float
+    {
+        $multiplier = max(0.75, min(1.6, $modelMultiplier));
+        $demand = (float) ($signals['demand']['score'] ?? 1.0);
+        $supply = (float) ($signals['supply']['pressure'] ?? 1.0);
+        $acceptance = (float) ($signals['wholesale']['acceptance_rate'] ?? 0.5);
+
+        $marketTension = max(0.85, min(1.35, $demand * (0.9 + $acceptance)));
+        $inventoryRelief = max(0.75, min(1.25, 2 - $supply));
+
+        $adjusted = $multiplier * $marketTension * $inventoryRelief;
+
+        return max(0.85, min(1.4, round($adjusted, 3)));
+    }
+
+    private function buildFallbackPricing(
+        float $basePrice,
+        float $portfolioFactor,
+        array $signals,
+        array $features,
+        ?int $runtimeMs = null
+    ): array {
+        $demand = (float) ($signals['demand']['score'] ?? 1.0);
+        $supply = (float) ($signals['supply']['pressure'] ?? 1.0);
+        $acceptance = (float) ($signals['wholesale']['acceptance_rate'] ?? 0.5);
+
+        $marketMultiplier = max(0.8, min(1.35, $demand * (0.9 + $acceptance) * (2 - $supply)));
+        $effectiveMultiplier = $marketMultiplier * $portfolioFactor;
+        $finalPrice = round($basePrice * $effectiveMultiplier, 2);
+
+        $result = [
+            'base_price' => round($basePrice, 2),
+            'market_multiplier' => round($marketMultiplier, 3),
+            'effective_multiplier' => round($effectiveMultiplier, 3),
+            'portfolio_factor' => round($portfolioFactor, 3),
+            'market_price' => round($basePrice * $marketMultiplier, 2),
+            'final_price' => $finalPrice,
+            'confidence' => 0.55,
+            'signals' => $signals,
+            'features' => $features,
+            'price_range' => [
+                'low' => round($finalPrice * 0.95, 2),
+                'fair' => $finalPrice,
+                'high' => round($finalPrice * 1.05, 2),
+            ],
+            'fallback' => true,
+            'runtime_ms' => $runtimeMs,
+        ];
+
+        $result['log_payload'] = [
+            'features' => $features,
+            'signals' => $signals,
+            'multiplier' => $result['effective_multiplier'],
+            'confidence' => $result['confidence'],
+            'used_fallback' => true,
+            'runtime_ms' => $runtimeMs,
+            'extra' => [
+                'base_price' => $basePrice,
+            ],
+        ];
+
+        return $result;
+    }
+
+    private function deriveBasePrice(Product $product, array $signals): float
+    {
+        $candidates = array_filter([
+            $product->unit_price ?? null,
+            $signals['retail']['median'] ?? null,
+            $signals['wholesale']['median_price'] ?? null,
+        ], fn ($value) => $value !== null && $value > 0);
+
+        if (empty($candidates)) {
+            return round((float) ($product->unit_price ?? 100.0), 2);
+        }
+
+        return round(max(20.0, array_sum($candidates) / count($candidates)), 2);
+    }
+
+    private function logPredictionResult(Product $product, array $result, array $options = []): void
+    {
+        $payload = $result['log_payload'] ?? null;
+        if (!$payload) {
+            return;
+        }
+
+        try {
+            $this->predictionLogger->log([
+                'context' => $options['log_context'] ?? 'vendor_pricing',
+                'product_id' => $product->id,
+                'listing_id' => $options['listing_id'] ?? null,
+                'multiplier' => $payload['multiplier'] ?? null,
+                'confidence' => $payload['confidence'] ?? null,
+                'used_fallback' => $payload['used_fallback'] ?? false,
+                'runtime_ms' => $payload['runtime_ms'] ?? ($result['runtime_ms'] ?? null),
+                'features' => $payload['features'] ?? null,
+                'signals' => $payload['signals'] ?? null,
+                'extra' => ($payload['extra'] ?? []) + [
+                    'portfolio_factor' => $result['portfolio_factor'] ?? null,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('PricingService: Failed to log prediction', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

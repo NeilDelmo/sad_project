@@ -106,12 +106,19 @@ class VendorInventoryController extends Controller
             return back()->withErrors(['error' => 'This inventory item is not available for listing.']);
         }
 
-        // Get ML dynamic pricing
-        $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product, auth()->user());
+        // Get ML dynamic pricing (anchored on purchase cost)
+        $pricingResult = $this->pricingService->calculateDynamicPrice(
+            $inventory->product,
+            auth()->user(),
+            [
+                'log_context' => 'vendor_inventory_preview',
+                'base_price' => (float) $inventory->purchase_price,
+            ]
+        );
         
         $baseCost = $inventory->purchase_price;
         $dynamicPrice = $pricingResult['final_price'];
-        $mlMultiplier = $pricingResult['multiplier'];
+        $mlMultiplier = $pricingResult['effective_multiplier'] ?? $pricingResult['market_multiplier'] ?? 1.0;
         $mlConfidence = $pricingResult['confidence'];
         
         // Calculate commission breakdown (10% platform fee)
@@ -147,11 +154,18 @@ class VendorInventoryController extends Controller
 
         DB::beginTransaction();
         try {
-            // Get ML dynamic pricing
-            $pricingResult = $this->pricingService->calculateDynamicPrice($inventory->product, auth()->user());
+            // Get ML dynamic pricing anchored on purchase cost
+            $pricingResult = $this->pricingService->calculateDynamicPrice(
+                $inventory->product,
+                auth()->user(),
+                [
+                    'log_context' => 'vendor_inventory_listing',
+                    'base_price' => (float) $inventory->purchase_price,
+                ]
+            );
             
             $baseCost = $inventory->purchase_price;
-            $mlMultiplier = $pricingResult['multiplier'];
+            $mlMultiplier = $pricingResult['effective_multiplier'] ?? $pricingResult['market_multiplier'] ?? 1.0;
             $dynamicPrice = $pricingResult['final_price'];
             $mlConfidence = $pricingResult['confidence'];
             
@@ -172,7 +186,7 @@ class VendorInventoryController extends Controller
                 'final_price' => $dynamicPrice,
                 'ml_confidence' => $mlConfidence,
                 'asking_price' => $dynamicPrice, // Legacy compatibility
-                'demand_factor' => $pricingResult['features']['demand_factor'] ?? null,
+                'demand_factor' => $pricingResult['signals']['demand']['score'] ?? $pricingResult['features']['demand_factor'] ?? null,
                 'freshness_score' => $pricingResult['features']['freshness_score'] ?? null,
                 'listing_date' => now(),
                 'status' => 'active',

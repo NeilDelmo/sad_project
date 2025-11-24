@@ -90,6 +90,62 @@
             background: rgba(255, 255, 255, 0.15);
         }
         .nav-link:hover::before {
+
+                    @php
+                        $pricingLog = $offer->latestPricingLog;
+                    @endphp
+
+                    @if($pricingLog)
+                        @php
+                            $signals = $pricingLog->signals ?? [];
+                            $demandScore = $signals['demand']['score'] ?? null;
+                            $recentOrders = $signals['demand']['recent_retail_orders'] ?? null;
+                            $supplyPressure = $signals['supply']['pressure'] ?? null;
+                            $supplyCopy = $supplyPressure ? ($supplyPressure < 0.95 ? 'Tight supply' : ($supplyPressure > 1.15 ? 'Plenty of catch' : 'Balanced')) : null;
+                            $acceptanceRate = isset($signals['wholesale']['acceptance_rate']) ? round($signals['wholesale']['acceptance_rate'] * 100, 1) : null;
+                            $retailMedian = $signals['retail']['median'] ?? null;
+                        @endphp
+                        <div class="pricing-insights">
+                            <h6>
+                                <i class="fas fa-lightbulb"></i>
+                                Why this price?
+                            </h6>
+                            <div class="insight-grid">
+                                <div class="insight-item">
+                                    <div class="insight-label">Demand Pulse</div>
+                                    <div class="insight-value">{{ $demandScore ? number_format($demandScore, 2) . '×' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $recentOrders ? $recentOrders . ' retail orders (24h)' : 'Low recent retail data' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Supply Pressure</div>
+                                    <div class="insight-value">{{ $supplyPressure ? number_format($supplyPressure, 2) . '×' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $supplyCopy ?? 'Awaiting supply metrics' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Wholesale Acceptance</div>
+                                    <div class="insight-value">{{ $acceptanceRate !== null ? $acceptanceRate . '%' : 'n/a' }}</div>
+                                    <div class="insight-note">{{ $acceptanceRate !== null ? 'Accepted wholesale bids last week' : 'No recent wholesale clearing' }}</div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-label">Retail Median</div>
+                                    <div class="insight-value">{{ $retailMedian ? '₱' . number_format($retailMedian, 2) : 'n/a' }}</div>
+                                    <div class="insight-note">Recent consumer sales nearby category</div>
+                                </div>
+                            </div>
+                            <div class="insight-meta">
+                                <span class="badge bg-{{ $pricingLog->used_fallback ? 'warning' : 'success' }} text-dark" style="font-size: 0.7rem;">
+                                    {{ $pricingLog->used_fallback ? 'Heuristic fallback' : 'ML prediction' }}
+                                </span>
+                                @if($pricingLog->runtime_ms)
+                                    <span>Runtime: {{ $pricingLog->runtime_ms }}ms</span>
+                                @endif
+                                @if(!empty($pricingLog->extra['base_price']))
+                                    <span>Base price input: ₱{{ number_format($pricingLog->extra['base_price'], 2) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
             transform: translateX(0);
         }
         .nav-link.active {
@@ -393,6 +449,62 @@
             right: 0;
             height: 2px;
             background: #0075B5;
+        }
+
+        .pricing-insights {
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .pricing-insights h6 {
+            font-weight: 700;
+            color: #1B5E88;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .insight-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .insight-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            letter-spacing: 0.04em;
+        }
+
+        .insight-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .insight-note {
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .insight-meta {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #475569;
         }
     </style>
 </head>

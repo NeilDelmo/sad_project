@@ -7,6 +7,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableConract;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\PricingPredictionLog;
 
 class VendorOffer extends Model implements AuditableConract
 {
@@ -54,6 +57,16 @@ class VendorOffer extends Model implements AuditableConract
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function pricingLogs(): HasMany
+    {
+        return $this->hasMany(PricingPredictionLog::class, 'offer_id');
+    }
+
+    public function latestPricingLog(): HasOne
+    {
+        return $this->hasOne(PricingPredictionLog::class, 'offer_id')->latestOfMany();
     }
 
     public function scopePending($query)

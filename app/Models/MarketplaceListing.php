@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\PricingPredictionLog;
 use OwenIt\Auditing\Contracts\Auditable;
 
 class MarketplaceListing extends Model implements Auditable
@@ -73,6 +76,16 @@ class MarketplaceListing extends Model implements Auditable
     public function vendorInventory(): BelongsTo
     {
         return $this->belongsTo(VendorInventory::class);
+    }
+
+    public function pricingLogs(): HasMany
+    {
+        return $this->hasMany(PricingPredictionLog::class, 'listing_id');
+    }
+
+    public function latestPricingLog(): HasOne
+    {
+        return $this->hasOne(PricingPredictionLog::class, 'listing_id')->latestOfMany();
     }
 
     /**

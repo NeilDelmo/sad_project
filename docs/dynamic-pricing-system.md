@@ -87,6 +87,21 @@ python/
 └── pricing_model_report.json # Model accuracy metrics
 ```
 
+### Exporting Real Training Data
+```
+php artisan pricing:export-dataset --days=60 --limit=8000 --path=python/pricing_dataset.csv
+```
+- Reads recent `PricingPredictionLog` rows (fisherman + vendor contexts) and flattens market signal snapshots.
+- Outputs a CSV that already matches the feature schema consumed by the Python trainer (`freshness_score`, `demand_factor`, etc.).
+- Optional flags: `--days` window, `--limit` for sampling, `--path` for alternate destinations.
+
+### Retraining the Model
+1. Ensure Python deps are installed (`pip install -r python/requirements.txt`).
+2. Run `python python/train_pricing_model.py`.
+    - Loads the exported CSV when available and falls back to synthetic data otherwise.
+    - If the real dataset is small, the script blends in synthetic samples and saves the cleaned frame to `python/pricing_training_frame.csv`.
+    - Outputs an updated `pricing_model.pkl` plus refreshed metrics in `pricing_model_report.json` detailing dataset source, MAE, RMSE, and feature importances.
+
 ### **Service Layer**
 ```php
 FishermanPricingService::calculateFairPrice($product, $baseCost)

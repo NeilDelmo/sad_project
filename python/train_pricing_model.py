@@ -25,6 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "pricing_model.pkl"
 REPORT_PATH = BASE_DIR / "pricing_model_report.json"
 DATASET_PATH = BASE_DIR / "pricing_dataset.csv"
+TRAINING_FRAME_PATH = BASE_DIR / "pricing_training_frame.csv"
+
+MIN_REAL_ROWS = 500
+HYBRID_TARGET_ROWS = 3000
 
 # Feature names expected by predict_price.py
 MODEL_FEATURES = [
@@ -89,6 +93,62 @@ def generate_synthetic_dataset(n_samples: int = 5000) -> pd.DataFrame:
     return df
 
 
+def load_real_dataset(path: Path) -> pd.DataFrame | None:
+    """Load exported marketplace data if available and well-formed."""
+    if not path.exists():
+        print(f"⚠️ Real pricing dataset not found at {path}.")
+        return None
+
+    try:
+        df = pd.read_csv(path)
+    except Exception as exc:  # pragma: no cover - informative logging only
+        print(f"⚠️ Failed to read pricing dataset: {exc}")
+        return None
+
+    required_columns = MODEL_FEATURES + ["optimal_price_multiplier"]
+    missing = [col for col in required_columns if col not in df.columns]
+    if missing:
+        print(f"⚠️ Dataset missing required columns: {missing}")
+        return None
+
+    df = df.dropna(subset=required_columns).reset_index(drop=True)
+    for column in required_columns:
+        df[column] = pd.to_numeric(df[column], errors="coerce")
+
+    df = df.dropna(subset=required_columns).reset_index(drop=True)
+    if df.empty:
+        print("⚠️ Exported dataset had no usable rows after cleaning.")
+        return None
+
+    return df
+
+
+def prepare_training_frame() -> Tuple[pd.DataFrame, str]:
+    """Return a cleaned dataset and note whether it is real, hybrid, or synthetic."""
+    real_df = load_real_dataset(DATASET_PATH)
+    dataset_source = "real"
+
+    if real_df is None:
+        dataset_source = "synthetic-only"
+        df = generate_synthetic_dataset(n_samples=HYBRID_TARGET_ROWS)
+        # Persist so the dataset exists for future runs/inspection.
+        df.to_csv(DATASET_PATH, index=False)
+        print(f"💾 Synthetic dataset saved to {DATASET_PATH}")
+    else:
+        df = real_df
+        if len(real_df) < MIN_REAL_ROWS:
+            needed = max(HYBRID_TARGET_ROWS - len(real_df), MIN_REAL_ROWS)
+            synthetic = generate_synthetic_dataset(n_samples=needed)
+            df = pd.concat([real_df, synthetic], ignore_index=True)
+            dataset_source = "hybrid"
+
+    TRAINING_FRAME_PATH.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(TRAINING_FRAME_PATH, index=False)
+    print(f"📦 Training frame cached to {TRAINING_FRAME_PATH}")
+
+    return df, dataset_source
+
+
 def train_model(df: pd.DataFrame) -> Tuple[GradientBoostingRegressor, Dict]:
     """Train the pricing model and return metrics."""
     X = df[MODEL_FEATURES]
@@ -136,12 +196,10 @@ def train_model(df: pd.DataFrame) -> Tuple[GradientBoostingRegressor, Dict]:
 
 
 def main() -> None:
-    print("🔄 Generating synthetic pricing dataset...")
-    df = generate_synthetic_dataset(n_samples=5000)
-    
-    # Save dataset for reference
-    df.to_csv(DATASET_PATH, index=False)
-    print(f"💾 Dataset saved to {DATASET_PATH}")
+    df, dataset_source = prepare_training_frame()
+    print(
+        f"🔄 Training with {dataset_source} dataset containing {len(df):,} rows"
+    )
     
     print("🤖 Training Gradient Boosting pricing model...")
     model, metrics = train_model(df)
@@ -152,6 +210,8 @@ def main() -> None:
     print(f"✅ Model saved to {MODEL_PATH}")
     
     # Save metrics report
+    metrics["dataset_source"] = dataset_source
+    metrics["dataset_rows"] = int(len(df))
     REPORT_PATH.write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
     print(f"📊 Metrics report saved to {REPORT_PATH}")
     
