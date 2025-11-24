@@ -188,9 +188,28 @@ class RentalController extends Controller
                 ]);
             }
 
+            // Apply Fisherman Trust Discount
+            $discountAmount = 0;
+            $user = auth()->user();
+            if ($user->user_type === 'fisherman') {
+                $tier = $user->trust_tier ?? 'bronze';
+                $discountPercent = match($tier) {
+                    'platinum' => 0.10, // 10%
+                    'gold' => 0.05,     // 5%
+                    'silver' => 0.02,   // 2%
+                    default => 0,
+                };
+                
+                if ($discountPercent > 0) {
+                    $discountAmount = $totalPrice * $discountPercent;
+                    $totalPrice -= $discountAmount;
+                }
+            }
+
             // Update rental total price and deposit (30% of total)
             $rental->update([
                 'total_price' => $totalPrice,
+                'discount_amount' => $discountAmount,
                 'deposit_amount' => $totalPrice * 0.3,
             ]);
 

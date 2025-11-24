@@ -287,4 +287,5 @@ new Chart(userCtx, {
     }
 });
 </script>
-</x-app-layout>
+</body>
+</html>

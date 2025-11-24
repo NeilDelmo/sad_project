@@ -121,8 +121,17 @@ class VendorInventoryController extends Controller
         $mlMultiplier = $pricingResult['effective_multiplier'] ?? $pricingResult['market_multiplier'] ?? 1.0;
         $mlConfidence = $pricingResult['confidence'];
         
-        // Calculate commission breakdown (10% platform fee)
-        $platformFee = $dynamicPrice * config('marketplace.platform_commission_rate', 0.10);
+        // Calculate commission breakdown based on Trust Tier
+        $user = auth()->user();
+        $tier = $user->trust_tier ?? 'bronze';
+        $commissionRate = match($tier) {
+            'platinum' => 0.02, // 2%
+            'gold' => 0.05,     // 5%
+            'silver' => 0.08,   // 8%
+            default => config('marketplace.platform_commission_rate', 0.10), // 10%
+        };
+
+        $platformFee = $dynamicPrice * $commissionRate;
         $vendorProfit = $dynamicPrice - $baseCost - $platformFee;
 
         return view('vendor.inventory.create-listing', compact(
@@ -133,7 +142,9 @@ class VendorInventoryController extends Controller
             'mlConfidence',
             'platformFee',
             'vendorProfit',
-            'pricingResult'
+            'pricingResult',
+            'commissionRate',
+            'tier'
         ));
     }
 
@@ -169,8 +180,17 @@ class VendorInventoryController extends Controller
             $dynamicPrice = $pricingResult['final_price'];
             $mlConfidence = $pricingResult['confidence'];
             
-            // Calculate 10% platform commission
-            $platformFee = $dynamicPrice * config('marketplace.platform_commission_rate', 0.10);
+            // Calculate commission breakdown based on Trust Tier
+            $user = auth()->user();
+            $tier = $user->trust_tier ?? 'bronze';
+            $commissionRate = match($tier) {
+                'platinum' => 0.02, // 2%
+                'gold' => 0.05,     // 5%
+                'silver' => 0.08,   // 8%
+                default => config('marketplace.platform_commission_rate', 0.10), // 10%
+            };
+
+            $platformFee = $dynamicPrice * $commissionRate;
             $vendorProfit = $dynamicPrice - $baseCost - $platformFee;
 
             // Create marketplace listing

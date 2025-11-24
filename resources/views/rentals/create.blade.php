@@ -253,12 +253,14 @@
         const depositSpan = document.getElementById('deposit');
 
         const items = @json($cartItems);
+        const userTier = "{{ auth()->user()->trust_tier ?? 'bronze' }}";
+        const userType = "{{ auth()->user()->user_type }}";
 
         function calculateSummary() {
             const rentalDate = new Date(rentalDateInput.value);
             const returnDate = new Date(returnDateInput.value);
 
-            if (rentalDate && returnDate && returnDate > rentalDate) {
+            if (rentalDate && returnDate && returnDate >= rentalDate) {
                 const days = Math.ceil((returnDate - rentalDate) / (1000 * 60 * 60 * 24)) + 1;
                 durationSpan.textContent = days + ' day' + (days > 1 ? 's' : '');
 
@@ -267,6 +269,33 @@
                     subtotal += item.product.rental_price_per_day * item.quantity * days;
                 });
 
+                // Calculate discount
+                let discount = 0;
+                let discountPercent = 0;
+                if (userType === 'fisherman') {
+                    if (userTier === 'platinum') discountPercent = 0.10;
+                    else if (userTier === 'gold') discountPercent = 0.05;
+                    else if (userTier === 'silver') discountPercent = 0.02;
+                }
+
+                if (discountPercent > 0) {
+                    discount = subtotal * discountPercent;
+                    subtotal -= discount;
+                    
+                    // Update UI to show discount
+                    const discountRow = document.getElementById('discount-row');
+                    if (!discountRow) {
+                        const row = document.createElement('div');
+                        row.id = 'discount-row';
+                        row.className = 'summary-row';
+                        row.style.color = '#16a34a';
+                        row.innerHTML = `<span>Trust Discount (${(discountPercent * 100)}%):</span><span id="discount-amount">-₱${discount.toFixed(2)}</span>`;
+                        document.querySelector('.summary-total').before(row);
+                    } else {
+                        document.getElementById('discount-amount').textContent = '-₱' + discount.toFixed(2);
+                    }
+                }
+
                 const deposit = subtotal * 0.3;
                 totalSpan.textContent = '₱' + subtotal.toFixed(2);
                 depositSpan.textContent = '₱' + deposit.toFixed(2);
@@ -274,6 +303,8 @@
                 durationSpan.textContent = 'Please select dates';
                 totalSpan.textContent = '₱0.00';
                 depositSpan.textContent = '₱0.00';
+                const discountRow = document.getElementById('discount-row');
+                if (discountRow) discountRow.remove();
             }
         }
 

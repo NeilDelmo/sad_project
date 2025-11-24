@@ -438,7 +438,14 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Total Price</div>
-                            <div class="detail-value">₱{{ number_format($rental->total_price, 2) }}</div>
+                            <div class="detail-value">
+                                ₱{{ number_format($rental->total_price, 2) }}
+                                @if($rental->discount_amount > 0)
+                                    <div style="font-size: 12px; color: #16a34a;">
+                                        <i class="fa-solid fa-tag"></i> Saved ₱{{ number_format($rental->discount_amount, 2) }}
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Deposit (30%)</div>

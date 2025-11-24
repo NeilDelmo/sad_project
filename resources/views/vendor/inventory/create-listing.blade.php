@@ -390,7 +390,12 @@
                 <div class="breakdown-row">
                     <span class="breakdown-label">
                         Platform Fee
-                        <span style="margin-left: 8px; font-size: 11px; color: #999;">(10%)</span>
+                        <span style="margin-left: 8px; font-size: 11px; color: #999;">({{ $commissionRate * 100 }}%)</span>
+                        @if($commissionRate < 0.10)
+                            <span style="margin-left: 5px; padding: 2px 6px; background: #dcfce7; color: #166534; font-size: 10px; border-radius: 10px; font-weight: bold;">
+                                {{ ucfirst($tier) }} Benefit Applied
+                            </span>
+                        @endif
                     </span>
                     <span class="breakdown-value" style="color: #dc2626;">-₱{{ number_format($platformFee, 2) }}</span>
                 </div>
