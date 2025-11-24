@@ -521,18 +521,13 @@
                     @endif
                 </div>
             @else
-                <form class="d-flex mt-3" action="{{ url('/dashboard') }}" method="GET">
-                    <input
-                        class="form-control email-input text-font"
-                        style="font-size: 17px"
-                        type="email"
-                        placeholder="name@email.com"
-                        name="email"
-                    />
-                    <button class="btn btn-style btn-hero ms-2 btn-fill" type="submit">
-                        Dive In
-                    </button>
-                </form>
+                <div class="d-flex mt-3 justify-content-center">
+                    @if(Auth::user()->user_type === 'buyer')
+                        <a href="{{ route('marketplace.index') }}" class="btn btn-style btn-hero">Go to Marketplace</a>
+                    @else
+                        <a href="{{ url('/dashboard') }}" class="btn btn-style btn-hero">Go to Dashboard</a>
+                    @endif
+                </div>
             @endguest
         </div>
     </div>
