@@ -164,6 +164,41 @@
             color: #374151;
         }
 
+        .status-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .status-filter a {
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            color: #374151;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+        }
+
+        .status-filter a.active {
+            background: #1B5E88;
+            color: #fff;
+            border-color: #1B5E88;
+        }
+
+        .status-filter-count {
+            font-size: 12px;
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
         .lock-indicator {
             display: inline-flex;
             align-items: center;
@@ -218,6 +253,30 @@
                 <i class="fa-solid fa-circle-check"></i> {{ session('success') }}
             </div>
         @endif
+
+        @php
+            $statusFilter = $statusFilter ?? null;
+            $statusCounts = $statusCounts ?? collect();
+            $statusLookup = [
+                'available' => 'Available',
+                'maintenance' => 'Maintenance',
+                'retired' => 'Retired',
+            ];
+        @endphp
+
+        <div class="status-filter">
+            @php $allActive = empty($statusFilter); @endphp
+            <a href="{{ route('rentals.admin.products') }}" class="{{ $allActive ? 'active' : '' }}">
+                All
+                <span class="status-filter-count">{{ $statusCounts->sum() }}</span>
+            </a>
+            @foreach($statusLookup as $key => $label)
+                <a href="{{ route('rentals.admin.products', ['status' => $key]) }}" class="{{ $statusFilter === $key ? 'active' : '' }}">
+                    {{ $label }}
+                    <span class="status-filter-count">{{ $statusCounts->get($key, 0) }}</span>
+                </a>
+            @endforeach
+        </div>
 
         <div class="products-grid">
             @foreach($products as $product)

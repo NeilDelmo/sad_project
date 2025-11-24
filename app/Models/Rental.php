@@ -23,6 +23,9 @@ class Rental extends Model implements Auditable
         'deposit_paid',
         'damage_fee',
         'lost_fee',
+        'damage_fee_waived',
+        'lost_fee_waived',
+        'waive_reason',
         'total_charges',
         'amount_due',
         'payment_status',
@@ -62,6 +65,8 @@ class Rental extends Model implements Auditable
         'total_charges' => 'decimal:2',
         'amount_due' => 'decimal:2',
         'late_fee' => 'decimal:2',
+        'damage_fee_waived' => 'boolean',
+        'lost_fee_waived' => 'boolean',
     ];
 
     public function user(): BelongsTo

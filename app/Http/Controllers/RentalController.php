@@ -464,7 +464,14 @@ class RentalController extends Controller
             'items.*.lost' => 'required|integer|min:0',
             'items.*.photos' => 'nullable|array|max:5',
             'items.*.photos.*' => 'image|mimes:jpeg,jpg,png,webp|max:5120',
+            'waive_damage_fees' => 'nullable|boolean',
+            'waive_lost_fees' => 'nullable|boolean',
+            'waive_reason' => 'nullable|string|max:500',
         ]);
+
+        $waiveDamage = $request->boolean('waive_damage_fees');
+        $waiveLost = $request->boolean('waive_lost_fees');
+        $waiveReason = trim((string) $request->input('waive_reason', ''));
 
         DB::beginTransaction();
         try {
@@ -586,11 +593,33 @@ class RentalController extends Controller
                         $damageFee += ($item->price_per_day * 10) * $damageCount * 0.5; // estimate full price as 10x daily
                     }
                     // Lost fee: 100% of item price per lost unit
+
+                if ($waiveDamage) {
+                    $damageFee = 0;
+                }
+                if ($waiveLost) {
+                    $lostFee = 0;
+                }
                     $lostCount = (int)($item->lost_count ?? 0);
                     if ($lostCount > 0) {
                         $lostFee += ($item->price_per_day * 10) * $lostCount;
+
+                $waiveNotes = [];
+                if ($waiveDamage) { $waiveNotes[] = 'damage fees waived'; }
+                if ($waiveLost) { $waiveNotes[] = 'lost fees waived'; }
+                $waiveNoteText = null;
+                if (!empty($waiveNotes)) {
+                    $waiveNoteText = '[' . now()->format('Y-m-d H:i') . '] ' . ucfirst(implode(' & ', $waiveNotes)) . ' by ' . auth()->user()->name;
+                    if ($waiveReason !== '') {
+                        $waiveNoteText .= ' (Reason: ' . $waiveReason . ')';
                     }
                 }
+                $adminNotes = $rental->admin_notes ?? '';
+                if ($waiveNoteText) {
+                    $adminNotes = $adminNotes ? $adminNotes . "\n\n" . $waiveNoteText : $waiveNoteText;
+                }
+                    }
+                $rental->update([
                 
                 $totalCharges = $rental->total_price + $lateFee + $damageFee + $lostFee;
                 $amountDue = max(0, $totalCharges - ($rental->deposit_paid ?? 0));
@@ -599,6 +628,10 @@ class RentalController extends Controller
                     'status' => 'completed',
                     'returned_at' => now(),
                     'late_fee' => $lateFee,
+                    'damage_fee_waived' => $waiveDamage,
+                    'lost_fee_waived' => $waiveLost,
+                    'waive_reason' => $waiveReason ?: null,
+                    'admin_notes' => $adminNotes,
                     'damage_fee' => $damageFee,
                     'lost_fee' => $lostFee,
                     'total_charges' => $totalCharges,
@@ -626,22 +659,38 @@ class RentalController extends Controller
     /**
      * Admin: View all rental products (inventory)
      */
-    public function adminProducts()
+    public function adminProducts(Request $request)
     {
         if (!auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $products = Product::where('is_rentable', true)
+        $statusFilter = $request->query('status');
+        $allowedStatuses = ['available', 'maintenance', 'retired'];
+
+        $productsQuery = Product::where('is_rentable', true)
             ->withCount(['rentalItems as active_rental_items_count' => function ($query) {
                 $query->whereHas('rental', function ($rentals) {
                     $rentals->whereIn('status', self::ACTIVE_RENTAL_STATUSES);
                 });
-            }])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            }]);
 
-        return view('rentals.admin.products', compact('products'));
+        if ($statusFilter && in_array($statusFilter, $allowedStatuses, true)) {
+            $productsQuery->where('equipment_status', $statusFilter);
+        }
+
+        $products = $productsQuery->orderBy('created_at', 'desc')->get();
+
+        $statusCounts = Product::where('is_rentable', true)
+            ->select('equipment_status', DB::raw('COUNT(*) as total'))
+            ->groupBy('equipment_status')
+            ->pluck('total', 'equipment_status');
+
+        return view('rentals.admin.products', [
+            'products' => $products,
+            'statusFilter' => $statusFilter,
+            'statusCounts' => $statusCounts,
+        ]);
     }
 
     /**
@@ -697,6 +746,13 @@ class RentalController extends Controller
                     ->withInput()
                     ->withErrors(['error' => 'Stock and equipment status cannot be changed while this item has pending or active rentals. Finish or cancel those rentals before updating these fields.']);
             }
+        }
+
+        $hasOpenMaintenance = ($product->equipment_status === 'maintenance') && (($product->maintenance_count ?? 0) > 0);
+        if ($hasOpenMaintenance && $validated['equipment_status'] === 'available') {
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'This equipment still has units under maintenance. Mark it as repaired from the maintenance dashboard before switching back to Available.']);
         }
 
         $updates = [

@@ -542,6 +542,30 @@
             <form id="returnForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div id="returnItems"></div>
+
+                <div style="margin-top: 15px; background: #fff7ed; border: 1px solid #fdba74; border-radius: 10px; padding: 15px;">
+                    <div style="font-weight:700; color:#b45309; margin-bottom:10px; display:flex; gap:8px; align-items:center;">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                        Settlement Options
+                    </div>
+                    <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                        <label style="display:flex; align-items:center; gap:6px; font-weight:600; color:#92400e;">
+                            <input type="checkbox" name="waive_damage_fees" value="1" onchange="toggleWaiverReason()">
+                            Waive damage fees
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; font-weight:600; color:#92400e;">
+                            <input type="checkbox" name="waive_lost_fees" value="1" onchange="toggleWaiverReason()">
+                            Waive lost gear fees
+                        </label>
+                    </div>
+                    <div id="waiveReasonGroup" style="margin-top:12px; display:none;">
+                        <label style="display:block; font-weight:600; color:#92400e; margin-bottom:6px;">Internal reason (optional)</label>
+                        <textarea name="waive_reason" rows="3" style="width:100%; padding:10px; border:1px solid #fcd34d; border-radius:8px; font-family:inherit;" placeholder="Explain why fees are waived (not shown to renter)"></textarea>
+                    </div>
+                    <p style="font-size:12px; color:#b45309; margin-top:10px;">
+                        Waived fees will be noted in the rental history so the fisherman knows the admin applied a courtesy adjustment.
+                    </p>
+                </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
                     <button type="submit" class="btn btn-approve">
@@ -652,6 +676,7 @@
             
             itemsContainer.innerHTML = html;
             modal.style.display = 'flex';
+            toggleWaiverReason();
 
                 function updateCounts(itemId, maxQty) {
                     const g = parseInt(document.querySelector(`[name="items[${itemId}][good]"]`).value || '0');
@@ -678,6 +703,15 @@
         
         function closeReturnModal() {
             document.getElementById('returnModal').style.display = 'none';
+        }
+
+        function toggleWaiverReason() {
+            const damage = document.querySelector('input[name="waive_damage_fees"]');
+            const lost = document.querySelector('input[name="waive_lost_fees"]');
+            const group = document.getElementById('waiveReasonGroup');
+            if (!group) { return; }
+            const shouldShow = (damage && damage.checked) || (lost && lost.checked);
+            group.style.display = shouldShow ? 'block' : 'none';
         }
 
         function showRejectModal(rentalId) {

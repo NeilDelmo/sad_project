@@ -271,6 +271,59 @@
             font-weight: bold;
             color: #ffc107;
         }
+
+        .settlement-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 15px;
+        }
+
+        .settlement-card h4 {
+            margin: 0 0 12px 0;
+            color: #1B5E88;
+            font-size: 18px;
+        }
+
+        .settlement-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        .settlement-row:last-child {
+            border-bottom: none;
+        }
+
+        .settlement-row span {
+            color: #475569;
+        }
+
+        .settlement-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 16px;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .waive-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ecfccb;
+            color: #365314;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
