@@ -98,9 +98,10 @@ class OrdersController extends Controller
         ]);
 
         // NOW update inventory to in_stock when vendor confirms receipt
-        \App\Models\VendorInventory::where('order_id', $order->id)
-            ->where('status', 'pending_delivery')
-            ->update(['status' => 'in_stock']);
+        $inventory = \App\Models\VendorInventory::where('order_id', $order->id)->first();
+        if ($inventory && $inventory->status !== 'in_stock') {
+            $inventory->update(['status' => 'in_stock']);
+        }
 
         $this->notifyAndMessage($order, "Order #{$order->id} has been confirmed received.");
 

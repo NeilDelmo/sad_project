@@ -663,22 +663,23 @@
                         @endif
                         {{ $offer->product->name ?? 'Product' }}
                     </div>
+                    @php $unitPrice = $offer->fisherman_counter_price ?? $offer->offered_price; @endphp
                     <div class="offer-details">
                         Fisherman: {{ $offer->fisherman->username ?? $offer->fisherman->email }}
-                        • {{ $offer->quantity }} kg @ ₱{{ number_format($offer->offered_price, 2) }}/kg
+                        • {{ $offer->quantity }} kg @ ₱{{ number_format($unitPrice, 2) }}/kg
                         • <span class="status-badge status-{{ $offer->status }}">{{ ucfirst($offer->status) }}</span>
                         <span style="color: #999; margin-left: 10px;">{{ $offer->updated_at->diffForHumans() }}</span>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div class="offer-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($offer->offered_price * $offer->quantity, 2) }}</div>
+                    <div class="offer-price" style="color: {{ $offer->status === 'accepted' ? '#16a34a' : ($offer->status === 'rejected' ? '#dc2626' : '#666') }};">₱{{ number_format($unitPrice * $offer->quantity, 2) }}</div>
                     <button class="btn-view-details" 
                         data-id="{{ $offer->id }}"
                         data-product="{{ $offer->product->name ?? 'Product' }}"
                         data-fisherman="{{ $offer->fisherman->username ?? $offer->fisherman->email }}"
                         data-quantity="{{ $offer->quantity }}"
-                        data-unit-price="{{ $offer->offered_price }}"
-                        data-total="{{ $offer->offered_price * $offer->quantity }}"
+                        data-unit-price="{{ $unitPrice }}"
+                        data-total="{{ $unitPrice * $offer->quantity }}"
                         data-date="{{ $offer->updated_at->format('F d, Y h:i A') }}"
                         data-status="{{ $offer->status }}"
                         onclick="showReceipt({

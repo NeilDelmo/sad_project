@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\VendorInventory;
 use App\Models\MarketplaceListing;
+use App\Models\Order;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -109,6 +110,11 @@ class VendorInventoryController extends Controller
     {
         $this->authorize('view', $inventory);
 
+        if ($inventory->status === 'pending_delivery' && $inventory->order && $inventory->order->status === Order::STATUS_RECEIVED) {
+            $inventory->update(['status' => 'in_stock']);
+            $inventory->refresh();
+        }
+
         if ($inventory->status === 'pending_delivery') {
             return back()->withErrors(['error' => 'Cannot list this product yet. The fisherman must deliver the order first.']);
         }
@@ -166,6 +172,11 @@ class VendorInventoryController extends Controller
     public function storeListing(Request $request, VendorInventory $inventory)
     {
         $this->authorize('view', $inventory);
+
+        if ($inventory->status === 'pending_delivery' && $inventory->order && $inventory->order->status === Order::STATUS_RECEIVED) {
+            $inventory->update(['status' => 'in_stock']);
+            $inventory->refresh();
+        }
 
         $request->validate([
             'quantity' => 'required|integer|min:1|max:' . $inventory->quantity,
