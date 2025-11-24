@@ -522,11 +522,11 @@
                         <div class="alert alert-info mb-3">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fas fa-info-circle"></i>
-                                <strong>Stock Status:</strong> {{ $offer->product->stock_quantity }} {{ $offer->product->unit_of_measure }} available
+                                <strong>Stock Remaining:</strong> {{ $offer->product->stock_quantity }} {{ $offer->product->unit_of_measure }}
                                 @if($offer->canBeFulfilled())
-                                    → <span class="text-success fw-bold">{{ $offer->product->stock_quantity - $offer->quantity }} {{ $offer->product->unit_of_measure }} remaining after this bid</span>
+                                    → <span class="text-success fw-bold">{{ $offer->product->stock_quantity - $offer->quantity }} {{ $offer->product->unit_of_measure }} left after this sale</span>
                                 @else
-                                    → <span class="text-danger fw-bold">Not enough stock to fulfill this bid</span>
+                                    → <span class="text-danger fw-bold">Not enough stock</span>
                                 @endif
                             </div>
                         </div>
@@ -595,7 +595,7 @@
                                     <div style="font-size: 1.1rem; font-weight: 700; color: #0075B5;">₱{{ number_format($suggestedPrice, 2) }}</div>
                                 </div>
                                 <div>
-                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Difference</div>
+                                    <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 4px;">Gap</div>
                                     <div style="font-size: 1.1rem; font-weight: 700; color: {{ $priceDiff >= 0 ? '#28a745' : '#dc3545' }};">
                                         {{ $priceDiff >= 0 ? '+' : '' }}₱{{ number_format($priceDiff, 2) }}
                                         <span style="font-size: 0.85rem;">({{ number_format($priceDiffPercent, 1) }}%)</span>
@@ -640,26 +640,28 @@
                             </h6>
                             <div class="insight-grid">
                                 <div class="insight-item">
-                                    <div class="insight-label">Demand Pulse</div>
+                                    <div class="insight-label">Buyer Interest</div>
                                     <div class="insight-value">{{ $demandScore ? number_format($demandScore, 2) . '×' : 'n/a' }}</div>
                                     <div class="insight-note">{{ $recentOrders ? $recentOrders . ' retail orders (24h)' : 'Low recent retail data' }}</div>
                                 </div>
                                 <div class="insight-item">
-                                    <div class="insight-label">Supply Pressure</div>
+                                    <div class="insight-label">Market Supply</div>
                                     <div class="insight-value">{{ $supplyPressure ? number_format($supplyPressure, 2) . '×' : 'n/a' }}</div>
                                     <div class="insight-note">{{ $supplyCopy ?? 'Awaiting supply metrics' }}</div>
                                 </div>
                                 <div class="insight-item">
-                                    <div class="insight-label">Wholesale Acceptance</div>
+                                    <div class="insight-label">Bid Success Rate</div>
                                     <div class="insight-value">{{ $acceptanceRate !== null ? $acceptanceRate . '%' : 'n/a' }}</div>
                                     <div class="insight-note">{{ $acceptanceRate !== null ? 'Accepted wholesale bids last week' : 'No recent wholesale clearing' }}</div>
                                 </div>
                                 <div class="insight-item">
-                                    <div class="insight-label">Retail Median</div>
+                                    <div class="insight-label">Avg. Store Price</div>
                                     <div class="insight-value">{{ $retailMedian ? '₱' . number_format($retailMedian, 2) : 'n/a' }}</div>
                                     <div class="insight-note">Recent consumer sales nearby category</div>
                                 </div>
                             </div>
+                            {{-- Debug info hidden for production --}}
+                            {{-- 
                             <div class="insight-meta">
                                 <span class="badge bg-{{ $pricingLog->used_fallback ? 'warning' : 'success' }} text-dark" style="font-size: 0.7rem;">
                                     {{ $pricingLog->used_fallback ? 'Heuristic fallback' : 'ML prediction' }}
@@ -671,6 +673,7 @@
                                     <span>Base price input: ₱{{ number_format($pricingLog->extra['base_price'], 2) }}</span>
                                 @endif
                             </div>
+                            --}}
                         </div>
                     @endif
 

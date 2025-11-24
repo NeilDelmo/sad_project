@@ -615,6 +615,126 @@ class RentalController extends Controller
     }
 
     /**
+     * Admin: View all rental products (inventory)
+     */
+    public function adminProducts()
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $products = Product::where('is_rentable', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('rentals.admin.products', compact('products'));
+    }
+
+    /**
+     * Admin: Show form to edit a rental product
+     */
+    public function editProduct(Product $product)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        if (!$product->is_rentable) {
+            abort(404, 'Not a rental product');
+        }
+
+        return view('rentals.admin.edit_product', compact('product'));
+    }
+
+    /**
+     * Admin: Update a rental product
+     */
+    public function updateProduct(Request $request, Product $product)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'rental_price_per_day' => 'required|numeric|min:0',
+            'rental_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'equipment_status' => 'required|in:available,maintenance,retired',
+        ]);
+
+        $updates = [
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'rental_price_per_day' => $validated['rental_price_per_day'],
+            'rental_stock' => $validated['rental_stock'],
+            'equipment_status' => $validated['equipment_status'],
+        ];
+
+        if ($request->hasFile('image')) {
+            $updates['image_path'] = $request->file('image')->store('products', 'public');
+        }
+
+        $product->update($updates);
+
+        return redirect()->route('rentals.admin.products')->with('success', 'Rental product updated successfully.');
+    }
+
+    /**
+     * Admin: Show form to create a new rental product
+     */
+    public function createProduct()
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+        return view('rentals.admin.create_product');
+    }
+
+    /**
+     * Admin: Store a new rental product
+     */
+    public function storeProduct(Request $request)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'rental_price_per_day' => 'required|numeric|min:0',
+            'rental_stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $gearCategory = ProductCategory::firstOrCreate(['name' => 'Gear']);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
+
+        Product::create([
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'unit_price' => 0, // Not for sale
+            'available_quantity' => 0, // Not for sale
+            'category_id' => $gearCategory->id,
+            'image_path' => $imagePath,
+            'is_rentable' => true,
+            'rental_price_per_day' => $validated['rental_price_per_day'],
+            'rental_stock' => $validated['rental_stock'],
+            'equipment_status' => 'available',
+            'supplier_id' => auth()->id(), // Admin created
+            'status' => 'active',
+        ]);
+
+        return redirect()->route('rentals.admin.index')->with('success', 'Rental product created successfully.');
+    }
+
+    /**
      * Admin: View all rentals for management
      */
     public function adminIndex()

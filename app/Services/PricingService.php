@@ -19,7 +19,7 @@ class PricingService
     public function calculateDynamicPrice(Product $product, ?User $vendor = null, array $options = []): array
     {
         $product->loadMissing('category');
-        $signals = $this->marketSignals->forProduct($product);
+        $signals = $this->marketSignals->forProduct($product, $options);
         $features = $this->extractPricingFeatures($product, $vendor, $signals);
         $basePrice = $options['base_price'] ?? $this->deriveBasePrice($product, $signals);
         $portfolioFactor = $vendor ? $this->calculateVendorPortfolioFactor($vendor) : 1.0;

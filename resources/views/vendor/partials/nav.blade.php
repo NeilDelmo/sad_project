@@ -7,6 +7,16 @@
         </a>
         @if(Auth::check() && Auth::user()->user_type === 'vendor')
             @include('components.trust-badge', ['score'=>Auth::user()->trust_score,'tier'=>Auth::user()->trust_tier,'compact'=>false])
+            
+            @if(Auth::user()->hasVerifiedEmail())
+                <div class="verification-badge verified" title="Account Verified">
+                    <i class="fa-solid fa-circle-check"></i> Verified
+                </div>
+            @else
+                <div class="verification-badge unverified" title="Email Unverified">
+                    <i class="fa-solid fa-circle-exclamation"></i> Unverified
+                </div>
+            @endif
         @endif
     </div>
 
@@ -93,6 +103,33 @@
   .nav-logo {
     height: 40px;
     width: auto;
+  }
+
+  .verification-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .verification-badge.verified {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #dcfce7;
+  }
+
+  .verification-badge.unverified {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fee2e2;
   }
 
   .nav-links {

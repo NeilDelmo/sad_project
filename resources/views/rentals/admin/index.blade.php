@@ -279,9 +279,16 @@
 
     <div class="container">
         <!-- Page Header -->
-        <div class="page-header">
-            <div class="page-title">🔧 Rental Management</div>
-            <div class="page-subtitle">Approve or reject equipment rental requests from fishermen</div>
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div class="page-title">🔧 Rental Management</div>
+                <div class="page-subtitle">Approve or reject equipment rental requests from fishermen</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="{{ route('rentals.admin.products') }}" class="btn btn-approve" style="background: #1B5E88; text-decoration: none;">
+                    <i class="fa-solid fa-boxes-stacked"></i> Manage Inventory
+                </a>
+            </div>
         </div>
 
         <!-- Success/Error Messages -->

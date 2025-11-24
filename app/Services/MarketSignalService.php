@@ -25,13 +25,17 @@ class MarketSignalService
     /**
      * Aggregate recent market signals for a product.
      */
-    public function forProduct(Product $product): array
+    public function forProduct(Product $product, array $options = []): array
     {
         $cacheKey = sprintf(
             'market_signals:%d:%s',
             $product->id,
             optional($product->updated_at)?->timestamp ?? 'na'
         );
+
+        if ($options['skip_cache'] ?? false) {
+            $this->cache->forget($cacheKey);
+        }
 
         return $this->cache->remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($product) {
             return [
@@ -113,6 +117,18 @@ class MarketSignalService
             ->whereHas('listing', fn ($query) => $query->where('product_id', $product->id))
             ->count();
 
+        // Fallback/Boost: Check category-wide demand if specific product demand is low
+        // This ensures "Bangus" benefits from "Milkfish" sales (Category Resilience)
+        $categoryOrders = 0;
+        if ($recentRetailOrders < 5) {
+            $categoryOrders = CustomerOrder::query()
+                ->where('created_at', '>=', $windowStart)
+                ->whereHas('listing.product', fn ($query) => $query->where('category_id', $product->category_id))
+                ->count();
+        }
+
+        $effectiveOrders = max($recentRetailOrders, $categoryOrders * 0.8); // 80% weight to category siblings
+
         $recentWholesaleOffers = VendorOffer::query()
             ->where('product_id', $product->id)
             ->where('created_at', '>=', $windowStart)
@@ -124,13 +140,13 @@ class MarketSignalService
             ->count();
 
         $score = 1.0
-            + ($recentRetailOrders * 0.05)
+            + ($effectiveOrders * 0.05)
             + ($recentWholesaleOffers * 0.02)
             - (max($activeListings - 5, 0) * 0.01);
 
         return [
             'score' => round(max(0.5, min(2.0, $score)), 2),
-            'recent_retail_orders' => $recentRetailOrders,
+            'recent_retail_orders' => (int) $effectiveOrders,
             'recent_wholesale_offers' => $recentWholesaleOffers,
             'active_listings' => $activeListings,
         ];

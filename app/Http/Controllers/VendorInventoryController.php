@@ -113,6 +113,7 @@ class VendorInventoryController extends Controller
             [
                 'log_context' => 'vendor_inventory_preview',
                 'base_price' => (float) $inventory->purchase_price,
+                'skip_cache' => true, // Force fresh signals for demo
             ]
         );
         

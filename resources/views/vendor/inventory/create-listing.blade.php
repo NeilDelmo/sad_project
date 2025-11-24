@@ -429,22 +429,22 @@
             <h3>Why this AI price?</h3>
             <div class="insight-grid" style="margin-bottom: 1rem;">
                 <div class="insight-pill">
-                    <div class="label">Demand pulse</div>
+                    <div class="label">Buyer Interest</div>
                     <div class="value">{{ isset($signals['demand']['score']) ? number_format($signals['demand']['score'], 2) . '×' : 'n/a' }}</div>
                     <div style="font-size: 0.8rem; color: #475569;">{{ $signals['demand']['recent_retail_orders'] ?? 0 }} retail orders (24h)</div>
                 </div>
                 <div class="insight-pill">
-                    <div class="label">Supply pressure</div>
+                    <div class="label">Market Supply</div>
                     <div class="value">{{ isset($signals['supply']['pressure']) ? number_format($signals['supply']['pressure'], 2) . '×' : 'n/a' }}</div>
                     <div style="font-size: 0.8rem; color: #475569;">{{ $signals['supply']['total_supply'] ?? '—' }} kg observed</div>
                 </div>
                 <div class="insight-pill">
-                    <div class="label">Wholesale acceptance</div>
+                    <div class="label">Bid Success Rate</div>
                     <div class="value">{{ isset($signals['wholesale']['acceptance_rate']) ? number_format($signals['wholesale']['acceptance_rate'] * 100, 1) . '%' : 'n/a' }}</div>
                     <div style="font-size: 0.8rem; color: #475569;">Cleared bids last 7 days</div>
                 </div>
                 <div class="insight-pill">
-                    <div class="label">Retail median</div>
+                    <div class="label">Avg. Store Price</div>
                     <div class="value">{{ isset($signals['retail']['median']) ? '₱' . number_format($signals['retail']['median'], 2) : 'n/a' }}</div>
                     <div style="font-size: 0.8rem; color: #475569;">Latest marketplace sales</div>
                 </div>
@@ -456,7 +456,7 @@
                     <li>Confidence {{ round(($pricingResult['confidence'] ?? 0) * 100, 1) }}% → aim between ₱{{ number_format($priceBand['low'], 2) }} and ₱{{ number_format($priceBand['high'], 2) }} per kg.</li>
                 @endif
                 @if($pricingResult['fallback'] ?? false)
-                    <li><strong>Heads up:</strong> signals-only fallback was used (model offline). Check comps before publishing.</li>
+                    <li><strong>Note:</strong> Using standard market rates (AI offline).</li>
                 @endif
             </ul>
         </div>

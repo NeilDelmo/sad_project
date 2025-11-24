@@ -255,6 +255,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Admin rental management
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('rentals.admin.index');
+    Route::get('/admin/rentals/products', [RentalController::class, 'adminProducts'])->name('rentals.admin.products'); // New route
+    Route::get('/admin/rentals/products/create', [RentalController::class, 'createProduct'])->name('rentals.admin.products.create');
+    Route::post('/admin/rentals/products', [RentalController::class, 'storeProduct'])->name('rentals.admin.products.store');
+    Route::get('/admin/rentals/products/{product}/edit', [RentalController::class, 'editProduct'])->name('rentals.admin.products.edit'); // New route
+    Route::put('/admin/rentals/products/{product}', [RentalController::class, 'updateProduct'])->name('rentals.admin.products.update'); // New route
     Route::post('/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('rentals.approve');
     Route::post('/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('rentals.reject');
     Route::post('/rentals/{rental}/activate', [RentalController::class, 'activate'])->name('rentals.activate');
