@@ -150,7 +150,6 @@
 </head>
 
 <body>
-    @include('partials.toast-notifications')
     @include('partials.message-notification')
 
     <!-- Navbar -->
