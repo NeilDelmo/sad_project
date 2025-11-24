@@ -1,3 +1,68 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.trust-badge {
+	--trust-bg: linear-gradient(135deg, #0ea5e9, #0369a1);
+	--trust-fg: #f8fafc;
+	--trust-chip: #bae6fd;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	background: var(--trust-bg);
+	color: var(--trust-fg);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+	white-space: nowrap;
+}
+
+.trust-badge__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.15);
+	font-size: 0.65rem;
+	color: var(--trust-fg);
+}
+
+.trust-badge__score {
+	background: var(--trust-chip);
+	color: #0b1120;
+	padding: 2px 6px;
+	border-radius: 12px;
+	font-weight: 600;
+	min-width: 32px;
+	text-align: center;
+}
+
+.trust-badge--platinum {
+	--trust-bg: linear-gradient(135deg, #0f172a, #1d4ed8);
+	--trust-fg: #e0f2ff;
+	--trust-chip: #1d4ed8;
+}
+
+.trust-badge--gold {
+	--trust-bg: linear-gradient(135deg, #0e7490, #0ea5e9);
+	--trust-fg: #f0f9ff;
+	--trust-chip: #38bdf8;
+}
+
+.trust-badge--silver {
+	--trust-bg: linear-gradient(135deg, #1d4ed8, #3b82f6);
+	--trust-fg: #f8fafc;
+	--trust-chip: #60a5fa;
+}
+
+.trust-badge--bronze {
+	--trust-bg: linear-gradient(135deg, #0ea5e9, #0369a1);
+	--trust-fg: #f8fafc;
+	--trust-chip: #bae6fd;
+}

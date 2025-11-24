@@ -16,6 +16,7 @@ use App\Services\FishermanPricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class VendorOfferController extends Controller
@@ -115,6 +116,7 @@ class VendorOfferController extends Controller
         }
 
         DB::beginTransaction();
+        $order = null;
         try {
             // Lock product row to prevent oversell
             $product = \App\Models\Product::where('id', $offer->product_id)->lockForUpdate()->first();
@@ -166,6 +168,8 @@ class VendorOfferController extends Controller
             if ($vendor) {
                 $vendor->notify(new \App\Notifications\VendorOfferAccepted($offer));
             }
+
+            $this->rewardWholesaleTrust($order, 'wholesale_offer_accepted');
 
             $remainingStock = $product->available_quantity - $offer->quantity;
             $message = 'Offer accepted! The vendor has been notified.';
@@ -235,6 +239,7 @@ class VendorOfferController extends Controller
         }
 
         DB::beginTransaction();
+        $order = null;
         try {
             // Lock product row to prevent oversell
             $product = \App\Models\Product::where('id', $offer->product_id)->lockForUpdate()->first();
@@ -283,6 +288,7 @@ class VendorOfferController extends Controller
             if ($fisherman) {
                 $fisherman->notify(new \App\Notifications\VendorAcceptedCounter($offer));
             }
+            $this->rewardWholesaleTrust($order, 'wholesale_counter_accepted');
             return back()->with('success', 'Counter offer accepted!');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -391,6 +397,31 @@ class VendorOfferController extends Controller
         }
 
         return back()->with('success', "Bidding closed. {$rejectedCount} pending bid(s) rejected.");
+    }
+
+    private function rewardWholesaleTrust(?\App\Models\Order $order, string $context): void
+    {
+        if (!$order) {
+            return;
+        }
+
+        try {
+            $fisherman = User::find($order->fisherman_id);
+            if ($fisherman && method_exists($fisherman, 'adjustTrustScore')) {
+                $fisherman->adjustTrustScore(3, $context, $order, 'Reliable wholesale fulfillment');
+            }
+
+            $vendor = User::find($order->vendor_id);
+            if ($vendor && method_exists($vendor, 'adjustTrustScore')) {
+                $vendor->adjustTrustScore(1, $context, $order, 'Secured supply from fishermen');
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to record wholesale trust event', [
+                'order_id' => $order->id,
+                'context' => $context,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
 
