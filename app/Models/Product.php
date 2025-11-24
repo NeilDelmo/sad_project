@@ -59,7 +59,7 @@ class Product extends Model implements AuditableConract
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('products.status', 'active');
     }
 
     public function supplier(): BelongsTo{
@@ -94,7 +94,7 @@ class Product extends Model implements AuditableConract
     public function activeMarketplaceListing()
     {
         return $this->hasOne(\App\Models\MarketplaceListing::class, 'product_id')
-            ->where('status', 'active')
+            ->where('marketplace_listings.status', 'active')
             ->latest('listing_date');
     }
 
