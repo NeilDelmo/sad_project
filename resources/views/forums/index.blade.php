@@ -365,15 +365,19 @@
             </a>
             <div class="nav-links">
                 @if(Auth::check())
-                    <a href="{{ route('fisherman.dashboard') }}" class="nav-link">
-                        <i class="fa-solid fa-gauge-high"></i> Dashboard
-                    </a>
+                    @if(Auth::user()->user_type !== 'buyer')
+                        <a href="{{ route('dashboard') }}" class="nav-link">
+                            <i class="fa-solid fa-gauge-high"></i> Dashboard
+                        </a>
+                    @endif
                     <a href="{{ route('marketplace.shop') }}" class="nav-link">
                         <i class="fa-solid fa-fish"></i> Marketplace
                     </a>
-                    <a href="{{ route('fishing-safety.public') }}" class="nav-link">
-                        <i class="fa-solid fa-life-ring"></i> Safety Map
-                    </a>
+                    @if(!in_array(Auth::user()->user_type, ['buyer', 'vendor']))
+                        <a href="{{ route('fishing-safety.public') }}" class="nav-link">
+                            <i class="fa-solid fa-life-ring"></i> Safety Map
+                        </a>
+                    @endif
                     <a href="{{ route('forums.index') }}" class="nav-link active">
                         <i class="fa-solid fa-comments"></i> Community Forum
                     </a>
