@@ -651,7 +651,10 @@
         <div class="row g-0 h-100">
             <div class="col-12 col-md-6">
                 <div class="h-100 position-relative overflow-hidden img-card">
-                    <img src="{{ asset('images/fish.jpg') }}" class="img-fit" alt="Gear Tracking Manager">
+                    <video class="img-fit" autoplay loop muted playsinline>
+                        <source src="{{ asset('images/rental.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
             </div>
 

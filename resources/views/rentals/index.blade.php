@@ -204,8 +204,8 @@
                         @if($gear->image_path)
                             <img src="{{ asset('storage/' . $gear->image_path) }}" alt="{{ $gear->name }}" class="gear-image">
                         @else
-                            <div class="gear-image" style="display: flex; align-items: center; justify-content: center; font-size: 48px;">
-                                🛠️
+                            <div class="gear-image" style="display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #9ca3af;">
+                                <i class="fa-solid fa-toolbox" style="font-size: 64px;"></i>
                             </div>
                         @endif
                         

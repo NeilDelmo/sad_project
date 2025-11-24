@@ -203,7 +203,13 @@
         <div class="products-grid">
             @foreach($products as $product)
                 <div class="product-card">
-                    <img src="{{ $product->image_path ? asset('storage/' . $product->image_path) : asset('images/placeholder-gear.jpg') }}" alt="{{ $product->name }}" class="product-image">
+                    @if($product->image_path)
+                        <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="product-image">
+                    @else
+                        <div class="product-image" style="display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #9ca3af;">
+                            <i class="fa-solid fa-toolbox" style="font-size: 64px;"></i>
+                        </div>
+                    @endif
                     <div class="product-content">
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div class="product-name">{{ $product->name }}</div>
