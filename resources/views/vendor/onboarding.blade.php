@@ -296,5 +296,7 @@
     </div>
 @include('partials.message-notification')
 @include('partials.toast-notifications')
+    <!-- 100% privacy-first analytics -->
+    <script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
 </html>
