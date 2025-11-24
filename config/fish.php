@@ -63,5 +63,11 @@ return [
     'category_aliases' => [
         'Fish',
         'Fresh Fish',
+        'Shellfish',
+        'Oily Fish',
+        'White Fish',
+        'Seafood',
+        'Crustacean',
+        'Cephalopod',
     ],
 ];
