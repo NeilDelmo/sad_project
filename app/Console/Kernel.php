@@ -10,6 +10,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('offers:expire')->hourly();
+        $schedule->command('products:expire')->daily();
         $schedule->command('rentals:cancel-expired')->everyFiveMinutes();
         // Dynamic pricing recalculation for active listings every hour
         $schedule->command('pricing:update-listings --only-active')->hourly();

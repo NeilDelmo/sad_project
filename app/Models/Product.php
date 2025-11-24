@@ -27,6 +27,7 @@ class Product extends Model implements AuditableConract
         'freshness_metric',
         'unit_price',
         'available_quantity',
+        'status',
         'seasonality_factor',
         'quality_rating',
         'is_rentable',
@@ -52,6 +53,14 @@ class Product extends Model implements AuditableConract
         'last_maintenance_date' => 'datetime',
         'reserved_stock' => 'integer',
     ];
+
+    /**
+     * Scope a query to only include active products.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 
     public function supplier(): BelongsTo{
         return $this->belongsTo(User::class, 'supplier_id', 'id');
