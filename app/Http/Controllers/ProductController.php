@@ -25,9 +25,11 @@ class ProductController extends Controller
     /**
      * Display a listing of the fisherman's products
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::where('supplier_id', Auth::id())
+        $status = $request->get('status', 'all');
+
+        $query = Product::where('supplier_id', Auth::id())
             ->with('category')
             ->withCount([
                 'vendorOffers as active_offer_count' => function ($query) {
@@ -36,9 +38,15 @@ class ProductController extends Controller
                 'orders as ongoing_order_count' => function ($query) {
                     $query->whereIn('status', self::ONGOING_ORDER_STATUSES);
                 },
-            ])
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ]);
+
+        if ($status === 'active') {
+            $query->where('available_quantity', '>', 0);
+        } elseif ($status === 'sold_out') {
+            $query->where('available_quantity', 0);
+        }
+
+        $products = $query->orderBy('created_at', 'desc')->get();
 
         $products->each(function ($product) {
             $lockReasons = [];
@@ -57,7 +65,7 @@ class ProductController extends Controller
             $product->is_edit_locked = !empty($lockReasons);
         });
 
-        return view('fisherman.products.index', compact('products'));
+        return view('fisherman.products.index', compact('products', 'status'));
     }
 
     /**

@@ -187,6 +187,11 @@
             color: #383d41;
         }
 
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         .action-link {
             position: relative;
             color: #0d5c85;
@@ -317,6 +322,15 @@
             <h1 class="page-title">Vendor Inventory</h1>
         </div>
 
+        <div class="mb-4">
+            <div class="btn-group" role="group" aria-label="Inventory Filters">
+                <a href="{{ route('vendor.inventory.index') }}" class="btn {{ !request()->has('status') ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
+                <a href="{{ route('vendor.inventory.index', ['status' => 'in_stock']) }}" class="btn {{ request('status') == 'in_stock' ? 'btn-primary' : 'btn-outline-primary' }}">In Stock</a>
+                <a href="{{ route('vendor.inventory.index', ['status' => 'listed']) }}" class="btn {{ request('status') == 'listed' ? 'btn-primary' : 'btn-outline-primary' }}">Listed</a>
+                <a href="{{ route('vendor.inventory.index', ['status' => 'sold_out']) }}" class="btn {{ request('status') == 'sold_out' ? 'btn-primary' : 'btn-outline-primary' }}">Sold Out</a>
+            </div>
+        </div>
+
         @if($inventory->count() > 0)
         <div class="inventory-table">
             <table>
@@ -344,6 +358,7 @@
                                 @if($item->status === 'in_stock') badge-success
                                 @elseif($item->status === 'listed') badge-info
                                 @elseif($item->status === 'pending_delivery') badge-warning
+                                @elseif($item->status === 'sold_out') badge-danger
                                 @elseif($item->status === 'refunded') badge-secondary
                                 @else badge-secondary
                                 @endif">

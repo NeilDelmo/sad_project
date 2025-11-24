@@ -250,6 +250,14 @@
             </a>
         </div>
 
+        <div class="mb-4">
+            <div class="btn-group" role="group" aria-label="Product Filters">
+                <a href="{{ route('fisherman.products.index') }}" class="btn {{ !request()->has('status') ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
+                <a href="{{ route('fisherman.products.index', ['status' => 'active']) }}" class="btn {{ request('status') == 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
+                <a href="{{ route('fisherman.products.index', ['status' => 'sold_out']) }}" class="btn {{ request('status') == 'sold_out' ? 'btn-primary' : 'btn-outline-primary' }}">Sold Out</a>
+            </div>
+        </div>
+
         <!-- Products Grid -->
         @if($products->count() > 0)
         <div class="products-grid">
@@ -274,6 +282,9 @@
                 <div class="product-details">
                     <i class="fa-solid fa-box"></i>
                     <strong>Stock:</strong> {{ $product->available_quantity }} kg
+                    @if($product->available_quantity == 0)
+                        <span class="badge bg-danger ms-2">Sold Out</span>
+                    @endif
                 </div>
                 
                 @if($product->description)

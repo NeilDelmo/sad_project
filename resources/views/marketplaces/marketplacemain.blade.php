@@ -392,19 +392,25 @@
         <div class="page-subtitle" id="fish-section" style="font-weight:600; margin-bottom: 12px;">Fresh Fish</div>
         <div class="product-grid">
         @forelse($fishProducts as $listing)
-        @php $product = $listing->product ?? $listing @endphp
+        @php 
+            $product = $listing->product ?? $listing;
+            $uom = $product->unit_of_measure ?? 'kg';
+            $stock = isset($stocks) ? ($stocks[$listing->id] ?? null) : null;
+        @endphp
         <div class="product-card">
-            <div class="product-image">
+            <div class="product-image" style="position: relative;">
                 @if($product->image_path)
                     <img src="{{ asset($product->image_path) }}" alt="{{ $product->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
                 @else
                     <i class="fa-solid fa-fish fa-2x" style="color: #0075B5;"></i>
                 @endif
+
+                @if(isset($stock) && $stock === 0)
+                    <div style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        SOLD OUT
+                    </div>
+                @endif
             </div>
-            @php
-                $uom = $product->unit_of_measure ?? 'kg';
-                $stock = isset($stocks) ? ($stocks[$listing->id] ?? null) : null;
-            @endphp
             <div class="product-name">{{ $product->name }}</div>
             <div class="product-price">
                 <span class="price-label">Price</span>

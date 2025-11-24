@@ -25,15 +25,26 @@ class VendorInventoryController extends Controller
     /**
      * Show vendor's inventory
      */
-    public function index()
+    public function index(Request $request)
     {
-        $inventory = VendorInventory::with(['product', 'product.category', 'order'])
-            ->where('vendor_id', auth()->id())
-            ->orderByRaw("FIELD(status, 'pending_delivery', 'in_stock', 'listed')")
+        $status = $request->get('status', 'all');
+
+        $query = VendorInventory::with(['product', 'product.category', 'order'])
+            ->where('vendor_id', auth()->id());
+
+        if ($status === 'in_stock') {
+            $query->where('status', 'in_stock')->where('quantity', '>', 0);
+        } elseif ($status === 'sold_out') {
+            $query->where('quantity', 0);
+        } elseif ($status === 'listed') {
+            $query->where('status', 'listed');
+        }
+
+        $inventory = $query->orderByRaw("FIELD(status, 'pending_delivery', 'in_stock', 'listed')")
             ->orderBy('purchased_at', 'desc')
             ->paginate(20);
 
-        return view('vendor.inventory.index', compact('inventory'));
+        return view('vendor.inventory.index', compact('inventory', 'status'));
     }
 
     /**
