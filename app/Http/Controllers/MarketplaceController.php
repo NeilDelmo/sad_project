@@ -54,10 +54,10 @@ class MarketplaceController extends Controller
 
         $fishProducts = $query->orderBy('listing_date', 'desc')->get();
 
-        // Filter out spoiled items (expired)
-        $fishProducts = $fishProducts->filter(function ($listing) {
-            return $listing->freshness_level !== 'Spoiled';
-        });
+        // Filter out spoiled items (expired) - DISABLED to prevent items vanishing
+        // $fishProducts = $fishProducts->filter(function ($listing) {
+        //     return $listing->freshness_level !== 'Spoiled';
+        // });
 
         // Precompute stock per listing based on vendor inventory
         $stocks = [];
