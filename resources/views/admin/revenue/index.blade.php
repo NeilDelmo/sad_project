@@ -107,8 +107,23 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const dailyData = @json($daily);
-        const labels = dailyData.map(d => d.day).reverse();
-        const dataPoints = dailyData.map(d => parseFloat(d.total)).reverse();
+        
+        let labels = [];
+        let dataPoints = [];
+
+        if (dailyData && dailyData.length > 0) {
+            labels = dailyData.map(d => d.day).reverse();
+            dataPoints = dailyData.map(d => parseFloat(d.total)).reverse();
+        } else {
+            // Fallback: Show last 7 days with 0 revenue if no data
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                labels.push(d.toISOString().split('T')[0]);
+                dataPoints.push(0);
+            }
+        }
+
         const ctx = document.getElementById('revenueChart').getContext('2d');
         
         // Create gradient

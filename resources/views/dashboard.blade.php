@@ -258,26 +258,8 @@
 
         <!-- Activity Tables -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Recent Orders -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
-                <div class="space-y-3">
-                    @forelse($recentOrders as $order)
-                    <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">{{ $order->vendor->name ?? 'Unknown' }}</p>
-                            <p class="text-xs text-gray-500">{{ $order->created_at->diffForHumans() }}</p>
-                        </div>
-                        <span class="text-sm font-semibold text-gray-900">₱{{ number_format($order->total, 2) }}</span>
-                    </div>
-                    @empty
-                    <p class="text-sm text-gray-500">No recent orders</p>
-                    @endforelse
-                </div>
-            </div>
-
             <!-- Recent Forum Activity -->
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-6 lg:col-span-2">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Forum Posts</h3>
                 <div class="space-y-3">
                     @forelse($recentThreads as $thread)

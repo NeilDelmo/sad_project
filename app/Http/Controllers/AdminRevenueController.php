@@ -21,8 +21,10 @@ class AdminRevenueController extends Controller
 
         $total = OrganizationRevenue::sum('amount');
 
-        $daily = OrganizationRevenue::selectRaw('DATE(collected_at) as day, SUM(amount) as total')
-            ->groupBy('day')
+        // Use DB facade for aggregate query to avoid model casting issues and ensure SQL compatibility
+        $daily = \Illuminate\Support\Facades\DB::table('organization_revenues')
+            ->selectRaw('DATE(collected_at) as day, SUM(amount) as total')
+            ->groupBy(\Illuminate\Support\Facades\DB::raw('DATE(collected_at)'))
             ->orderBy('day', 'desc')
             ->limit(30)
             ->get();

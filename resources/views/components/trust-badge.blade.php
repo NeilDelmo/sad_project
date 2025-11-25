@@ -12,8 +12,23 @@
         $score >= 90  => '#3b82f6', // Silver/Blue
         default => '#f97316', // Bronze/Orange
     };
+
+    // Fee benefit based on score/tier
+    $fee = match(true) {
+        $score >= 150 => '2%', // Platinum
+        $score >= 120 => '5%', // Gold
+        $score >= 90  => '8%', // Silver
+        default => '10%', // Bronze
+    };
+
+    $tierName = match(true) {
+        $score >= 150 => 'Platinum',
+        $score >= 120 => 'Gold',
+        $score >= 90  => 'Silver',
+        default => 'Bronze',
+    };
 @endphp
-<div class="trust-indicator" title="Trust Score: {{ $score }}/200">
+<div class="trust-indicator" title="{{ $tierName }} Tier: {{ $fee }} Platform Fee (Score: {{ $score }}/200)">
     <svg width="44" height="44" viewBox="0 0 44 44" class="trust-circle">
         <circle cx="22" cy="22" r="18" fill="none" stroke="#e5e7eb" stroke-width="4"></circle>
         <circle cx="22" cy="22" r="18" fill="none" stroke="{{ $color }}" stroke-width="4"
