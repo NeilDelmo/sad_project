@@ -59,21 +59,12 @@ class MarketplaceController extends Controller
             return $listing->freshness_level !== 'Spoiled';
         });
 
-        // Precompute stock per listing based on vendor inventory minus non-refunded customer orders
+        // Precompute stock per listing based on vendor inventory
         $stocks = [];
         if ($fishProducts->isNotEmpty()) {
-            $listingIds = $fishProducts->pluck('id');
-            $soldByListing = CustomerOrder::whereIn('listing_id', $listingIds)
-                ->where('status', '!=', CustomerOrder::STATUS_REFUNDED)
-                ->selectRaw('listing_id, SUM(quantity) as qty')
-                ->groupBy('listing_id')
-                ->pluck('qty', 'listing_id');
-
             foreach ($fishProducts as $listing) {
                 $baseQty = optional($listing->vendorInventory)->quantity;
-                if ($baseQty === null) { $stocks[$listing->id] = null; continue; }
-                $sold = (int) ($soldByListing[$listing->id] ?? 0);
-                $stocks[$listing->id] = max(0, (int)$baseQty - $sold);
+                $stocks[$listing->id] = $baseQty;
             }
         }
 
