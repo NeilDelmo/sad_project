@@ -108,20 +108,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         const dailyData = @json($daily);
         
+        // Generate last 30 days
         let labels = [];
         let dataPoints = [];
-
+        const today = new Date();
+        
+        // Create a map of date -> total for quick lookup
+        const revenueMap = {};
         if (dailyData && dailyData.length > 0) {
-            labels = dailyData.map(d => d.day).reverse();
-            dataPoints = dailyData.map(d => parseFloat(d.total)).reverse();
-        } else {
-            // Fallback: Show last 7 days with 0 revenue if no data
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                labels.push(d.toISOString().split('T')[0]);
-                dataPoints.push(0);
-            }
+            dailyData.forEach(d => {
+                revenueMap[d.day] = parseFloat(d.total);
+            });
+        }
+
+        // Loop backwards from today for 30 days
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(today.getDate() - i);
+            const dateString = d.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            labels.push(dateString);
+            dataPoints.push(revenueMap[dateString] || 0);
         }
 
         const ctx = document.getElementById('revenueChart').getContext('2d');
@@ -206,7 +213,8 @@
                             font: {
                                 size: 11
                             },
-                            color: '#6b7280'
+                            color: '#6b7280',
+                            maxTicksLimit: 10 // Limit x-axis labels to prevent overcrowding
                         }
                     }
                 }
