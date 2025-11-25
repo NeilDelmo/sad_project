@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\User;
 use App\Models\Order;
+use App\Models\VendorInventory;
 use App\Notifications\NewCatchAvailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,20 +50,8 @@ class ProductController extends Controller
         $products = $query->orderBy('created_at', 'desc')->get();
 
         $products->each(function ($product) {
-            $lockReasons = [];
-
-            if ($product->available_quantity <= 0) {
-                $lockReasons[] = 'its stock is already depleted';
-            }
-            if (($product->active_offer_count ?? 0) > 0) {
-                $lockReasons[] = 'there are active vendor offers in progress';
-            }
-            if (($product->ongoing_order_count ?? 0) > 0) {
-                $lockReasons[] = 'there are ongoing transactions tied to this product';
-            }
-
-            $product->lock_reasons = $lockReasons;
-            $product->is_edit_locked = !empty($lockReasons);
+            $product->lock_reasons = $this->getProductLockReasons($product);
+            $product->is_edit_locked = !empty($product->lock_reasons);
         });
 
         return view('fisherman.products.index', compact('products', 'status'));
@@ -257,18 +246,19 @@ class ProductController extends Controller
             $lockReasons[] = 'its stock is already depleted';
         }
 
-        $hasActiveOffers = $product->vendorOffers()
-            ->whereIn('status', self::ACTIVE_OFFER_STATUSES)
-            ->exists();
-        if ($hasActiveOffers) {
-            $lockReasons[] = 'there are active vendor offers in progress';
+        // Check for ANY offers (active or not) to prevent FK errors
+        if ($product->vendorOffers()->exists()) {
+            $lockReasons[] = 'there are vendor offers associated with this product';
         }
 
-        $hasOngoingTransactions = $product->orders()
-            ->whereIn('status', self::ONGOING_ORDER_STATUSES)
-            ->exists();
-        if ($hasOngoingTransactions) {
-            $lockReasons[] = 'there are ongoing transactions tied to this product';
+        // Check for ANY orders (ongoing or completed) to prevent FK errors
+        if ($product->orders()->exists()) {
+            $lockReasons[] = 'there are transactions tied to this product';
+        }
+
+        // Check for ANY inventory records (purchased by vendors)
+        if (VendorInventory::where('product_id', $product->id)->exists()) {
+            $lockReasons[] = 'it has been purchased by vendors';
         }
 
         return $lockReasons;

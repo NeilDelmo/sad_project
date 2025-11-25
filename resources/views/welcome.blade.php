@@ -660,7 +660,7 @@
 
             <div class="col-12 col-md-6">
                 <div class="p-5 h-100 d-flex flex-column justify-content-center align-items-start">
-                    <span class="subhead-font mb-3">Gear Tracking Manager</span>
+                    <span class="subhead-font mb-3">Gear Rental</span>
                     <p class="desc-font mb-4">
                     Effortlessly manage equipments with digital asset logs and
                     automated maintenance schedules, keeping everything in top
