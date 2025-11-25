@@ -75,8 +75,8 @@ class Order extends Model implements Auditable
             return false;
         }
         
-        $hoursSinceDelivery = now()->diffInHours($this->delivered_at);
-        return $hoursSinceDelivery < 3;
+        $minutesSinceDelivery = now()->diffInMinutes($this->delivered_at);
+        return $minutesSinceDelivery < (3 * 60);
     }
     
     /**

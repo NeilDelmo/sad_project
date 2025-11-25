@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+use App\Models\VendorInventory;
 
 class OrdersController extends Controller
 {
@@ -110,52 +112,61 @@ class OrdersController extends Controller
 
     public function requestRefund(Request $request, Order $order)
     {
-        $user = Auth::user();
-        if ($order->vendor_id !== $user->id) {
-            abort(403);
-        }
-        if (!in_array($order->status, [Order::STATUS_DELIVERED, Order::STATUS_RECEIVED])) {
-            throw ValidationException::withMessages(['status' => 'Refunds can only be requested after delivery.']);
-        }
-        
-        // Check if refund was already declined
-        if ($order->status === Order::STATUS_REFUND_DECLINED) {
-            throw ValidationException::withMessages(['refund' => 'Your refund request was already declined by the fisherman.']);
-        }
-        
-        // Check 3-hour refund window
-        if (!$order->isRefundWindowOpen()) {
-            throw ValidationException::withMessages(['refund' => 'Refund window has closed. Refunds must be requested within 3 hours of delivery.']);
-        }
-        $data = $request->validate([
-            'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
-            'notes' => ['nullable','string','max:500'],
-            'proof' => ['required','image','max:4096'],
-        ]);
+        try {
+            $user = Auth::user();
+            if ($order->vendor_id !== $user->id) {
+                abort(403);
+            }
+            if (!in_array($order->status, [Order::STATUS_DELIVERED, Order::STATUS_RECEIVED])) {
+                throw ValidationException::withMessages(['status' => 'Refunds can only be requested after delivery.']);
+            }
+            
+            // Check if refund was already declined
+            if ($order->status === Order::STATUS_REFUND_DECLINED) {
+                throw ValidationException::withMessages(['refund' => 'Your refund request was already declined by the fisherman.']);
+            }
+            
+            // Check 3-hour refund window
+            if (!$order->isRefundWindowOpen()) {
+                throw ValidationException::withMessages(['refund' => 'Refund window has closed. Refunds must be requested within 3 hours of delivery.']);
+            }
+            $data = $request->validate([
+                'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
+                'notes' => ['nullable','string','max:500'],
+                'proof' => ['required','image','max:4096'],
+            ]);
 
-        $proof = $request->file('proof')->store('orders/refunds', 'public');
+            $proof = $request->file('proof')->store('orders/refunds', 'public');
 
-        $order->update([
-            'status' => Order::STATUS_REFUND_REQUESTED,
-            'refund_reason' => $data['reason'],
-            'refund_notes' => $data['notes'] ?? null,
-            'refund_proof_path' => $proof,
-        ]);
+            $order->update([
+                'status' => Order::STATUS_REFUND_REQUESTED,
+                'refund_reason' => $data['reason'],
+                'refund_notes' => $data['notes'] ?? null,
+                'refund_proof_path' => $proof,
+            ]);
 
-        $inventory = \App\Models\VendorInventory::where('order_id', $order->id)->first();
-        if ($inventory) {
-            $inventory->update(['status' => 'refund_pending']);
-            \App\Models\MarketplaceListing::where('vendor_inventory_id', $inventory->id)
-                ->where('status', 'active')
-                ->update([
-                    'status' => 'inactive',
-                    'unlisted_at' => now(),
-                ]);
+            $inventory = VendorInventory::where('order_id', $order->id)->first();
+            if ($inventory) {
+                $inventory->update(['status' => 'refund_pending']);
+                \App\Models\MarketplaceListing::where('vendor_inventory_id', $inventory->id)
+                    ->where('status', 'active')
+                    ->update([
+                        'status' => 'inactive',
+                        'unlisted_at' => now(),
+                    ]);
+            }
+
+            $this->notifyAndMessage($order, "Refund requested for Order #{$order->id} (Reason: {$data['reason']}).");
+
+            return back()->with('success', 'Refund requested. Fisherman will review your request.');
+        } catch (\Exception $e) {
+            Log::error('Refund Request Error: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-
-        $this->notifyAndMessage($order, "Refund requested for Order #{$order->id} (Reason: {$data['reason']}).");
-
-        return back()->with('success', 'Refund requested. Fisherman will review your request.');
     }
 
     public function approveRefund(Order $order)
