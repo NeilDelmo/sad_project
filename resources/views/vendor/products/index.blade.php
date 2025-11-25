@@ -167,15 +167,15 @@
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
         }
 
         .product-card {
             background: white;
             border-radius: 16px;
-            padding: 28px;
+            padding: 16px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
             border: 2px solid transparent;
@@ -189,27 +189,27 @@
         }
 
         .product-header {
-            margin-bottom: 20px;
-            padding-bottom: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
             border-bottom: 2px solid #f0f0f0;
         }
 
         .product-image {
             width: 100%;
-            height: 220px;
+            height: 140px;
             object-fit: cover;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             background: #f8f9fa;
         }
 
         .product-image-placeholder {
             width: 100%;
-            height: 220px;
+            height: 140px;
             background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -218,10 +218,10 @@
         }
 
         .product-name {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
             color: #1B5E88;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             line-height: 1.3;
             display: flex;
             align-items: center;
@@ -229,31 +229,31 @@
         }
 
         .product-name i {
-            font-size: 20px;
+            font-size: 18px;
         }
 
         .product-category {
             display: inline-block;
             background: linear-gradient(135deg, #E7FAFE 0%, #d4f4fa 100%);
             color: #0075B5;
-            padding: 6px 14px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.3px;
         }
 
         .product-details {
             background: #f8f9fa;
-            padding: 18px;
+            padding: 8px;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .product-detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 4px 0;
             border-bottom: 1px solid #e9ecef;
         }
 
@@ -264,21 +264,21 @@
         .detail-label {
             color: #6c757d;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .detail-value {
             color: #2c3e50;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .product-price {
-            font-size: 32px;
+            font-size: 20px;
             font-weight: 800;
             color: #1B5E88;
-            margin: 24px 0;
-            padding: 20px;
+            margin: 10px 0;
+            padding: 10px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             text-align: center;
@@ -286,52 +286,52 @@
         }
 
         .price-label {
-            font-size: 12px;
+            font-size: 10px;
             color: #6c757d;
             font-weight: 600;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 2px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .offer-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            padding: 24px;
+            padding: 12px;
             border-radius: 12px;
-            margin-top: 24px;
+            margin-top: 10px;
             border: 2px solid #e9ecef;
         }
 
         .offer-input-group {
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
 
         .offer-input-group:last-of-type {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .offer-label {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .offer-label i {
             color: #0075B5;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .form-control-custom {
             width: 100%;
-            padding: 12px 16px;
+            padding: 8px 12px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             transition: all 0.2s;
             font-family: inherit;
         }
@@ -350,18 +350,18 @@
             background: linear-gradient(135deg, #0075B5 0%, #1B5E88 100%);
             color: white;
             border: none;
-            padding: 14px 24px;
+            padding: 10px 16px;
             border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
             width: 100%;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 117, 181, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-make-offer:hover {
@@ -376,11 +376,11 @@
         .supplier-info {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            padding-top: 18px;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
             border-top: 2px solid #f0f0f0;
-            font-size: 14px;
+            font-size: 12px;
             color: #6c757d;
             font-weight: 500;
         }
@@ -415,6 +415,34 @@
         .empty-state p {
             color: #6c757d;
             font-size: 16px;
+        }
+
+
+        .pagination-wrapper {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .pagination-wrapper .pagination {
+            justify-content: center;
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+
+        .pagination-wrapper .page-link {
+            padding: 0.375rem 0.75rem;
+            color: #1B5E88;
+            border-color: #dee2e6;
+        }
+
+        .pagination-wrapper .page-item.active .page-link {
+            background-color: #1B5E88;
+            border-color: #1B5E88;
+            color: white;
+        }
+
+        .pagination-wrapper .page-item.disabled .page-link {
+            color: #6c757d;
         }
 
         @media (max-width: 768px) {
@@ -506,129 +534,135 @@
                     <span class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</span>
                 </div>
 
-                <div class="product-details">
-                    <div class="product-detail-row">
-                        <span class="detail-label">Available</span>
-                        <span class="detail-value">
-                            @if($product->available_quantity > 0)
-                                {{ $product->available_quantity }} {{ $product->unit_of_measure ?? 'kg' }}
-                            @else
-                                <span class="text-danger">Sold Out</span>
-                            @endif
-                        </span>
-                    </div>
-                    <div class="product-detail-row">
-                        <span class="detail-label">Quality</span>
-                        <span class="detail-value">
-                            @if($product->freshness_level)
-                                <span class="badge 
-                                    @if($product->freshness_level == 'Fresh') bg-success
-                                    @elseif($product->freshness_level == 'Good') bg-info
-                                    @elseif($product->freshness_level == 'Aging') bg-warning text-dark
-                                    @elseif($product->freshness_level == 'Stale') bg-warning text-dark
-                                    @else bg-danger
-                                    @endif">
-                                    {{ $product->freshness_level }}
-                                </span>
-                            @else
-                                {{ $product->freshness_metric ?? 'Good' }}
-                            @endif
-                        </span>
-                    </div>
-                    <div class="product-detail-row">
-                        <span class="detail-label">Listed</span>
-                        <span class="detail-value">{{ $product->created_at->diffForHumans() }}</span>
-                    </div>
-                </div>
-
                 <div class="product-price">
                     <span class="price-label">Fisherman's Asking Price</span>
                     ₱{{ number_format($product->unit_price, 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
                 </div>
 
-                <!-- Bidding Stats -->
-                @php $stats = $biddingStats[$product->id] ?? null; @endphp
-                <div class="product-details" style="margin-top:10px;">
-                    <div class="product-detail-row">
-                        <span class="detail-label">Highest Bid</span>
-                        <span class="detail-value">
-                            @if($stats && $stats['highest'] > 0)
-                                ₱{{ number_format($stats['highest'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
-                            @else
-                                —
-                            @endif
-                        </span>
-                    </div>
-                    <div class="product-detail-row">
-                        <span class="detail-label">Bidders</span>
-                        <span class="detail-value">{{ $stats['bidders'] ?? 0 }}</span>
-                    </div>
-                    @if($stats && $stats['your_offer'])
-                    <div class="product-detail-row">
-                        <span class="detail-label">Your Bid</span>
-                        <span class="detail-value">₱{{ number_format($stats['your_offer'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}</span>
-                    </div>
-                    <div class="product-detail-row">
-                        <span class="detail-label">Your Rank</span>
-                        <span class="detail-value">#{{ $stats['your_rank'] ?? '—' }}</span>
-                    </div>
-                    @endif
-                    @if($stats && !empty($stats['top_bids']))
-                    <div class="product-detail-row">
-                        <span class="detail-label">Top Bids</span>
-                        <span class="detail-value">
-                            @foreach($stats['top_bids'] as $i => $amt)
-                                <span style="display:inline-block; margin-right:8px;">#{{ $i+1 }}: ₱{{ number_format($amt, 2) }}</span>
-                            @endforeach
-                        </span>
-                    </div>
-                    @endif
-                </div>
+                <button class="btn btn-outline-primary w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productDetails{{ $product->id }}" aria-expanded="false" aria-controls="productDetails{{ $product->id }}">
+                    <i class="fa-solid fa-circle-info me-2"></i> View Details & Bid
+                </button>
 
-                <div class="offer-section">
-                    @if($product->available_quantity > 0)
-                    <form action="{{ route('vendor.offers.store', $product) }}" method="post">
-                        @csrf
-                        <div class="offer-input-group">
-                            <label class="offer-label">
-                                <i class="fa-solid fa-weight"></i>
-                                Quantity ({{ $product->unit_of_measure ?? 'kg' }})
-                            </label>
-                            <input type="number" name="quantity" min="1" max="{{ $product->available_quantity }}" 
-                                   class="form-control-custom" placeholder="Enter quantity" required>
+                <div class="collapse" id="productDetails{{ $product->id }}">
+                    <div class="product-details">
+                        <div class="product-detail-row">
+                            <span class="detail-label">Available</span>
+                            <span class="detail-value">
+                                @if($product->available_quantity > 0)
+                                    {{ $product->available_quantity }} {{ $product->unit_of_measure ?? 'kg' }}
+                                @else
+                                    <span class="text-danger">Sold Out</span>
+                                @endif
+                            </span>
                         </div>
-                        <div class="offer-input-group">
-                            <label class="offer-label">
-                                <i class="fa-solid fa-peso-sign"></i>
-                                Your Offer Price (₱/{{ $product->unit_of_measure ?? 'kg' }})
-                            </label>
-                            <input type="number" step="0.01" name="offered_price" 
-                                   class="form-control-custom" placeholder="Enter your offer" required>
+                        <div class="product-detail-row">
+                            <span class="detail-label">Quality</span>
+                            <span class="detail-value">
+                                @if($product->freshness_level)
+                                    <span class="badge 
+                                        @if($product->freshness_level == 'Fresh') bg-success
+                                        @elseif($product->freshness_level == 'Good') bg-info
+                                        @elseif($product->freshness_level == 'Aging') bg-warning text-dark
+                                        @elseif($product->freshness_level == 'Stale') bg-warning text-dark
+                                        @else bg-danger
+                                        @endif">
+                                        {{ $product->freshness_level }}
+                                    </span>
+                                @else
+                                    {{ $product->freshness_metric ?? 'Good' }}
+                                @endif
+                            </span>
                         </div>
-                        @if(in_array($product->id, $pendingOffers))
-                        <button type="button" class="btn-make-offer" disabled style="background: #6c757d; cursor: not-allowed; opacity: 0.7;">
-                            <i class="fa-solid fa-clock"></i>
-                            <span>Offer Pending</span>
-                        </button>
-                        @else
-                        <button type="submit" class="btn-make-offer">
-                            <i class="fa-solid fa-handshake"></i>
-                            <span>Make Offer</span>
-                        </button>
+                        <div class="product-detail-row">
+                            <span class="detail-label">Listed</span>
+                            <span class="detail-value">{{ $product->created_at->diffForHumans() }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Bidding Stats -->
+                    @php $stats = $biddingStats[$product->id] ?? null; @endphp
+                    <div class="product-details" style="margin-top:10px;">
+                        <div class="product-detail-row">
+                            <span class="detail-label">Highest Bid</span>
+                            <span class="detail-value">
+                                @if($stats && $stats['highest'] > 0)
+                                    ₱{{ number_format($stats['highest'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}
+                                @else
+                                    —
+                                @endif
+                            </span>
+                        </div>
+                        <div class="product-detail-row">
+                            <span class="detail-label">Bidders</span>
+                            <span class="detail-value">{{ $stats['bidders'] ?? 0 }}</span>
+                        </div>
+                        @if($stats && $stats['your_offer'])
+                        <div class="product-detail-row">
+                            <span class="detail-label">Your Bid</span>
+                            <span class="detail-value">₱{{ number_format($stats['your_offer'], 2) }}/{{ $product->unit_of_measure ?? 'kg' }}</span>
+                        </div>
+                        <div class="product-detail-row">
+                            <span class="detail-label">Your Rank</span>
+                            <span class="detail-value">#{{ $stats['your_rank'] ?? '—' }}</span>
+                        </div>
                         @endif
-                    </form>
-                    @else
-                    <div class="text-center py-3">
-                        <i class="fa-solid fa-circle-xmark text-danger mb-2" style="font-size: 24px;"></i>
-                        <h5 class="text-danger mb-1">Sold Out</h5>
-                        <p class="text-muted small mb-0">This product is no longer available for bidding.</p>
+                        @if($stats && !empty($stats['top_bids']))
+                        <div class="product-detail-row">
+                            <span class="detail-label">Top Bids</span>
+                            <span class="detail-value">
+                                @foreach($stats['top_bids'] as $i => $amt)
+                                    <span style="display:inline-block; margin-right:8px;">#{{ $i+1 }}: ₱{{ number_format($amt, 2) }}</span>
+                                @endforeach
+                            </span>
+                        </div>
+                        @endif
                     </div>
-                    @endif
-                </div>
 
-                <div class="supplier-info">
-                    <i class="fa-solid fa-user"></i>
-                    <span>{{ $product->supplier->name ?? $product->supplier->username ?? 'Fisherman #'.$product->supplier_id }}</span>
+                    <div class="offer-section">
+                        @if($product->available_quantity > 0)
+                        <form action="{{ route('vendor.offers.store', $product) }}" method="post">
+                            @csrf
+                            <div class="offer-input-group">
+                                <label class="offer-label">
+                                    <i class="fa-solid fa-weight"></i>
+                                    Quantity ({{ $product->unit_of_measure ?? 'kg' }})
+                                </label>
+                                <input type="number" name="quantity" min="1" max="{{ $product->available_quantity }}" 
+                                    class="form-control-custom" placeholder="Enter quantity" required>
+                            </div>
+                            <div class="offer-input-group">
+                                <label class="offer-label">
+                                    <i class="fa-solid fa-peso-sign"></i>
+                                    Your Offer Price (₱/{{ $product->unit_of_measure ?? 'kg' }})
+                                </label>
+                                <input type="number" step="0.01" name="offered_price" 
+                                    class="form-control-custom" placeholder="Enter your offer" required>
+                            </div>
+                            @if(in_array($product->id, $pendingOffers))
+                            <button type="button" class="btn-make-offer" disabled style="background: #6c757d; cursor: not-allowed; opacity: 0.7;">
+                                <i class="fa-solid fa-clock"></i>
+                                <span>Offer Pending</span>
+                            </button>
+                            @else
+                            <button type="submit" class="btn-make-offer">
+                                <i class="fa-solid fa-handshake"></i>
+                                <span>Make Offer</span>
+                            </button>
+                            @endif
+                        </form>
+                        @else
+                        <div class="text-center py-3">
+                            <i class="fa-solid fa-circle-xmark text-danger mb-2" style="font-size: 24px;"></i>
+                            <h5 class="text-danger mb-1">Sold Out</h5>
+                            <p class="text-muted small mb-0">This product is no longer available for bidding.</p>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="supplier-info">
+                        <i class="fa-solid fa-user"></i>
+                        <span>{{ $product->supplier->name ?? $product->supplier->username ?? 'Fisherman #'.$product->supplier_id }}</span>
+                    </div>
                 </div>
             </div>
             @empty
@@ -641,8 +675,8 @@
         </div>
 
         <!-- Pagination -->
-        <div style="margin-top: 30px; text-align: center;">
-            {{ $products->links() }}
+        <div class="pagination-wrapper">
+            {{ $products->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
