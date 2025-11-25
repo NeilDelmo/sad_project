@@ -20,6 +20,10 @@ class NewCatchAvailable extends Notification
     public function toDatabase($notifiable): array
     {
         return [
+            'type' => 'new_catch_available',
+            'title' => 'New Catch Available',
+            'message' => sprintf('New catch available: %s (₱%s)', $this->product->name, number_format($this->product->unit_price, 2)),
+            'link' => route('vendor.products.index', ['q' => $this->product->name]),
             'product_id' => $this->product->id,
             'name' => $this->product->name,
             'category_id' => $this->product->category_id,

@@ -60,6 +60,14 @@ class NotificationController extends Controller
             $data = $n->data;
             $type = data_get($data, 'type', 'notification');
             
+            // Fix for legacy NewCatchAvailable notifications which lacked type/title/message
+            if ($type === 'notification' && isset($data['product_id']) && isset($data['name']) && !isset($data['title'])) {
+                $type = 'new_catch_available';
+                $data['title'] = 'New Catch Available';
+                $data['message'] = sprintf('New catch available: %s', $data['name']);
+                $data['link'] = route('vendor.products.index', ['q' => $data['name']]);
+            }
+
             // Determine title if missing
             $title = data_get($data, 'title');
             if (!$title) {
@@ -77,6 +85,7 @@ class NotificationController extends Controller
                     'rental_rejected' => 'Rental Rejected',
                     'rental_issue_reported' => 'Rental Issue',
                     'return_processed' => 'Return Processed',
+                    'new_catch_available' => 'New Catch Available',
                     default => 'Notification'
                 };
             }
