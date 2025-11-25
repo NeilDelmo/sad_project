@@ -75,9 +75,11 @@ class CustomerOrderController extends Controller
             ]);
 
             $inventory->decrement('quantity', $qty);
-            if ($inventory->quantity <= 0) {
-                $listing->update(['status' => 'inactive', 'unlisted_at' => now()]);
-            }
+            
+            // Keep listing active even if stock is 0 so it shows as "Sold Out"
+            // if ($inventory->quantity <= 0) {
+            //     $listing->update(['status' => 'inactive', 'unlisted_at' => now()]);
+            // }
 
             // Notify vendor
             $vendor = User::find($listing->seller_id);
