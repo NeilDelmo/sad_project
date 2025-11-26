@@ -29,6 +29,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $status = $request->get('status', 'all');
+        $search = $request->get('search');
+        $category = $request->get('category');
 
         $query = Product::where('supplier_id', Auth::id())
             ->with('category')
@@ -47,6 +49,17 @@ class ProductController extends Controller
             $query->where('available_quantity', 0);
         }
 
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($category) {
+            $query->where('category_id', $category);
+        }
+
         $products = $query->orderBy('created_at', 'desc')->get();
 
         $products->each(function ($product) {
@@ -54,7 +67,9 @@ class ProductController extends Controller
             $product->is_edit_locked = !empty($product->lock_reasons);
         });
 
-        return view('fisherman.products.index', compact('products', 'status'));
+        $categories = ProductCategory::whereIn('name', ['Fish', 'Shellfish'])->get();
+
+        return view('fisherman.products.index', compact('products', 'status', 'categories'));
     }
 
     /**

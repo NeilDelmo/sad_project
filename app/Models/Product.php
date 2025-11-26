@@ -62,6 +62,44 @@ class Product extends Model implements AuditableConract
         return $query->where('products.status', 'active');
     }
 
+    /**
+     * Scope a query to exclude spoiled products based on freshness decay.
+     */
+    public function scopeNotSpoiled($query)
+    {
+        return $query->where(function ($q) {
+            // Shellfish (0.5 multiplier)
+            $q->orWhere(function ($sub) {
+                $sub->where('fish_type', 'Shellfish')
+                    ->where(function ($s) {
+                        $s->where('freshness_metric', 'Very Fresh')->where('created_at', '>=', now()->subHours(12))
+                          ->orWhere('freshness_metric', 'Fresh')->where('created_at', '>=', now()->subHours(9))
+                          ->orWhere('freshness_metric', 'Good')->where('created_at', '>=', now()->subHours(6));
+                    });
+            });
+
+            // Oily Fish (0.7 multiplier)
+            $q->orWhere(function ($sub) {
+                $sub->where('fish_type', 'Oily Fish')
+                    ->where(function ($s) {
+                        $s->where('freshness_metric', 'Very Fresh')->where('created_at', '>=', now()->subHours(16)) // approx 16.8
+                          ->orWhere('freshness_metric', 'Fresh')->where('created_at', '>=', now()->subHours(12)) // approx 12.6
+                          ->orWhere('freshness_metric', 'Good')->where('created_at', '>=', now()->subHours(8)); // approx 8.4
+                    });
+            });
+
+            // White Fish / Default (1.0 multiplier)
+            $q->orWhere(function ($sub) {
+                $sub->whereNotIn('fish_type', ['Shellfish', 'Oily Fish'])
+                    ->where(function ($s) {
+                        $s->where('freshness_metric', 'Very Fresh')->where('created_at', '>=', now()->subHours(24))
+                          ->orWhere('freshness_metric', 'Fresh')->where('created_at', '>=', now()->subHours(18))
+                          ->orWhere('freshness_metric', 'Good')->where('created_at', '>=', now()->subHours(12));
+                    });
+            });
+        });
+    }
+
     public function supplier(): BelongsTo{
         return $this->belongsTo(User::class, 'supplier_id', 'id');
     }

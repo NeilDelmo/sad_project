@@ -250,12 +250,32 @@
             </a>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-4" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div class="btn-group" role="group" aria-label="Product Filters">
-                <a href="{{ route('fisherman.products.index') }}" class="btn {{ !request()->has('status') ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
-                <a href="{{ route('fisherman.products.index', ['status' => 'active']) }}" class="btn {{ request('status') == 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
-                <a href="{{ route('fisherman.products.index', ['status' => 'sold_out']) }}" class="btn {{ request('status') == 'sold_out' ? 'btn-primary' : 'btn-outline-primary' }}">Sold Out</a>
+                <a href="{{ route('fisherman.products.index', array_merge(request()->query(), ['status' => 'all'])) }}" class="btn {{ (!request()->has('status') || request('status') == 'all') ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
+                <a href="{{ route('fisherman.products.index', array_merge(request()->query(), ['status' => 'active'])) }}" class="btn {{ request('status') == 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
+                <a href="{{ route('fisherman.products.index', array_merge(request()->query(), ['status' => 'sold_out'])) }}" class="btn {{ request('status') == 'sold_out' ? 'btn-primary' : 'btn-outline-primary' }}">Sold Out</a>
             </div>
+
+            <form action="{{ route('fisherman.products.index') }}" method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 600px;">
+                @if(request('status'))
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                @endif
+                
+                <select name="category" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}" {{ request('category') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search products..." value="{{ request('search') }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </div>
+            </form>
         </div>
 
         <!-- Products Grid -->
@@ -294,9 +314,32 @@
                 </div>
                 @endif
                 
-                @if($product->freshness_metric)
-                <span class="freshness-badge">
-                    🌟 {{ $product->freshness_metric }}
+                @php
+                    $currentFreshness = $product->freshness_level;
+                    $badgeClass = match($currentFreshness) {
+                        'Very Fresh' => 'bg-success',
+                        'Fresh' => 'bg-primary',
+                        'Good' => 'bg-info text-dark',
+                        'Spoiled' => 'bg-danger',
+                        default => 'bg-secondary'
+                    };
+                @endphp
+                
+                @if($currentFreshness)
+                <span class="freshness-badge {{ $badgeClass }}" style="background: none; padding: 0;">
+                    <span class="badge {{ $badgeClass }}">
+                        @if($currentFreshness === 'Spoiled')
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        @else
+                            🌟
+                        @endif
+                        {{ $currentFreshness }}
+                    </span>
+                    @if($currentFreshness !== $product->freshness_metric)
+                        <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                            (Originally: {{ $product->freshness_metric }})
+                        </small>
+                    @endif
                 </span>
                 @endif
                 

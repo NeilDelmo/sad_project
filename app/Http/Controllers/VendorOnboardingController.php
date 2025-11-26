@@ -234,6 +234,7 @@ class VendorOnboardingController extends Controller
 
         $query = Product::with(['category', 'supplier', 'activeMarketplaceListing'])
             ->active()
+            ->notSpoiled()
             ->orderByDesc('created_at');
 
         // Filter out equipment and gear - vendors only buy fish and shellfish
