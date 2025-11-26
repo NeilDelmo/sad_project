@@ -8,9 +8,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CustomerOrderStatusUpdated extends Notification implements ShouldQueue
+class CustomerOrderStatusUpdated extends Notification
 {
-    use Queueable;
+    // use Queueable;
 
     public function __construct(public CustomerOrder $order, public string $text)
     {
