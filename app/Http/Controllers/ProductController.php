@@ -33,6 +33,10 @@ class ProductController extends Controller
         $category = $request->get('category');
 
         $query = Product::where('supplier_id', Auth::id())
+            ->where(function($q) {
+                $q->notSpoiled()
+                  ->orWhere('available_quantity', 0);
+            })
             ->with('category')
             ->withCount([
                 'vendorOffers as active_offer_count' => function ($query) {
@@ -60,7 +64,10 @@ class ProductController extends Controller
             $query->where('category_id', $category);
         }
 
-        $products = $query->orderBy('created_at', 'desc')->get();
+        $products = $query
+            ->orderByRaw('available_quantity = 0 DESC')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $products->each(function ($product) {
             $product->lock_reasons = $this->getProductLockReasons($product);
