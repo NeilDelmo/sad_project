@@ -119,7 +119,6 @@
       <a class="btn btn-sm {{ request('status') === 'pending' || !request('status') ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'pending']) }}">Pending</a>
       <a class="btn btn-sm {{ request('status') === 'countered' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'countered']) }}">Countered</a>
       <a class="btn btn-sm {{ request('status') === 'accepted' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'accepted']) }}">Accepted</a>
-      <a class="btn btn-sm {{ request('status') === 'rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'rejected']) }}">Rejected</a>
       <a class="btn btn-sm {{ request('status') === 'auto_rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'auto_rejected']) }}">Auto-Rejected</a>
       <a class="btn btn-sm {{ request('status') === 'withdrawn' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'withdrawn']) }}">Canceled</a>
       <a class="btn btn-sm {{ request('status') === 'all' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'all']) }}">All</a>
@@ -178,7 +177,7 @@
                 <span class="text-muted">-</span>
               @endif
             </td>
-            <td><span class="status-badge status-{{ $offer->status }}">{{ ucfirst(str_replace('_', ' ', $offer->status)) }}</span></td>
+            <td><span class="status-badge status-{{ $offer->status }}">{{ $offer->status === 'withdrawn' ? 'Canceled' : ucfirst(str_replace('_', ' ', $offer->status)) }}</span></td>
             <td>{{ $offer->created_at->format('M d, Y') }}</td>
             <td>
               @if($offer->status === 'pending' && $offer->canModify())
@@ -201,7 +200,7 @@
               @elseif($offer->status === 'auto_rejected')
                 <small class="text-muted"><i class="fas fa-robot"></i> Auto-rejected</small>
               @elseif($offer->status === 'withdrawn')
-                <small class="text-muted"><i class="fas fa-undo"></i> Withdrawn</small>
+                <small class="text-muted"><i class="fas fa-undo"></i> Canceled</small>
               @else
                 <span class="text-muted">No actions</span>
               @endif

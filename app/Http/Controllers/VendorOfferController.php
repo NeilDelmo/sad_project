@@ -326,7 +326,7 @@ class VendorOfferController extends Controller
             return back()->withErrors(['error' => 'This counter offer has expired.']);
         }
         $offer->update([
-            'status' => 'rejected',
+            'status' => 'withdrawn',
             'responded_at' => now(),
         ]);
 

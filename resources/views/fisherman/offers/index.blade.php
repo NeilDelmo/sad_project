@@ -480,7 +480,13 @@
             <div class="empty-state">
                 <i class="fas fa-inbox"></i>
                 <h3>No Offers Found</h3>
-                <p>You don't have any {{ request('status') ?? 'pending' }} offers at the moment.</p>
+                @php
+                    $statusLabel = request('status') ?? 'pending';
+                    if ($statusLabel === 'withdrawn') {
+                        $statusLabel = 'canceled';
+                    }
+                @endphp
+                <p>You don't have any {{ $statusLabel }} offers at the moment.</p>
             </div>
         @else
             @foreach($offers as $offer)
@@ -495,7 +501,7 @@
                         </div>
                         <div class="d-flex gap-2 align-items-center">
                             <span class="offer-status status-{{ $offer->status }}">
-                                {{ ucfirst($offer->status) }}
+                                {{ $offer->status === 'withdrawn' ? 'Canceled' : ucfirst($offer->status) }}
                             </span>
                             @if($offer->status === 'pending')
                                 @php
@@ -794,7 +800,7 @@
                     @if($offer->status === 'withdrawn')
                         <div class="alert alert-info mt-3 mb-0">
                             <i class="fas fa-undo"></i> 
-                            This offer was withdrawn by the vendor on {{ $offer->responded_at?->format('M d, Y g:i A') }}.
+                            This offer was canceled by the vendor on {{ $offer->responded_at?->format('M d, Y g:i A') }}.
                         </div>
                     @endif
 

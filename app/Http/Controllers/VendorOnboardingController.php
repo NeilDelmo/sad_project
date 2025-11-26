@@ -205,8 +205,11 @@ class VendorOnboardingController extends Controller
             ->with(['fisherman', 'product', 'product.category'])
             ->orderByDesc('created_at');
 
-        if (in_array($status, ['pending', 'countered', 'accepted', 'rejected'])) {
+        if (in_array($status, ['pending', 'countered', 'accepted', 'withdrawn', 'auto_rejected'])) {
             $query->where('status', $status);
+        } elseif ($status === 'all') {
+            // Show all offers regardless of status
+            // No additional filter needed
         } else {
             // Default view includes key statuses
             $query->whereIn('status', ['pending', 'countered', 'accepted']);

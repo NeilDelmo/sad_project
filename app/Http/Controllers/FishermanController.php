@@ -145,7 +145,7 @@ class FishermanController extends Controller
             ->with(['vendor', 'product', 'product.category'])
             ->orderByDesc('created_at');
 
-        if (in_array($status, ['pending', 'countered', 'accepted', 'rejected', 'auto_rejected', 'closed', 'withdrawn', 'expired'])) {
+        if (in_array($status, ['pending', 'countered', 'accepted', 'auto_rejected', 'closed', 'withdrawn', 'expired'])) {
             $query->where('status', $status);
         } elseif ($status === 'all') {
             // no additional filter
