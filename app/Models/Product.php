@@ -90,7 +90,10 @@ class Product extends Model implements AuditableConract
 
             // White Fish / Default (1.0 multiplier)
             $q->orWhere(function ($sub) {
-                $sub->whereNotIn('fish_type', ['Shellfish', 'Oily Fish'])
+                $sub->where(function($type) {
+                        $type->whereNotIn('fish_type', ['Shellfish', 'Oily Fish'])
+                             ->orWhereNull('fish_type');
+                    })
                     ->where(function ($s) {
                         $s->where('freshness_metric', 'Very Fresh')->where('created_at', '>=', now()->subHours(24))
                           ->orWhere('freshness_metric', 'Fresh')->where('created_at', '>=', now()->subHours(18))
