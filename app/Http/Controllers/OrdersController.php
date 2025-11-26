@@ -130,6 +130,21 @@ class OrdersController extends Controller
             if (!$order->isRefundWindowOpen()) {
                 throw ValidationException::withMessages(['refund' => 'Refund window has closed. Refunds must be requested within 3 hours of delivery.']);
             }
+            
+            // Check if product has been sold on marketplace
+            $inventory = VendorInventory::where('order_id', $order->id)->first();
+            if ($inventory) {
+                $hasCustomerOrders = \App\Models\CustomerOrder::whereHas('listing', function($q) use ($inventory) {
+                    $q->where('vendor_inventory_id', $inventory->id);
+                })->exists();
+                
+                if ($hasCustomerOrders) {
+                    throw ValidationException::withMessages([
+                        'refund' => 'Cannot request refund. This product has already been sold to customers on the marketplace. Please contact support for assistance.'
+                    ]);
+                }
+            }
+            
             $data = $request->validate([
                 'reason' => ['required','in:bad_delivery,poor_quality,never_received,damaged_on_arrival'],
                 'notes' => ['nullable','string','max:500'],
