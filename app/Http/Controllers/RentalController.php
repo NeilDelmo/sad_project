@@ -989,6 +989,22 @@ class RentalController extends Controller
 
         $product->update($updates);
 
+        // Auto-resolve related reports based on processed count
+        $processedCount = $repaired + $discarded;
+        if ($processedCount > 0) {
+            $reports = \App\Models\RentalIssueReport::where('status', 'under_review')
+                ->whereHas('rental.rentalItems', function($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })
+                ->orderBy('created_at', 'asc')
+                ->take($processedCount)
+                ->get();
+
+            foreach ($reports as $report) {
+                $report->update(['status' => 'resolved']);
+            }
+        }
+
         return back()->with('success', 'Equipment maintenance updated.');
     }
 
@@ -1006,6 +1022,13 @@ class RentalController extends Controller
             'equipment_status' => 'retired',
             'rental_stock' => 0, // Set stock to 0 so it doesn't appear in catalog
         ]);
+
+        // Resolve all pending reports for this product
+        \App\Models\RentalIssueReport::whereIn('status', ['open', 'under_review'])
+            ->whereHas('rental.rentalItems', function($q) use ($product) {
+                $q->where('product_id', $product->id);
+            })
+            ->update(['status' => 'resolved']);
 
         return back()->with('success', 'Equipment retired permanently.');
     }
