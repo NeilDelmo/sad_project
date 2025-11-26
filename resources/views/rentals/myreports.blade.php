@@ -110,29 +110,8 @@
             gap: 15px;
             margin-bottom: 20px;
         }
-...existing code...
-                        <div class="detail-item">
-                            <div class="detail-label">Issue Type</div>
-                            <div class="detail-value">{{ ucfirst(str_replace('_', ' ', $report->issue_type)) }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Severity</div>
-                            <div class="detail-value">
-                                @php
-                                    $sev = strtolower($report->severity ?? 'low');
-                                    $sevClass = match($sev) {
-                                        'high' => 'severity-high',
-                                        'medium' => 'severity-medium',
-                                        default => 'severity-low'
-                                    };
-                                @endphp
-                                <span class="severity-badge {{ $sevClass }}">
-                                    {{ ucfirst($report->severity ?? 'N/A') }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Reported On</div>        .detail-item {
+
+        .detail-item {
             padding: 10px;
             background: #f8f9fa;
             border-radius: 6px;
@@ -226,7 +205,19 @@
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Severity</div>
-                            <div class="detail-value">{{ ucfirst($report->severity ?? 'N/A') }}</div>
+                            <div class="detail-value">
+                                @php
+                                    $sev = strtolower($report->severity ?? 'low');
+                                    $sevClass = match($sev) {
+                                        'high' => 'severity-high',
+                                        'medium' => 'severity-medium',
+                                        default => 'severity-low'
+                                    };
+                                @endphp
+                                <span class="severity-badge {{ $sevClass }}">
+                                    {{ ucfirst($report->severity ?? 'N/A') }}
+                                </span>
+                            </div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Reported On</div>
