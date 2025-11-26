@@ -327,21 +327,21 @@
                 @endphp
                 
                 @if($currentFreshness)
-                <span class="freshness-badge {{ $badgeClass }}" style="background: none; padding: 0;">
-                    <span class="badge {{ $badgeClass }}">
+                <div style="margin-top: 10px;">
+                    <span class="badge {{ $badgeClass }}" style="font-size: 13px; padding: 6px 12px;">
                         @if($currentFreshness === 'Spoiled')
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         @else
-                            🌟
+                            <i class="fa-solid fa-star"></i>
                         @endif
                         {{ $currentFreshness }}
                     </span>
                     @if($currentFreshness !== $product->freshness_metric)
-                        <small class="text-muted d-block mt-1" style="font-size: 11px;">
-                            (Originally: {{ $product->freshness_metric }})
-                        </small>
+                        <div class="text-muted mt-1" style="font-size: 11px; margin-left: 2px;">
+                            Was: {{ $product->freshness_metric }}
+                        </div>
                     @endif
-                </span>
+                </div>
                 @endif
                 
                 <div class="product-details" style="margin-top: 12px; font-size: 12px; color: #999;">
