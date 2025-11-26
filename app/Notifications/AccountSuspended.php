@@ -7,9 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AccountSuspended extends Notification implements ShouldQueue
+class AccountSuspended extends Notification
 {
-    use Queueable;
+    // use Queueable; // Disabled to send immediately
 
     /**
      * Create a new notification instance.
