@@ -36,6 +36,7 @@
         .status-under_review { background: #cff4fc; color: #055160; }
         .status-resolved { background: #d1e7dd; color: #0f5132; }
         .status-maintenance { background: #ffe8cc; color: #fd7e14; }
+        .status-retired { background: #e2e3e5; color: #383d41; text-decoration: line-through; }
         .severity-badge { padding: 6px 12px; border-radius: 14px; font-size: 12px; font-weight: 700; margin-left: 8px; }
         .severity-high { background: #fee2e2; color: #991b1b; }
         .severity-medium { background: #fed7aa; color: #9a3412; }
@@ -104,7 +105,7 @@
             <div class="stat-card">
                 <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-check-circle"></i></div>
                 <div class="stat-number">{{ $stats['resolved'] }}</div>
-                <div class="stat-label">Resolved</div>
+                <div class="stat-label">Resolved / Retired</div>
             </div>
         </div>
 

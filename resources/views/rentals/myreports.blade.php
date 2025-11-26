@@ -194,8 +194,14 @@
                 <div class="report-card">
                     <div class="report-header">
                         <div class="report-id">Report #{{ $report->id }}</div>
-                        <span class="status-badge status-{{ $report->status }}">
-                            {{ ucfirst(str_replace('_', ' ', $report->status)) }}
+                        @php
+                            // Fisherman sees 'Resolved' for both 'resolved' and 'retired'
+                            $isRetired = $report->status === 'retired';
+                            $displayStatus = $isRetired ? 'resolved' : $report->status;
+                            $displayText = $isRetired ? 'Resolved' : ucfirst(str_replace('_', ' ', $report->status));
+                        @endphp
+                        <span class="status-badge status-{{ $displayStatus }}">
+                            {{ $displayText }}
                         </span>
                     </div>
 

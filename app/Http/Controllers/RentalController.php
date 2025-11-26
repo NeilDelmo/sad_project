@@ -244,33 +244,6 @@ class RentalController extends Controller
 
     public function myReports()
     {
-        // Auto-resolve stuck reports
-        $stuckReports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
-            ->whereIn('status', ['under_review', 'maintenance'])
-            ->with(['rental.rentalItems.product'])
-            ->get();
-
-        foreach ($stuckReports as $report) {
-            $rental = $report->rental;
-            if (!$rental) continue;
-
-            $allResolved = true;
-            foreach ($rental->rentalItems as $item) {
-                $product = $item->product;
-                if (!$product) continue;
-                
-                // If product is in maintenance, the report is still valid
-                if ($product->equipment_status === 'maintenance') {
-                    $allResolved = false;
-                    break;
-                }
-            }
-
-            if ($allResolved) {
-                $report->update(['status' => 'resolved']);
-            }
-        }
-
         $reports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
             ->with(['rental.rentalItems.product'])
             ->orderBy('created_at', 'desc')
@@ -1055,7 +1028,7 @@ class RentalController extends Controller
             ->whereHas('rental.rentalItems', function($q) use ($product) {
                 $q->where('product_id', $product->id);
             })
-            ->update(['status' => 'resolved']);
+            ->update(['status' => 'retired']);
 
         return back()->with('success', 'Equipment retired permanently.');
     }
@@ -1070,7 +1043,7 @@ class RentalController extends Controller
         }
 
         $reports = \App\Models\RentalIssueReport::with(['rental.user', 'rental.rentalItems.product', 'user'])
-            ->orderByRaw("FIELD(status, 'open', 'under_review', 'maintenance', 'resolved')")
+            ->orderByRaw("FIELD(status, 'open', 'under_review', 'maintenance', 'resolved', 'retired')")
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1078,7 +1051,7 @@ class RentalController extends Controller
             'open' => \App\Models\RentalIssueReport::where('status', 'open')->count(),
             'under_review' => \App\Models\RentalIssueReport::where('status', 'under_review')->count(),
             'maintenance' => \App\Models\RentalIssueReport::where('status', 'maintenance')->count(),
-            'resolved' => \App\Models\RentalIssueReport::where('status', 'resolved')->count(),
+            'resolved' => \App\Models\RentalIssueReport::whereIn('status', ['resolved', 'retired'])->count(),
         ];
 
         return view('rentals.admin.reports', compact('reports', 'stats'));
