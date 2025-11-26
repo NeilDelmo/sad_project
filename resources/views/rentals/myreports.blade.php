@@ -52,6 +52,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-top: 4px solid #1B5E88; /* Blue accent */
         }
 
         .report-header {
@@ -60,7 +61,7 @@
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 1px solid #eee;
         }
 
         .report-id {
@@ -74,22 +75,34 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: bold;
+            text-transform: uppercase;
         }
 
         .status-open {
-            background: #fef3c7;
-            color: #92400e;
+            background: #fff3cd;
+            color: #856404;
         }
 
         .status-under_review {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #cff4fc;
+            color: #055160;
         }
 
         .status-resolved {
-            background: #d1fae5;
-            color: #065f46;
+            background: #d1e7dd;
+            color: #0f5132;
         }
+
+        .severity-badge {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .severity-high { color: #dc3545; background: #f8d7da; }
+        .severity-medium { color: #fd7e14; background: #ffe5d0; }
+        .severity-low { color: #198754; background: #d1e7dd; }
 
         .report-details {
             display: grid;
@@ -97,8 +110,29 @@
             gap: 15px;
             margin-bottom: 20px;
         }
-
-        .detail-item {
+...existing code...
+                        <div class="detail-item">
+                            <div class="detail-label">Issue Type</div>
+                            <div class="detail-value">{{ ucfirst(str_replace('_', ' ', $report->issue_type)) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Severity</div>
+                            <div class="detail-value">
+                                @php
+                                    $sev = strtolower($report->severity ?? 'low');
+                                    $sevClass = match($sev) {
+                                        'high' => 'severity-high',
+                                        'medium' => 'severity-medium',
+                                        default => 'severity-low'
+                                    };
+                                @endphp
+                                <span class="severity-badge {{ $sevClass }}">
+                                    {{ ucfirst($report->severity ?? 'N/A') }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Reported On</div>        .detail-item {
             padding: 10px;
             background: #f8f9fa;
             border-radius: 6px;

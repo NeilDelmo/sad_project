@@ -244,6 +244,33 @@ class RentalController extends Controller
 
     public function myReports()
     {
+        // Auto-resolve stuck reports
+        $stuckReports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
+            ->where('status', 'under_review')
+            ->with(['rental.rentalItems.product'])
+            ->get();
+
+        foreach ($stuckReports as $report) {
+            $rental = $report->rental;
+            if (!$rental) continue;
+
+            $allResolved = true;
+            foreach ($rental->rentalItems as $item) {
+                $product = $item->product;
+                if (!$product) continue;
+                
+                // If product is in maintenance, the report is still valid
+                if ($product->equipment_status === 'maintenance') {
+                    $allResolved = false;
+                    break;
+                }
+            }
+
+            if ($allResolved) {
+                $report->update(['status' => 'resolved']);
+            }
+        }
+
         $reports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
             ->with(['rental.rentalItems.product'])
             ->orderBy('created_at', 'desc')
