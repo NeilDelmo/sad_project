@@ -990,17 +990,33 @@ class RentalController extends Controller
         $product->update($updates);
 
         // Auto-resolve related reports based on processed count
-        $processedCount = $repaired + $discarded;
-        if ($processedCount > 0) {
-            $reports = \App\Models\RentalIssueReport::whereIn('status', ['under_review', 'maintenance'])
+        
+        // 1. Handle discarded units -> Mark reports as 'retired'
+        if ($discarded > 0) {
+            $discardedReports = \App\Models\RentalIssueReport::whereIn('status', ['under_review', 'maintenance'])
                 ->whereHas('rental.rentalItems', function($q) use ($product) {
                     $q->where('product_id', $product->id);
                 })
                 ->orderBy('created_at', 'asc')
-                ->take($processedCount)
+                ->take($discarded)
                 ->get();
 
-            foreach ($reports as $report) {
+            foreach ($discardedReports as $report) {
+                $report->update(['status' => 'retired']);
+            }
+        }
+
+        // 2. Handle repaired units -> Mark reports as 'resolved'
+        if ($repaired > 0) {
+            $repairedReports = \App\Models\RentalIssueReport::whereIn('status', ['under_review', 'maintenance'])
+                ->whereHas('rental.rentalItems', function($q) use ($product) {
+                    $q->where('product_id', $product->id);
+                })
+                ->orderBy('created_at', 'asc')
+                ->take($repaired)
+                ->get();
+
+            foreach ($repairedReports as $report) {
                 $report->update(['status' => 'resolved']);
             }
         }
