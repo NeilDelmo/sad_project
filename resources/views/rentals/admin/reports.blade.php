@@ -35,6 +35,7 @@
         .status-open { background: #fff3cd; color: #856404; }
         .status-under_review { background: #cff4fc; color: #055160; }
         .status-resolved { background: #d1e7dd; color: #0f5132; }
+        .status-maintenance { background: #ffe8cc; color: #fd7e14; }
         .severity-badge { padding: 6px 12px; border-radius: 14px; font-size: 12px; font-weight: 700; margin-left: 8px; }
         .severity-high { background: #fee2e2; color: #991b1b; }
         .severity-medium { background: #fed7aa; color: #9a3412; }
@@ -94,6 +95,11 @@
                 <div class="stat-icon" style="color: #0c5460;"><i class="fa-solid fa-eye"></i></div>
                 <div class="stat-number">{{ $stats['under_review'] }}</div>
                 <div class="stat-label">Under Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #fd7e14;"><i class="fa-solid fa-wrench"></i></div>
+                <div class="stat-number">{{ $stats['maintenance'] ?? 0 }}</div>
+                <div class="stat-label">Maintenance</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-check-circle"></i></div>
@@ -162,7 +168,7 @@
                         </div>
                     @endif
 
-                    @if($report->status === 'under_review')
+                    @if($report->status === 'under_review' || $report->status === 'maintenance')
                         <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
                             <form method="POST" action="{{ route('reports.resolve', $report) }}" style="display: inline;">
                                 @csrf

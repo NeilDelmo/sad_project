@@ -93,6 +93,11 @@
             color: #0f5132;
         }
 
+        .status-maintenance {
+            background: #ffe8cc;
+            color: #fd7e14;
+        }
+
         .severity-badge {
             font-weight: bold;
             padding: 4px 8px;

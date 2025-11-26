@@ -246,7 +246,7 @@ class RentalController extends Controller
     {
         // Auto-resolve stuck reports
         $stuckReports = \App\Models\RentalIssueReport::where('user_id', auth()->id())
-            ->where('status', 'under_review')
+            ->whereIn('status', ['under_review', 'maintenance'])
             ->with(['rental.rentalItems.product'])
             ->get();
 
@@ -1019,7 +1019,7 @@ class RentalController extends Controller
         // Auto-resolve related reports based on processed count
         $processedCount = $repaired + $discarded;
         if ($processedCount > 0) {
-            $reports = \App\Models\RentalIssueReport::where('status', 'under_review')
+            $reports = \App\Models\RentalIssueReport::whereIn('status', ['under_review', 'maintenance'])
                 ->whereHas('rental.rentalItems', function($q) use ($product) {
                     $q->where('product_id', $product->id);
                 })
@@ -1051,7 +1051,7 @@ class RentalController extends Controller
         ]);
 
         // Resolve all pending reports for this product
-        \App\Models\RentalIssueReport::whereIn('status', ['open', 'under_review'])
+        \App\Models\RentalIssueReport::whereIn('status', ['open', 'under_review', 'maintenance'])
             ->whereHas('rental.rentalItems', function($q) use ($product) {
                 $q->where('product_id', $product->id);
             })
@@ -1070,13 +1070,14 @@ class RentalController extends Controller
         }
 
         $reports = \App\Models\RentalIssueReport::with(['rental.user', 'rental.rentalItems.product', 'user'])
-            ->orderByRaw("FIELD(status, 'open', 'under_review', 'resolved')")
+            ->orderByRaw("FIELD(status, 'open', 'under_review', 'maintenance', 'resolved')")
             ->orderBy('created_at', 'desc')
             ->get();
 
         $stats = [
             'open' => \App\Models\RentalIssueReport::where('status', 'open')->count(),
             'under_review' => \App\Models\RentalIssueReport::where('status', 'under_review')->count(),
+            'maintenance' => \App\Models\RentalIssueReport::where('status', 'maintenance')->count(),
             'resolved' => \App\Models\RentalIssueReport::where('status', 'resolved')->count(),
         ];
 
@@ -1106,7 +1107,7 @@ class RentalController extends Controller
         $product->update(['equipment_status' => 'maintenance']);
 
         // Update report status
-        $report->update(['status' => 'under_review']);
+        $report->update(['status' => 'maintenance']);
 
         // Log note
         $timestamp = now()->format('Y-m-d H:i');
