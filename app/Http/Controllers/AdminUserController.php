@@ -80,8 +80,16 @@ class AdminUserController extends Controller
         
         $user->account_status = 'suspended';
         $user->save();
+
+        // Send email notification
+        try {
+            $user->notify(new \App\Notifications\AccountSuspended());
+        } catch (\Exception $e) {
+            // Log error but continue
+            \Illuminate\Support\Facades\Log::error('Failed to send suspension email: ' . $e->getMessage());
+        }
         
-        return redirect()->back()->with('success', 'User suspended successfully.');
+        return redirect()->back()->with('success', 'User suspended successfully and notified via email.');
     }
 
     public function ban($id)
