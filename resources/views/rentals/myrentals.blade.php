@@ -409,6 +409,15 @@
                         @endforeach
                     </div>
 
+                    @if($rental->status === 'rejected' && $rental->admin_notes)
+                        <div style="padding: 15px; background: #fee2e2; border-left: 4px solid #dc3545; border-radius: 6px; margin-bottom: 15px;">
+                            <strong style="color: #991b1b;">
+                                <i class="fa-solid fa-circle-xmark"></i> Rejection Reason:
+                            </strong> 
+                            <p style="margin-top: 5px; color: #7f1d1d;">{{ $rental->admin_notes }}</p>
+                        </div>
+                    @endif
+
                     @if($rental->notes)
                         <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; margin-bottom: 15px;">
                             <strong style="color: #1B5E88;">Notes:</strong> {{ $rental->notes }}

@@ -50,10 +50,15 @@ class RentalRejected extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $message = 'Your rental request #' . $this->rental->id . ' has been rejected.';
+        if ($this->rental->admin_notes) {
+            $message .= ' Reason: ' . $this->rental->admin_notes;
+        }
+
         return [
             'rental_id' => $this->rental->id,
             'title' => 'Rental Request Rejected',
-            'message' => 'Your rental request #' . $this->rental->id . ' has been rejected. Please contact admin for more information.',
+            'message' => $message,
             'action_url' => route('rentals.myrentals'),
             'action_text' => 'View Details',
             'rental_date' => $this->rental->rental_date->format('M d, Y'),
