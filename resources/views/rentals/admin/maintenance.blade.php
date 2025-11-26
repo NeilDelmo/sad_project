@@ -295,27 +295,48 @@
                     @endif
 
                     <div class="action-buttons">
-                        <form action="{{ route('equipment.repair', $equipment) }}" method="POST" style="display: inline; max-width: 600px;">
+                        <form action="{{ route('equipment.repair', $equipment) }}" method="POST" style="display: inline; max-width: 100%; width: 100%;">
                             @csrf
-                            <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
-                                <div style="flex:0 0 180px;">
-                                    <label style="display:block; font-weight:bold; font-size: 13px; color:#1B5E88;">Repair Cost (₱)</label>
-                                    <input type="number" step="0.01" min="0" name="repair_cost" required style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
-                                </div>
-                                <div style="flex:1;">
-                                    <label style="display:block; font-weight:bold; font-size: 13px; color:#1B5E88;">Repair Notes</label>
-                                    <textarea name="repair_notes" rows="2" required placeholder="What was repaired/replaced?" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;"></textarea>
-                                </div>
-                                <div style="flex:0 0 180px;">
-                                    <label style="display:block; font-weight:bold; font-size: 13px; color:#1B5E88;">Repaired Units</label>
-                                    <input type="number" min="1" max="{{ $equipment->maintenance_count ?? 0 }}" name="repaired_count" value="{{ $equipment->maintenance_count ?? 0 }}" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
-                                    <small style="color:#666;">Up to {{ $equipment->maintenance_count ?? 0 }}</small>
+                            
+                            <!-- Repair Section -->
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                <h4 style="margin-bottom: 10px; color: #1B5E88; font-size: 16px;"><i class="fa-solid fa-hammer"></i> Repair Actions</h4>
+                                <div style="display:flex; gap:15px; align-items:flex-start; flex-wrap:wrap;">
+                                    <div style="flex:0 0 150px;">
+                                        <label style="display:block; font-weight:bold; font-size: 12px; color:#666; margin-bottom: 5px;">Repair Cost (₱)</label>
+                                        <input type="number" step="0.01" min="0" name="repair_cost" value="0" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                    </div>
+                                    <div style="flex:1; min-width: 250px;">
+                                        <label style="display:block; font-weight:bold; font-size: 12px; color:#666; margin-bottom: 5px;">Repair Notes</label>
+                                        <textarea name="repair_notes" rows="1" placeholder="Details about the repair..." style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;"></textarea>
+                                    </div>
+                                    <div style="flex:0 0 120px;">
+                                        <label style="display:block; font-weight:bold; font-size: 12px; color:#10b981; margin-bottom: 5px;">Repaired Qty</label>
+                                        <input type="number" min="0" max="{{ $equipment->maintenance_count ?? 0 }}" name="repaired_count" value="{{ $equipment->maintenance_count ?? 0 }}" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; border-color: #10b981;">
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success" onclick="return confirm('Mark this equipment as repaired and available for rent?')">
-                                <i class="fa-solid fa-check-circle"></i>
-                                Mark as Repaired
-                            </button>
+
+                            <!-- Discard Section (Optional) -->
+                            <div style="background: #fff5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #fed7d7;">
+                                <h4 style="margin-bottom: 10px; color: #c53030; font-size: 16px;"><i class="fa-solid fa-trash-can"></i> Discard Actions (Optional)</h4>
+                                <div style="display:flex; gap:15px; align-items:flex-start; flex-wrap:wrap;">
+                                    <div style="flex:1; min-width: 250px;">
+                                        <label style="display:block; font-weight:bold; font-size: 12px; color:#666; margin-bottom: 5px;">Discard Reason</label>
+                                        <input type="text" name="discard_reason" placeholder="e.g. Stolen, Lost, Beyond Repair" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                                    </div>
+                                    <div style="flex:0 0 120px;">
+                                        <label style="display:block; font-weight:bold; font-size: 12px; color:#c53030; margin-bottom: 5px;">Discard Qty</label>
+                                        <input type="number" min="0" max="{{ $equipment->maintenance_count ?? 0 }}" name="discarded_count" value="0" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; border-color: #c53030;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Update maintenance status?')">
+                                    <i class="fa-solid fa-save"></i> Update Maintenance Status
+                                </button>
+                            </div>
                         </form>
                         <form action="{{ route('equipment.retire', $equipment) }}" method="POST" style="display: inline;">
                             @csrf

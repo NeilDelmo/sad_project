@@ -922,36 +922,74 @@ class RentalController extends Controller
         }
 
         $validated = $request->validate([
-            'repair_notes' => 'required|string|max:1000',
-            'repair_cost' => 'required|numeric|min:0',
+            'repair_notes' => 'nullable|string|max:1000',
+            'repair_cost' => 'nullable|numeric|min:0',
             'repaired_count' => 'nullable|integer|min:0',
+            'discarded_count' => 'nullable|integer|min:0',
+            'discard_reason' => 'nullable|string|max:255',
         ]);
 
-        $timestamp = now()->format('Y-m-d H:i');
-        $newNote = "[{$timestamp}] Repaired by " . auth()->user()->name . " - Cost: ₱" . number_format($validated['repair_cost'], 2) . "\n" . $validated['repair_notes'];
-        $existingNotes = $product->maintenance_notes ?? '';
-        $updatedNotes = $existingNotes ? $existingNotes . "\n\n---\n\n" . $newNote : $newNote;
+        $repaired = (int)($validated['repaired_count'] ?? 0);
+        $discarded = (int)($validated['discarded_count'] ?? 0);
+        $cost = (float)($validated['repair_cost'] ?? 0);
+        $notes = $validated['repair_notes'] ?? '';
+        $discardReason = $validated['discard_reason'] ?? '';
 
-        $repaired = min((int)($validated['repaired_count'] ?? 0), (int)($product->maintenance_count ?? 0));
+        if ($repaired === 0 && $discarded === 0 && empty($notes)) {
+             return back()->withErrors(['error' => 'Please specify an action (repair units, discard units, or add notes).']);
+        }
+
+        $timestamp = now()->format('Y-m-d H:i');
+        $logEntry = "[{$timestamp}] Maintenance Update by " . auth()->user()->name;
+        
+        if ($cost > 0) {
+            $logEntry .= " - Cost: ₱" . number_format($cost, 2);
+        }
+        
+        if (!empty($notes)) {
+            $logEntry .= "\nNotes: " . $notes;
+        }
+        
+        $totalMaintenance = (int)($product->maintenance_count ?? 0);
+
+        if ($repaired + $discarded > $totalMaintenance) {
+            return back()->withErrors(['error' => 'Total repaired and discarded units cannot exceed units in maintenance.']);
+        }
+
+        if ($repaired > 0) {
+            $logEntry .= "\nAction: Repaired {$repaired} unit(s) and returned to stock.";
+        }
+
+        if ($discarded > 0) {
+            $reasonStr = $discardReason ? " (Reason: {$discardReason})" : "";
+            $logEntry .= "\nAction: Discarded {$discarded} unit(s){$reasonStr}.";
+        }
+
+        $existingNotes = $product->maintenance_notes ?? '';
+        $updatedNotes = $existingNotes ? $existingNotes . "\n\n---\n\n" . $logEntry : $logEntry;
 
         $updates = [
             'maintenance_notes' => $updatedNotes,
-            'total_repair_cost' => ($product->total_repair_cost ?? 0) + $validated['repair_cost'],
+            'total_repair_cost' => ($product->total_repair_cost ?? 0) + $cost,
             'last_maintenance_date' => now(),
         ];
-        if ($repaired > 0) {
-            $updates['maintenance_count'] = max(0, ($product->maintenance_count ?? 0) - $repaired);
-            $updates['rental_stock'] = ($product->rental_stock ?? 0) + $repaired;
+
+        if ($repaired > 0 || $discarded > 0) {
+            $updates['maintenance_count'] = max(0, $totalMaintenance - $repaired - $discarded);
+            // Only increment stock for repaired units
+            if ($repaired > 0) {
+                $updates['rental_stock'] = ($product->rental_stock ?? 0) + $repaired;
+            }
         }
 
         // If no units remain in maintenance, set status to available
-        if ((($updates['maintenance_count'] ?? $product->maintenance_count ?? 0)) === 0) {
+        if (($updates['maintenance_count'] ?? $totalMaintenance) === 0) {
             $updates['equipment_status'] = 'available';
         }
 
         $product->update($updates);
 
-        return back()->with('success', 'Equipment marked as repaired and available for rent.');
+        return back()->with('success', 'Equipment maintenance updated.');
     }
 
     /**
