@@ -21,6 +21,9 @@ class RecommendationService
     {
         $filters = function($query) use ($q, $categoryAliases) {
             $query->active()
+                ->whereHas('seller', function($q) {
+                    $q->where('account_status', 'active');
+                })
                 ->whereHas('product.category', function($q2) use ($categoryAliases) {
                     $q2->whereIn('name', $categoryAliases);
                 });
@@ -162,6 +165,9 @@ class RecommendationService
             $catName = (string)$row->category_name;
             $cheapestByCat[$catName] = MarketplaceListing::with(['product','product.category','seller'])
                 ->active()
+                ->whereHas('seller', function($q) {
+                    $q->where('account_status', 'active');
+                })
                 ->join('products','marketplace_listings.product_id','=','products.id')
                 ->where('products.category_id', $catId)
                 ->orderByRaw('COALESCE(marketplace_listings.final_price, marketplace_listings.dynamic_price, marketplace_listings.asking_price, marketplace_listings.base_price) ASC')
@@ -170,6 +176,9 @@ class RecommendationService
 
             $freshestByCat[$catName] = MarketplaceListing::with(['product','product.category','seller'])
                 ->active()
+                ->whereHas('seller', function($q) {
+                    $q->where('account_status', 'active');
+                })
                 ->join('products','marketplace_listings.product_id','=','products.id')
                 ->where('products.category_id', $catId)
                 ->orderByRaw('marketplace_listings.freshness_score DESC, marketplace_listings.listing_date DESC')

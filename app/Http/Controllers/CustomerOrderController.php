@@ -42,6 +42,12 @@ class CustomerOrderController extends Controller
         if ($user->id === $listing->seller_id) {
             throw ValidationException::withMessages(['quantity' => 'You cannot purchase your own listing.']);
         }
+        
+        // Check if seller is active
+        if ($listing->seller && $listing->seller->account_status !== 'active') {
+            throw ValidationException::withMessages(['error' => 'This seller is currently unavailable.']);
+        }
+
         $data = $request->validate([
             'quantity' => ['required','integer','min:1']
         ]);

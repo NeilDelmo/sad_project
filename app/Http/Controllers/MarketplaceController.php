@@ -31,6 +31,9 @@ class MarketplaceController extends Controller
         $aliases = config('fish.category_aliases', ['Fish', 'Fresh Fish']);
         $query = MarketplaceListing::with(['product', 'product.category', 'seller', 'vendorInventory'])
             ->active()
+            ->whereHas('seller', function($q) {
+                $q->where('account_status', 'active');
+            })
             ->whereHas('product.category', function($q2) use ($aliases) {
                 $q2->whereIn('name', $aliases);
             });

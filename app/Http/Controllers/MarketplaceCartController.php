@@ -79,6 +79,11 @@ class MarketplaceCartController extends Controller
             return back()->withErrors(['error' => 'You cannot add your own listing to cart.']);
         }
 
+        // Check if seller is active
+        if ($listing->seller && $listing->seller->account_status !== 'active') {
+             return back()->withErrors(['error' => 'This seller is currently unavailable.']);
+        }
+
         // Check stock
         $stock = 0;
         if ($listing->vendor_inventory_id) {
@@ -186,6 +191,11 @@ class MarketplaceCartController extends Controller
                 foreach ($listings as $listing) {
                     if (!isset($cart[$listing->id])) continue;
                     
+                    // Check if seller is active
+                    if ($listing->seller && $listing->seller->account_status !== 'active') {
+                        throw new \Exception("Seller for {$listing->product->name} is currently unavailable.");
+                    }
+
                     $qty = $cart[$listing->id];
                     
                     // Re-check stock
