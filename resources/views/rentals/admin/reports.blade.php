@@ -20,17 +20,21 @@
         .stat-icon { font-size: 36px; margin-bottom: 10px; }
         .stat-number { font-size: 32px; font-weight: bold; color: #1B5E88; }
         .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
-        .report-card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px; margin-bottom: 20px; border-left: 5px solid #ffc107; }
-        .report-card.severity-high { border-left-color: #dc3545; }
-        .report-card.severity-medium { border-left-color: #ff9800; }
-        .report-card.severity-low { border-left-color: #17a2b8; }
-        .report-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+        .report-card { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            border-top: 4px solid #1B5E88; /* Blue accent */
+        }
+        .report-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .report-title { font-size: 20px; font-weight: bold; color: #1B5E88; margin-bottom: 8px; }
         .report-meta { font-size: 14px; color: #666; }
         .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; text-transform: uppercase; display: inline-block; }
         .status-open { background: #fff3cd; color: #856404; }
-        .status-under_review { background: #d1ecf1; color: #0c5460; }
-        .status-resolved { background: #d4edda; color: #155724; }
+        .status-under_review { background: #cff4fc; color: #055160; }
+        .status-resolved { background: #d1e7dd; color: #0f5132; }
         .severity-badge { padding: 6px 12px; border-radius: 14px; font-size: 12px; font-weight: 700; margin-left: 8px; }
         .severity-high { background: #fee2e2; color: #991b1b; }
         .severity-medium { background: #fed7aa; color: #9a3412; }
@@ -98,16 +102,16 @@
             </div>
         </div>
 
-        @if($reports->count() > 0)
+                @if($reports->count() > 0)
             @foreach($reports as $report)
-                <div class="report-card @if($report->severity) severity-{{ $report->severity }} @endif">
+                <div class="report-card">
                     <div class="report-header">
                         <div style="flex: 1;">
                             <div class="report-title">
                                 {{ $report->title ?: 'Issue Report #' . $report->id }}
                                 <span class="issue-type-badge">{{ ucfirst(str_replace('_', ' ', $report->issue_type)) }}</span>
                                 @if($report->severity)
-                                    <span class="severity-badge severity-{{ $report->severity }}">{{ strtoupper($report->severity) }}</span>
+                                    <span class="severity-badge severity-{{ strtolower($report->severity) }}">{{ strtoupper($report->severity) }}</span>
                                 @endif
                             </div>
                             <div class="report-meta">
