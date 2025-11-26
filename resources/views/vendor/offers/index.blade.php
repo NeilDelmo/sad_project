@@ -121,7 +121,7 @@
       <a class="btn btn-sm {{ request('status') === 'accepted' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'accepted']) }}">Accepted</a>
       <a class="btn btn-sm {{ request('status') === 'rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'rejected']) }}">Rejected</a>
       <a class="btn btn-sm {{ request('status') === 'auto_rejected' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'auto_rejected']) }}">Auto-Rejected</a>
-      <a class="btn btn-sm {{ request('status') === 'withdrawn' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'withdrawn']) }}">Withdrawn</a>
+      <a class="btn btn-sm {{ request('status') === 'withdrawn' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'withdrawn']) }}">Canceled</a>
       <a class="btn btn-sm {{ request('status') === 'all' ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('vendor.offers.index', ['status' => 'all']) }}">All</a>
     </div>
     <div class="offers-table">
@@ -187,8 +187,8 @@
                 </button>
                 <form method="POST" action="{{ route('fisherman.offers.withdraw', $offer) }}" class="d-inline">
                   @csrf
-                  <button type="submit" class="btn btn-withdraw btn-sm mb-1" onclick="return confirm('Withdraw this bid?')">
-                    <i class="fas fa-undo"></i> Withdraw
+                  <button type="submit" class="btn btn-withdraw btn-sm mb-1" onclick="return confirm('Cancel this bid?')">
+                    <i class="fas fa-undo"></i> Cancel
                   </button>
                 </form>
               @elseif($offer->status === 'countered')

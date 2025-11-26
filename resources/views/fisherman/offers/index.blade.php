@@ -439,7 +439,7 @@
             </button>
             <button class="tab {{ request('status') == 'withdrawn' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'withdrawn']) }}'">
-                Withdrawn
+                Canceled
             </button>
             <button class="tab {{ request('status') == 'all' ? 'active' : '' }}" 
                     onclick="window.location.href='{{ route('fisherman.offers.index', ['status' => 'all']) }}'">
