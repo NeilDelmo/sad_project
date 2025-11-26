@@ -336,12 +336,14 @@
                                                     <i class="fa-solid fa-pause"></i> Suspend
                                                 </button>
                                             </form>
+                                            {{-- Ban button hidden as requested
                                             <form method="POST" action="{{ route('admin.users.ban', $user->id) }}" class="inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-ban" onclick="return confirm('Ban {{ $user->username }}? This is permanent and more severe than suspension.')">
                                                     <i class="fa-solid fa-ban"></i> Ban
                                                 </button>
                                             </form>
+                                            --}}
                                             <button type="button" class="btn btn-ban" style="border-color: #f59e0b; color: #b45309;" onclick="openPenaltyModal('{{ $user->id }}', '{{ $user->username }}')">
                                                 <i class="fa-solid fa-gavel"></i> Penalty
                                             </button>

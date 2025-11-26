@@ -62,6 +62,9 @@ class VendorOnboardingController extends Controller
             ->active()
             ->notSpoiled()
             ->where('available_quantity', '>', 0)
+            ->whereHas('supplier', function($q) {
+                $q->where('account_status', 'active');
+            })
             ->orderByDesc('created_at');
 
         // Filter to only show fish and shellfish products (vendors don't buy equipment)
@@ -238,6 +241,9 @@ class VendorOnboardingController extends Controller
             ->active()
             ->notSpoiled()
             ->where('available_quantity', '>', 0)
+            ->whereHas('supplier', function($q) {
+                $q->where('account_status', 'active');
+            })
             ->orderByDesc('created_at');
 
         // Filter out equipment and gear - vendors only buy fish and shellfish
